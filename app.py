@@ -15,6 +15,7 @@ from backend.auth import configure_session, authenticate_user, login_user, logou
 from backend.routes.user_routes import user_bp
 from backend.routes.admin_routes import admin_bp
 from backend.routes.validation_routes import validation_bp
+from backend.services.image_service import generate_tags, generate_description
 from test_routes import test_bp
 from backend.services.scheduler_service import start_scheduler, stop_scheduler
 
@@ -191,6 +192,76 @@ def set_firebase_web_config():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/ai/generate-tags', methods=['POST'])
+def ai_generate_tags():
+    try:
+        token_required = os.environ.get('AI_SERVICE_TOKEN')
+        if token_required:
+            auth = request.headers.get('Authorization') or ''
+            if not auth.startswith('Bearer '):
+                return jsonify({'error': 'Unauthorized'}), 401
+            if auth.split(' ', 1)[1].strip() != token_required:
+                return jsonify({'error': 'Forbidden'}), 403
+
+        file = request.files.get('image')
+        if not file:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        extra_raw = request.form.get('extra_candidates') or request.form.get('learned_tags')
+        extra_candidates = []
+        if extra_raw:
+            try:
+                extra_candidates = json.loads(extra_raw)
+            except Exception:
+                extra_candidates = []
+
+        temp_dir = os.path.join(tempfile.gettempdir(), 'qreclaim_ai')
+        os.makedirs(temp_dir, exist_ok=True)
+        ext = (file.filename or 'img').rsplit('.', 1)[-1].lower()
+        temp_path = os.path.join(temp_dir, f'{os.urandom(8).hex()}.{ext}')
+        file.save(temp_path)
+        try:
+            result = generate_tags(temp_path, extra_candidates=extra_candidates)
+        finally:
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        return jsonify({'success': True, 'result': result, 'tags': result.get('tags', [])}), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to generate tags: {str(e)}'}), 500
+
+@app.route('/ai/generate-description', methods=['POST'])
+def ai_generate_description():
+    try:
+        token_required = os.environ.get('AI_SERVICE_TOKEN')
+        if token_required:
+            auth = request.headers.get('Authorization') or ''
+            if not auth.startswith('Bearer '):
+                return jsonify({'error': 'Unauthorized'}), 401
+            if auth.split(' ', 1)[1].strip() != token_required:
+                return jsonify({'error': 'Forbidden'}), 403
+
+        file = request.files.get('image')
+        if not file:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        temp_dir = os.path.join(tempfile.gettempdir(), 'qreclaim_ai')
+        os.makedirs(temp_dir, exist_ok=True)
+        ext = (file.filename or 'img').rsplit('.', 1)[-1].lower()
+        temp_path = os.path.join(temp_dir, f'{os.urandom(8).hex()}.{ext}')
+        file.save(temp_path)
+        try:
+            caption = generate_description(temp_path)
+        finally:
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        return jsonify({'success': True, 'description': caption}), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to generate description: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Start the background scheduler for automatic tasks

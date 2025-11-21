@@ -15,7 +15,7 @@ from firebase_admin import firestore  # For SERVER_TIMESTAMP
 from google.api_core.exceptions import FailedPrecondition  # Handle missing Firestore composite indexes gracefully
 from ..services.locker_service import get_available_lockers
 from ..services.found_item_service import get_dashboard_statistics, get_recent_activities, create_found_item
-from ..services.image_service import generate_tags
+from ..services.image_service import generate_tags, generate_description
 from ..services.status_service import update_overdue_items, validate_status_transition, is_status_final
 from ..services.admin_review_service import create_admin_review, get_admin_reviews, get_admin_review_by_id
 from ..services.claim_service import validate_admin_status_for_approval  # Validate admin before approving/rejecting
@@ -3141,11 +3141,7 @@ def generate_description_api():
             temp_path = temp_file.name
         
         try:
-            # Import the caption generation function
-            from ..ai_image_tagging import generate_caption_for_image
-            
-            # Generate description using AI
-            description = generate_caption_for_image(temp_path)
+            caption = generate_description(temp_path)
             
             # Clean up temporary file
             os.unlink(temp_path)

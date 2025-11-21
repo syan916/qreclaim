@@ -5,7 +5,7 @@ from ..auth import is_authenticated, is_student, student_required
 from ..database import db
 from ..services.user_service import get_user_profile
 from ..services.lost_item_service import create_lost_item
-from ..services.image_service import generate_tags
+from ..services.image_service import generate_tags, generate_description
 from ..services.found_item_service import get_found_item_details
 from ..services.claim_service import (
     start_claim,
@@ -419,9 +419,7 @@ def user_generate_description_api():
         temp_path = os.path.join(temp_dir, temp_name)
         file.save(temp_path)
 
-        # Use AI caption generation
-        from ..ai_image_tagging import generate_caption_for_image
-        caption = generate_caption_for_image(temp_path)
+        caption = generate_description(temp_path)
 
         # Clean up
         try:
