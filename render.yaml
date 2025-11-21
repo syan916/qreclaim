@@ -10,6 +10,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /opt/render/project/src/firebaseAdminKey.json
       - fromGroup: qreclaim-env
 
 envVarGroups:
