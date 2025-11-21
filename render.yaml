@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    preDeployCommand: bash -lc '[[ -n "$FIREBASE_ADMIN_KEY_JSON" ]] && echo "$FIREBASE_ADMIN_KEY_JSON" > firebaseAdminKey.json || true'
+    preDeployCommand: 'if [ -n "$FIREBASE_ADMIN_KEY_JSON" ]; then printf %s "$FIREBASE_ADMIN_KEY_JSON" > firebaseAdminKey.json; python -c "import json; json.load(open(\"firebaseAdminKey.json\")); print(\"Firebase Admin JSON OK\")"; else echo "FIREBASE_ADMIN_KEY_JSON not set; skipping credentials file creation"; fi'
     startCommand: gunicorn -w 2 -k gthread -b 0.0.0.0:$PORT app:app
     healthCheckPath: /api/health
     envVars:
