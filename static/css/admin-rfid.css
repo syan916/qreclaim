@@ -1,0 +1,93 @@
+:root {
+    --rfid-gap: 1rem;
+}
+
+.rfid-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--rfid-gap);
+}
+
+.rfid-card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.rfid-row {
+    display: flex;
+    gap: var(--rfid-gap);
+    margin-top: 0.75rem;
+}
+
+.rfid-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rfid-field label {
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.rfid-field input,
+.rfid-field select,
+.rfid-field textarea {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.rfid-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.75rem;
+}
+
+.btn.primary { background: var(--primary-color); color: #fff; }
+.btn.primary:hover { background: var(--primary-dark); }
+.btn.success { background: var(--success-color); color: #fff; }
+.btn.success:hover { background: var(--success-dark); }
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.status.connected { background: #dcfce7; color: #166534; }
+.status.disconnected { background: #fee2e2; color: #7f1d1d; }
+
+.log {
+    height: 180px;
+    border: 1px dashed var(--gray-300);
+    border-radius: 8px;
+    padding: 0.75rem;
+    overflow: auto;
+    background: #fafafa;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+}
+
+.alert {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    background: #fef3c7;
+    color: #78350f;
+}
+
+@media (max-width: 900px) {
+    .rfid-grid { grid-template-columns: 1fr; }
+}

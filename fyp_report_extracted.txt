@@ -1,0 +1,3607 @@
+
+--- PAGE 1 ---
+ 
+ 
+ 
+ 
+Qreclaim: Smart Lost-and-Found 
+System with AI-Powered Image 
+and RFID  
+Verification 
+ 
+ 
+ 
+By 
+ 
+ 
+ 
+ 
+Lee Song Yan 
+ 
+ 
+ 
+ 
+ 
+ 
+             
+ 
+  
+ 
+FACULTY OF COMPUTING AND  
+INFORMATION TECHNOLOGY 
+ 
+TUNKU ABDUL RAHMAN UNIVERSITY OF 
+MANAGEMENT AND TECHNOLOGY 
+JOHOR 
+ 
+ 
+ACADEMIC YEAR 
+2025/26  
+
+
+--- PAGE 2 ---
+ 
+Qreclaim: Smart Lost-and-Found System with AI-
+Powered Image and RFID  
+Verification 
+ 
+By 
+ 
+Lee Song Yan 
+ 
+ 
+Supervisor: Dr. Leong Pui Huang 
+ 
+ 
+ 
+A project report submitted to the  
+Faculty of Computing and Information Technology   
+in partial fulfillment of the requirement for the 
+ 
+Bachelor of Information Technology (Honours). 
+ 
+  
+ 
+ 
+Faculty of Computing and Information Technology   
+Tunku Abdul Rahman University of Management and Technology 
+Johor 
+ 
+ 
+ 
+ 
+ 
+ 
+Copyright by Tunku Abdul Rahman University of Management and 
+Technology. 
+All rights reserved.  No part of this project documentation may be reproduced, 
+stored in retrieval system, or transmitted in any form or by any means without 
+prior permission of Tunku Abdul Rahman University of Management and 
+Technology. 
+ 
+
+--- PAGE 3 ---
+Qreclaim Declaration 
+ 
+BMCS3403 Project I 2 
+Declaration 
+The project submitted herewith is a result of my own efforts in totality and in every aspect of the project 
+works.  All information that has been obtained from other sources had been fully acknowledged.  I 
+understand that any plagiarism, cheating or collus ion or any sorts constitutes a breach of TAR 
+University rules and regulations and would be subjected to disciplinary actions. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+__________Syan________________ 
+Lee Song Yan 
+Bachelor of Information Technology (Honours) in Software Systems Development 
+ ID:24JMR08473 
+ 
+
+--- PAGE 4 ---
+Qreclaim Abstract 
+ 
+BMCS3403 Project I 4 
+Abstract 
+This project, Qreclaim: Smart Lost-and-Found System with AI-Powered Image and RFID Verification, 
+was developed to address long-standing weaknesses in the lost-and-found process at TAR UMT Johor. 
+The existing practice relies on informal channels such as WhatsApp and Facebook, which leads to poor 
+accountability, inconsistent item recovery, and weak verification of ownership. The purpose of this 
+project is to design a structured and secure platform that improves the way lost items are reported, 
+matched, and claimed, ensuring greate r efficiency and trust in the process. The scope of the system 
+covers four main modules: a centralized reporting platform for both students and staff, an AI-powered 
+image tagging and similarity matching engine using BLIP and CLIP models, a dual -factor clai m 
+verification process combining RFID student ID cards and facial recognition through a prototype kiosk, 
+and an administrator dashboard with locker management and analytics. The project adopts the 
+Incremental Model as its methodology, with system developme nt supported by Firebase, Python, 
+Hugging Face models, and Raspberry Pi integration. Requirements were gathered through research, 
+surveys, and observation, leading to a structured Software Requirements Specification and detailed 
+system design. Testing in this phase focused on functional correctness and usability feedback, ensuring 
+that core modules performed as expected. Results showed that the system design successfully addressed 
+the main problems identified, offering secure verification, improved item matching, and a user-friendly 
+interface. However, limitations remain in scalability and mobile app support. Overall, this Project I 
+report concludes that integrating AI, IoT, and usability principles provides a feasible and effective 
+solution to campus lost-and-found challenges, and the outcomes of this stage lay a clear foundation for 
+implementation and evaluation in Project II.
+
+--- PAGE 5 ---
+Qreclaim Acknowledgement 
+ 
+BMCS3403 Project I 4 
+Acknowledgement 
+ 
+First and foremost, I would like to express my deepest gratitude to Dr. Leong Pui Huang, my project 
+supervisor, for her continuous guidance, encouragement, and constructive feedback throughout the 
+course of this Final Year Project. Her valuable insights and expertise have greatly contributed to the 
+successful planning and development of this project. 
+I would also like to extend my sincere appreciation to the moderators and academic staff  of the 
+Faculty of Computing and Information Technology at TAR UMT Johor Branch for their support, 
+suggestions, and evaluations during the project progress presentations and reviews. 
+Special thanks go to my family, especially my parents, for their unconditional support, patience, and 
+motivation throughout my academic journey. Their encouragement has been a strong pillar that kept 
+me focused and determined. 
+Lastly, I am grateful to my friends and peers  who have provided moral support, ideas, and helpful 
+feedback during discussions. Their input and encouragement have helped me refine the project and 
+overcome challenges along the way. 
+To all who have contributed directly or indirectly to the success of this project, your support is sincerely 
+appreciated. 
+
+--- PAGE 6 ---
+Qreclaim Table of Content 
+ 
+BMCS3403 Project I 5 
+Table of Contents 
+1 Introduction ....................................................................................................................... 8 
+1.1 Background ........................................................................................................................... 8 
+1.2 Project Objectives ................................................................................................................. 9 
+1.2.1 To develop a centralized lost-and-found platform for structured and official item reporting ......... 9 
+1.2.2 To apply AI-powered image recognition for automatic item tagging and accurate matching using 
+Hugging Face Bootstrapping Language-Image Pre-training (BLIP) Model ................................................. 10 
+1.2.3 To implement secure item claim verification using multi-factor authentication with RFID and 
+facial recognition .......................................................................................................................................... 11 
+1.2.4 To evaluate the usability of the lost-and-found system through surveys ...................................... 11 
+1.3 Advantages and Contributions ............................................................................................ 13 
+1.3.1 Centralized Platform for Consistent Reporting and Accountability ............................................. 13 
+1.3.2 AI-Powered Image Tagging and Matching for Efficient Recovery .............................................. 13 
+1.3.3 Secure Dual-Factor Verification to Prevent False Claims ............................................................ 14 
+1.3.4 Human-Centered Usability Design for Better Adoption and Accessibility .................................. 14 
+1.4 Project Plan ......................................................................................................................... 14 
+1.4.1 Milestone/Schedule ....................................................................................................................... 15 
+1.5 Project Team and Organization .......................................................................................... 17 
+1.6 Chapter Summary and Evaluation ...................................................................................... 17 
+2 Literature Review ............................................................................................................ 20 
+2.1 Similar System Study.......................................................................................................... 20 
+2.1.1 FoundeLost (UKM) ...................................................................................................................... 20 
+2.1.2 RFID-Based System (UiTM Arau) ............................................................................................... 22 
+2.1.3 Faculty Portal (UNIMAS FCSIT) ................................................................................................. 24 
+2.1.4 e-Aduan Lost & Found (UTeM) ................................................................................................... 24 
+2.2 Project Background............................................................................................................. 26 
+2.2.1 Limitations of Current Systems .................................................................................................... 27 
+2.3 Target Market ..................................................................................................................... 31 
+2.3.1 TAR UMT Johor Students ............................................................................................................ 31 
+2.3.2 TAR UMT Johor Staff .................................................................................................................. 33 
+2.4 Domain Research ................................................................................................................ 34 
+2.4.1 Firebase (Google Cloud Platform) ................................................................................................ 34 
+2.4.2 Python & Flask / FastAPI ............................................................................................................. 35 
+2.4.3 Hugging Face Transformers (CLIP/BLIP) ................................................................................... 35 
+2.4.4 You Only Look Once (YOLOv8) ................................................................................................. 36 
+2.4.5 OpenCV & Facial Recognition ..................................................................................................... 37 
+2.4.6 RFID Tagging with Raspberry Pi & RC522 Modules .................................................................. 37 
+2.5 Chapter Summary and Evaluation ...................................................................................... 38 
+3 Methodology and Requirements Analysis..................................................................... 41 
+3.1 Methodology ....................................................................................................................... 41 
+3.2 Requirements Gathering Techniques (Fact Gathering) ...................................................... 43 
+3.2.1 Research ........................................................................................................................................ 44 
+3.2.2 Observation ................................................................................................................................... 44 
+3.2.3 Questionnaire ................................................................................................................................ 45 
+3.3 Requirements Analysis (Fact Analysis) .............................................................................. 45 
+3.3.1 Analysis of Current Process Deficiencies ..................................................................................... 46 
+3.3.2 Derivation of Functional Requirements ........................................................................................ 47 
+3.3.3 Derivation of Non-Functional Requirements ................................................................................ 50 
+3.4 Project Scope ...................................................................................................................... 51 
+3.5 Software Requirements Specification (SRS) ...................................................................... 54 
+3.5.1 Functional Requirement ................................................................................................................ 54 
+3.5.2 Non-Functional Requirement........................................................................................................ 58 
+3.6 Chapter Summary and Evaluation ...................................................................................... 60 
+
+--- PAGE 7 ---
+Qreclaim Table of Content 
+ 
+BMCS3403 Project I 6 
+4 System Design .................................................................................................................. 63 
+4.1 Software Architecture Design ............................................................................................. 63 
+4.2 Use Case Diagram .............................................................................................................. 66 
+4.2.1 Use Case Description .................................................................................................................... 67 
+4.2.2 Activity Diagram .......................................................................................................................... 74 
+4.3 Data Design ........................................................................................................................ 84 
+4.3.1 ERD Diagram ............................................................................................................................... 84 
+4.3.2 Class Diagram ............................................................................................................................... 86 
+4.3.3 Data Dictionary ............................................................................................................................. 87 
+4.4 Security Design ................................................................................................................... 93 
+4.4.1 Access Control .............................................................................................................................. 93 
+4.4.2 Authentication ............................................................................................................................... 93 
+4.4.3 Session Management .................................................................................................................... 93 
+4.4.4 QR Token and Claim Security ...................................................................................................... 93 
+4.4.5 Biometric and RFID Security ....................................................................................................... 94 
+4.4.6 Input Validation ............................................................................................................................ 94 
+4.4.7 Logging ......................................................................................................................................... 94 
+4.4.8 Kiosk Security .............................................................................................................................. 94 
+4.5 Report Design ..................................................................................................................... 94 
+4.6 User Interface (UI) Design ................................................................................................. 96 
+4.7 Chapter Summary and Evaluation .................................................................................... 102 
+Reference .............................................................................................................................. 104 
+Appendix ............................................................................................................................... 107 
+Appendix A - Questionnaire Survey ........................................................................................... 107 
+Appendix B - Results of the Questionnaire Survey .................................................................... 118 
+ 
+ 
+ 
+ 
+  
+
+--- PAGE 8 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 7 
+ 
+ 
+ 
+ 
+ 
+ 
+Chapter 1 
+ 
+Introduction 
+  
+
+--- PAGE 9 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 8 
+1 Introduction 
+This chapter introduces the Final Year Project titled “Qreclaim: Smart Lost-and-Found System 
+with AI-Powered Image and RFID Verification.” It explains the motivation for the project, its 
+background, goals, unique contributions, technical plan, and project team. The system is designed 
+to improve the current lost-and-found process at TAR UMT Johor Branch, which suffers from poor 
+structure, inefficient item recovery, and unreliable identity verification. The chapter also defines 
+the scope of the project clearly: it includes the development of a centralized web platform for 
+reporting and matching items, AI-based image recognition for automatic tagging, and a self-service 
+prototype with facial recognition and RFID technology for claim verifi cation. The system also 
+includes an administrative dashboard for decision -making regarding long -unclaimed items. 
+However, this project will not cover mobile app development, full campus deployment, or social 
+media integration. The main focus is to develop a working prototype and system to support lost -
+and-found activities within the Johor campus. 
+1.1 Background 
+TAR UMT Johor currently does not have an official or centralized system to handle lost-and-found 
+cases. Instead, students and staff rely on community -driven social media platforms such as 
+WhatsApp, Facebook, and Xiaohongshu groups to report or search for lost items. These channels 
+are informal and unregulated, resulting in a lack of proper tracking, inconsistent item recovery, 
+and poor accountability. Without an official system, it is difficult to trace ownership or know 
+whether an item has been recovered or not. This lack of structure leads to confusion and prevents 
+the university from managing these cases efficiently (OnlyTARCianKnow, n.d.; TAR UMT, n.d.; 
+Shivaramakrishnaan & Logesh, 2025; Umo, 2023). 
+ 
+Another major problem is the absence of any intelligent or automated method to match lost items 
+with those that have been found. Currently, staff must rely on memory or manually compare vague 
+descriptions and photos to identify possible matches. This proce ss is time -consuming and often 
+inaccurate. Many lost items are never recovered simply because their descriptions are too general, 
+or because no proper search or filtering mechanism exists. AI-driven systems such as LostNet and 
+other deep learning models have demonstrated that intelligent visual recognition can significantly 
+improve item recovery processes through accurate tagging and similarity matching (Zhou et al., 
+2024; Ghazal et al., 2016). 
+ 
+In addition, there is no secure way to verify whether someone claiming an item is the rightful 
+owner. At present, items are usually returned based on verbal confirmation or guesses, which can 
+
+--- PAGE 10 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 9 
+be easily manipulated. This weak verification process increases the risk of false claims, 
+impersonation, and theft. It also creates mistrust in the system. Research shows that institutions 
+like Rutgers University implement strict identification processes t o prevent such issues, while 
+others propose biometric and RFID-based verification to enhance security (Shivaramakrishnaan & 
+Logesh, 2025; Rutgers University, n.d.). 
+ 
+Lastly, there is no structured review of the system’s usability or how well it works for students and 
+administrators. Items that are not claimed over time are left in storage or discarded without proper 
+review. The current process lacks tools for monitoring, analysis, or decision-making. This makes 
+the system inefficient and unsustainable in the long term, especially as more items continue to be 
+lost without a proper follow -up. Studies have shown that systems with poor usability tend to be 
+abandoned by users, highlighting the importance of applying human -computer interaction (HCI) 
+principles (Bringula & Basa, 2011). 
+1.2 Project Objectives 
+This project focuses on solving the four major weaknesses in TAR UMT Johor Branch’s current 
+lost-and-found system. These include the absence of a centralized platform, no intelligent way to 
+match lost and found items, unreliable methods of verifying the id entity of claimants, and the 
+lack of a structured review process for unclaimed items or system usability. The goal of this 
+project is to design and implement a smart web -based platform that integrates artificial 
+intelligence (AI), Internet of Things (IoT), and secure verification technologies to improve how 
+lost items are reported, matched, claimed, and managed across campus. Each of the following 
+objectives is linked directly to one of the problems identified and is supported by a related 
+research question. 
+1.2.1 To develop a centralized lost-and-found platform for structured and 
+official item reporting 
+The first objective of this project is to design a single, centralized web platform that allows both 
+students and administrative staff to submit, search, and manage lost -and-found item reports. 
+Currently, TAR UMT Johor relies on informal channels such as W hatsApp, Facebook, and 
+Xiaohongshu for this process, which leads to inconsistent tracking, data loss, and poor 
+accountability. The proposed system will offer an organized digital form to report found or lost 
+items, complete with item descriptions, location, timestamp, and image uploads. This data will 
+be securely stored and managed in a Firebase cloud database. The system also supports real -
+time notifications and structured access roles for students and administrators (Google Cloud, 
+2023). 
+
+--- PAGE 11 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 10 
+ 
+This objective directly addresses the lack of a centralized and official system and improves the 
+university’s ability to trace lost items, manage inventory, and maintain proper records. It 
+provides a reliable structure for reporting that social media tools  simply cannot offer. The 
+corresponding research question is: "How can a centralized web application improve the 
+consistency and efficiency of the campus lost-and-found process?" 
+1.2.2 To apply AI -powered image recognition for automatic item tagging and 
+accurate matching using Hugging Face Bootstrapping Language-Image 
+Pre-training (BLIP) Model 
+The second objective is to use artificial intelligence to improve how lost and found items are 
+categorized and matched within the system. Currently, there is no intelligent way to match items, 
+and staff rely on manual comparisons and vague descriptions. Th is process is inefficient, 
+especially when items look similar or have generic features like “black wallet” or “red water 
+bottle.” To solve this, the system will integrate the BLIP (Bootstrapping Language-Image Pre-
+training) model developed by Salesforce and made available through Hugging Face. BLIP is a 
+pre-trained vision–language model that can generate context -aware captions from uploaded 
+images, which can then be transformed into structured hashtags for item tagging. 
+In this project, BLIP will not be developed from scratch, but  adopted in two possible 
+deployment approaches: either by accessing the Hugging Face Inference API for real -time 
+captioning, or by downloading and running the BLIP model locally on a backend server through 
+the Hugging Face Transformers library. Both methods ensure that the system can leverage state-
+of-the-art image captioning without requiring model training by the researcher. The generated 
+tags will be used to compare new lost item reports with existing found item records using 
+similarity scoring technique s. When the system identifies a high -probability match, it will 
+notify the student for further action (Zhou et al., 2024; Ghazal et al., 2016). 
+This integration reduces the time spent on manual checking and significantly improves 
+matching accuracy, especially when descriptions are unclear or incomplete. By reusing an 
+advanced AI model within the system’s design, the project demonstrates how existing research 
+outputs can be effectively applied in practical applications. The research question related to this 
+objective is: “How can AI image recognition improve the accuracy and speed of item matching 
+in a campus lost-and-found system?” 
+ 
+
+--- PAGE 12 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 11 
+1.2.3 To implement secure item claim verification using multi-factor 
+authentication with RFID and facial recognition 
+The third objective is to make the claiming process more secure and trustworthy by requiring 
+users to go through a two-step identity verification before they can retrieve a found item. In the 
+current system, items are returned based on verbal descriptions or guesses, which can easily be 
+faked or misused. This project will introduce a secure claim kiosk built with a Raspberry Pi, an 
+RFID card reader, and a USB camera. Students must first complete a facial recognition check 
+using a model hosted through Huggin g Face, which generates a temporary QR code. At the 
+kiosk, the students must present this QR code and scan their RFID student card. Only when 
+both forms of identity are verified will the system allow the claim to proceed (Suárez-Armas & 
+Caballero-Gil, 2017; Ismail et al., 2025). 
+This dual-verification system reduces the chances of impersonation or accidental item release 
+and increases the reliability of the lost -and-found process. It ensures that the student claiming 
+the item is the rightful owner and that all actions are logged s ecurely. The related research 
+question is: "In what ways can combining facial recognition and RFID technology improve the 
+security and reliability of item claims?". 
+1.2.4 To evaluate the usability of the lost-and-found system through surveys 
+The fourth objective of this project is to ensure that the system is user-friendly, accessible, and 
+easy to navigate for both students and administrators. While the main goal is to improve lost -
+and-found management, it is equally important that users can i nteract with the system 
+confidently and without confusion. In the current process, there is no formal evaluation of how 
+easy or effective the lost-and-found system is. Students are not guided properly, and staff have 
+no tools to monitor how well the system  is being used. Poor usability can lead to frustration, 
+abandonment, and even system failure, regardless of how well the technical features work. 
+ 
+To solve this, the proposed system will follow Human -Computer Interaction (HCI) principles 
+in its interface design. Guidelines such as Nielsen’s usability heuristics and the Malaysia 
+Government Design System (MYDS) will be used to design clear layouts, pro vide proper 
+feedback messages, and reduce user errors (Nielsen, 2024; Malaysia Digital, 2024). Rounded 
+buttons, simple icons, and step -by-step forms will be included to help users understand and 
+complete their tasks easily. In addition, usability testing will be conducted with real users during 
+development. Students and admins will provide feedback on the interface, and their responses 
+will be used to improve the design iteratively (Moran, 2019; Bringula & Basa, 2011). 
+ 
+
+--- PAGE 13 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 12 
+This objective ensures that the system is not only functional but also comfortable and satisfying 
+to use, especially in a university environment where users may have different levels of digital 
+experience. The corresponding research question is: "How can u ser-centered design and HCI 
+evaluation improve the usability and acceptance of a smart campus lost-and-found system?" 
+  
+
+--- PAGE 14 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 13 
+1.3 Advantages and Contributions 
+The Qreclaim system offers major improvements over the traditional lost -and-found processes 
+currently used at TAR UMT Johor Branch and many other institutions. Unlike manual methods 
+or basic Google Forms shared on social media, Qreclaim introduces a smart, centralized , and 
+secure platform for managing lost and found items. The following are the core advantages and 
+contributions of the system: 
+1.3.1 Centralized Platform for Consistent Reporting and Accountability 
+Presently, students and staff resort to social media platforms like WhatsApp, Facebook, and 
+Xiaohongshu to report lost items. This approach is prone to missing information, duplicate 
+entries, and no formal supervision. In contrast, Qreclaim offers a struct ured web platform 
+powered by Firebase. Every report  including photos, descriptions, timestamps, and status 
+updates are securely logged in one unified system. Both administrators and students access 
+dashboard views customized to their roles, enabling accurate tracking, reliable updates, and 
+real-time synchronization. This eliminates data loss, confusing duplicates, and manual errors in 
+logs, ensuring full accountability. 
+Academically, this platform demonstrates how cloud -based database systems can enhance 
+operational workflows in university contexts. The design reflects proven benefits such as 
+improved data integrity, access control, and administration transparency (Shakil, Sethi & Alam, 
+2015). Practically, Qreclaim offers a scalable, cost-effective template that other institutions can 
+adopt to formalize their own inventory or lost -and-found systems, replacing informal 
+procedures with a dependable, centralized model. 
+1.3.2 AI-Powered Image Tagging and Matching for Efficient Recovery 
+Using only textual descriptions to match lost and found items is inefficient and often fails when 
+descriptions are vague (“black wallet,” “red bottle”). Qreclaim solves this by leveraging the 
+BLIP model to automatically extract image tags that describe vis ual features such as color, 
+texture, shape, or object type. These tags feed into a similarity‑scoring algorithm that rapidly 
+identifies probable matches between reported lost and found items. This speeds up recovery, 
+reduces manual workload, and minimizes errors all without relying on human interpretation. 
+This solution advances research on vision -language models like BLIP by applying them in a 
+real-world campus scenario. It builds on systems such as LostNet, which achieved high 
+accuracy (96.8%) in matching lost objects based on image similarity (Zhou et al. , 2023). 
+Qreclaim demonstrates that AI-based visual tagging can be effectively deployed within a live 
+environment to automate previous labor-intensive processes, making the system proactive and 
+responsive. 
+
+--- PAGE 15 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 14 
+1.3.3 Secure Dual-Factor Verification to Prevent False Claims 
+Traditional claim processes often lack verification and can result in items being taken by 
+unauthorised individuals. Qreclaim addresses this through a dual -factor authentication kiosk: 
+claimants must scan their RFID student card and pass facial recognition verification before the 
+system releases an item. Each claim is logged with time, user identity, and confirmation status, 
+increasing trust and preventing impersonation or fraudulent retrieval. 
+This project exemplifies practical integration of IoT and biometric authentication in a campus 
+setting. Studies show that combining RFID scans and facial recognition provides stronger 
+security than single-factor systems (Yadav et al., 2019). Qreclaim offers real-world insight into 
+deploying these technologies safely and efficiently, particularly for institutional use, and 
+supports research into robust, accessible authentication methods. 
+ 
+1.3.4 Human-Centered Usability Design for Better Adoption and Accessibility 
+Even advanced systems fail if real users find them difficult to navigate. Qreclaim prioritizes 
+usability by following established HCI principles (e.g. Nielsen’s heuristics) and the Malaysia 
+Government Design System (MYDS). The interface includes clear icon s, step-by-step forms, 
+contextual feedback, and accessible visual elements. Usability testing with students and staff is 
+embedded in the development cycle, with iterations made based on actual user feedback. This 
+human-centered approach ensures the system is intuitive and reduces errors. 
+By integrating iterative user studies and HCI best practices into system design, Qreclaim 
+contributes to the body of usability research  especially in the Malaysian higher -education 
+context, where such evaluations are sparse. It provides empirical evidence that user -centered 
+design leads to higher adoption rates, fewer errors, and greater satisfaction. It serves as a viable 
+model for future systems prioritising accessibility and real-world usability. 
+1.4 Project Plan 
+The project is divided into two main phases: Project I and Project II, with clearly defined goals 
+and deliverables in each stage. 
+ 
+During Project I, the focus is on research, problem analysis, and system planning. This includes 
+identifying the main problems in TAR UMT’s current lost-and-found process, reviewing existing 
+academic solutions, and deciding on the key technologies to be us ed. Functional requirements 
+are collected, and early design work is completed, such as creating case diagrams, system 
+architecture, wireframes, and the project proposal documentation. 
+ 
+
+--- PAGE 16 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 15 
+In Project II, the development of the actual system begins. The web-based platform is built using 
+Firebase for backend data storage and Python for AI integration. The Raspberry Pi -based 
+prototype is implemented to handle identity verification through RFID card scanning and facial 
+recognition. Once the system modules are completed, the project enters the testing phase, which 
+includes functional testing, integration testing, and usability testing involving real students and 
+admin users. Their feedback will be  used to improve the user interface and fix any technical 
+issues. 
+ 
+This project plan ensures that the system can be developed within the academic schedule while 
+meeting all functional, security, and usability goals. 
+1.4.1 Milestone/Schedule 
+Table 1.1 and Table 1.2 below show the estimated completion data for each activity and also 
+the expected result will come out of each stage. 
+Table 1.1 Project I Schedule 
+ 
+ACTIVITIES EXPECTED OUTCOME COMPLETION DATE 
+Complete Project Proposal 
+(includes Form 1, Form 2 & 
+Form 3) 
+Submit Project Proposal (includes Form 1, Form 2 
+& Form 3) 04 July 2025 
+Complete Moderation of Project 
+Proposal (All) Moderation of Project Proposal (All) 18 July 2025 
+Complete Chapter 1 Introduction Submit Chapter 1 Introduction 25 July 2025 
+Complete Chapter 2 Research 
+Background Submit Chapter 2 Research Background 08 August 2025 
+Complete Chapter 3 
+Methodology and Requirements 
+Analysis 
+Submit Chapter 3 Methodology and Requirements 
+Analysis 29 August 2025 
+Complete Chapter 4 System 
+Design Submit Chapter 4 System Design 19 September 2025 
+Complete Project I Portfolio 
+(individual) Submit Project I Portfolio (individual) 25 September 2025 
+ 
+ 
+Table 1.2 Project II Schedule 
+ 
+ACTIVITIES EXPECTED OUTCOME COMPLETION DATE 
+Preparation of test plan/cases or 
+experiment plan System Preview 
+with Supervisor 
+Show test plan/cases or experiment plan  System 
+Preview with Supervisor 10 November 2025 
+
+--- PAGE 17 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 16 
+Preparation of test plan/cases or 
+experiment plan System Preview 
+with Supervisor 
+Show test plan/cases or experiment plan  System 
+Preview with Supervisor 21 November 2025 
+Final System Testing with 
+Supervisor and Moderator 
+Show Final System Testing with Supervisor and 
+Moderator 28 November 2025 
+Complete Draft FYP Report 
+(individual) Submission of Draft FYP Report (individual) 12 December 2025 
+Complete Final FYP Report 
+(individual) and all associated  
+deliverables stated in guidelines. 
+Submission of Final FYP Report (individual) and 
+all associated deliverables stated in guidelines. 19 December 2025 
+ 
+  
+
+--- PAGE 18 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 17 
+1.5 Project Team and Organization 
+This project is developed by Lee Song Yan, an undergraduate student from the Bachelor of 
+Information Technology (Hons) in Software Systems Development programme at TAR UMT 
+Johor Branch. As an individual project, the student is fully responsible for all sta ges of the 
+project, including research, system design, development, testing, and documentation. The 
+supervisor for this project is Dr. Leong Pui Huang, who will provide academic guidance, 
+technical advice, and evaluation throughout the development cycle.  
+Figure 1.1 shows the overall structure of the Qreclaim system, which is divided into two main 
+modules: the User Module and the Administrator Module. At this introductory stage, the 
+modules are presented only at a high level to show how the system is separa ted according to 
+user roles. The User Module is intended for students, while the Administrator Module is 
+intended for campus admin. 
+ 
+ 
+Figure 1.1 System Modules 
+1.6 Chapter Summary and Evaluation 
+This chapter has provided an overview of the Qreclaim project, highlighting its motivation, 
+background, objectives, contributions, and implementation plan. The chapter began by 
+establishing the need for a structured and intelligent lost-and-found solution at TAR UMT Johor 
+Branch, noting the limitations of the current reliance on informal social media platforms and 
+manual processes. The background section emphasized four key issues that currently affect item 
+recovery on campus: the absence of a centralized reporting platform, the lack of intelligent item 
+matching, weak verification procedures, and the absence of usability evaluation or structured 
+handling of unclaimed items. These challenges served as the foundation for the formulation of 
+the project objectives. 
+ 
+
+
+--- PAGE 19 ---
+Qreclaim Chapter 1 
+ 
+ 
+BMCS3403 Project I 18 
+The project objectives were then defined in detail, aligning each objective with one of the 
+identified problems. These include developing a centralized web platform for reporting lost and 
+found items, implementing AI -based image recognition for automatic t agging and similarity 
+matching, integrating a dual-factor claim verification system using RFID and facial recognition, 
+and improving system usability through user -centered design and iterative evaluation. The 
+chapter also described the unique contributions of Qreclaim, emphasizing how it combines cloud 
+technology, artificial intelligence, and IoT to create a secure, efficient, and user-friendly system. 
+ 
+Furthermore, the project plan and milestone schedule were outlined to ensure that the project is 
+completed in a structured and timely manner. Project I focuses on research, analysis, and design, 
+while Project II emphasizes system development, integration, and usability testing. Finally, the 
+project team and organization section clarified the roles and responsibilities of the student 
+developer and supervisor, ensuring accountability throughout the project. 
+ 
+In evaluating this chapter, it successfully establishes the importance and relevance of the project 
+by connecting the identified problems with practical and research-based solutions. The objectives 
+are well-defined, measurable, and logically aligned with the issues highlighted in the background 
+section. The chapter also demonstrates a clear technical and methodological direction, ensuring 
+that the project is feasible within the allocated timeframe. Overall, Chapter 1 sets a strong 
+foundation for the subsequent chapters by defining the problem space, justifying the need for the 
+system, and presenting a clear roadmap for its development and evaluation
+
+--- PAGE 20 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 19 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Chapter 2 
+ 
+Literature Review 
+  
+
+--- PAGE 21 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 20 
+2 Literature Review 
+This chapter presents a detailed review of relevant literature related to the development of 
+Qreclaim, a Smart Lost and Found System designed for the TAR UMT campus. It includes a study 
+of the current problems in the existing campus lost and found process,  such as lack of proper 
+tracking, manual matching, and unreliable claim verification. In addition, this chapter explores 
+existing systems implemented by other institutions to highlight their strengths and weaknesses. By 
+understanding the limitations of cur rent practices and reviewing similar systems, this literature 
+review helps justify the need for Qreclaim and supports the design decisions made during system 
+development. 
+2.1 Similar System Study 
+This section reviews existing lost and found systems implemented by other universities in Malaysia, 
+identifying their key features, benefits, and limitations. These examples provide insight into current 
+practices and help establish a foundation for the design of Qreclaim. 
+ 
+A comparative analysis was conducted to explore existing lost and found systems implemented in 
+Malaysian university environments. This study focuses on four relevant examples: the FoundeLost 
+system from Universiti Kebangsaan Malaysia (UKM), an RFID -based p rototype developed at 
+UiTM Arau, a faculty-level portal from Universiti Malaysia Sarawak (UNIMAS), and the e-Aduan 
+module from Universiti Teknikal Malaysia Melaka (UTeM). Each system is analyzed in terms of 
+key features, benefits, and limitations, with the objective of identifying gaps that Qreclaim aims to 
+address through enhanced functionality and user experience. 
+ 
+2.1.1 FoundeLost (UKM) 
+One of the most structured university -level lost and found systems is FoundeLost, developed by 
+students at Universiti Kebangsaan Malaysia (UKM). It is a web and Android -based platform that 
+allows users to register using their matriculation number and post listings for lost or found items. 
+Each item listing includes a title, image, category, and description, and users can manage 
+submissions through a personal dashboard. The system is also programmed to automatically delete 
+any listing that exceeds 30 days, w hich helps maintain listing relevancy and prevents database 
+clutter (Tan & Chong, 2023). 
+ 
+As illustrated in Figure 2.1, the FoundeLost system flow begins with user login, followed by 
+manual item submission or search navigation. Users are expected to browse the entire listing 
+
+--- PAGE 22 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 21 
+library, visually identify potential matches, and initiate contact or claims based on descriptive 
+alignment. All verification is handled manually, which places significant responsibility on the user 
+to ensure accuracy. This traditional flow lacks backend i ntelligence or security layers, relying 
+instead on human effort and memory. 
+ 
+The key advantage of FoundeLost is that it creates a centralized platform within the university 
+environment, reducing the reliance on social media groups or physical bulletin boards. It also 
+provides users with direct access to reports and claims status in  real-time. However, the system 
+still depends entirely on manual navigation by users. There is no intelligent search or matching 
+capability built into the system, so students must scroll through all available entries to find possible 
+matches. In addition, there is no integrated verification mechanism beyond manual description 
+matching, which could lead to false claims or mistaken identity. These weaknesses limit its 
+scalability and security in larger institutions. 
+ 
+Qreclaim addresses these limitations by incorporating AI-based image-text similarity search using 
+deep learning models such as BLIP or CLIP. Rather than requiring students to browse listings, the 
+system can suggest potential matches based on uploaded images or tex tual clues. Additionally, 
+Qreclaim includes RFID card scanning and facial recognition for claim verification, ensuring that 
+the process is more accurate and secure for both students and campus staff. 
+ 
+ 
+Figure 2.1 FoundeLost Application Flow Chart 
+
+
+--- PAGE 23 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 22 
+ 
+2.1.2 RFID-Based System (UiTM Arau) 
+Another solution was introduced by Ilias et al. (2020) from UiTM Arau, who developed a web -
+based prototype tailored specifically for their university’s lost and found operations. The system 
+utilized RFID technology to help identify owners of misplaced item s, and automated email 
+notifications were sent to the rightful owners once a tagged item was scanned by staff. A reporting 
+and tracking portal were also provided, allowing users to submit and view lost or found item 
+records, as illustrated in Figure 2.2. 
+ 
+The system included enforced user login, featuring dedicated interfaces for both students and 
+administrators (Figure 2.3). Additionally, only the original poster was permitted to edit or delete 
+their submitted reports, which helped maintain accountability and prevent unauthorized 
+modifications. For its intended scope within UiTM Arau, the system offered a practical and 
+functional solution to improve lost and found management through basic digitalization and RFID-
+based identification. 
+ 
+Nevertheless, the prototype was limited to a single university context and lacked certain advanced 
+features that would improve scalability and security, such as biometric verification or broader 
+device accessibility. Qreclaim addresses these gaps by offeri ng a mobile -responsive design 
+suitable for both desktop and smartphones, and by integrating RFID with facial recognition to 
+enable more secure and verifiable claim processes. This multi -layered approach enhances both 
+usability and reliability, especially in larger campus environments like TAR UMT Johor. 
+ 
+ 
+Figure 2.2 Lost and Found Items List 
+
+
+--- PAGE 24 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 23 
+ 
+ 
+Figure 2.3 Login Page 
+  
+
+
+--- PAGE 25 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 24 
+2.1.3 Faculty Portal (UNIMAS FCSIT) 
+UNIMAS implemented a simple faculty-level lost and found portal within its Faculty of Computer 
+Science and Information Technology (FCSIT) (Sadiah & Nyambong, 2020). The system allowed 
+staff and students to post lost or found items using a form -based web interface, which was then 
+made available on a shared online bulletin board for others to browse. The portal served as a digital 
+replacement for traditional notice boards and simplified communication within the faculty. 
+ 
+While this system increased visibility for lost items within FCSIT, it was never scaled to support 
+the entire university. The scope was limited to a single faculty, and the lack of AI search, feedback 
+features, or claim verification protocols meant that th e system relied heavily on manual effort. 
+There was also no mechanism for ensuring only authorized users could submit or manage listings. 
+ 
+Qreclaim addresses these shortcomings by supporting a campus -wide user base and offering 
+advanced AI -powered item search based on both image and text inputs. Its Firebase backend 
+enables real-time synchronization across multiple departments, and administrative features ensure 
+that only verified users can manage entries. 
+ 
+2.1.4 e-Aduan Lost & Found (UTeM) 
+At Universiti Teknikal Malaysia Melaka (UTeM), the e-Aduan module was designed as part of a 
+broader complaint and request system for campus users. Among its functions, it enabled students 
+to submit details about lost or found items online, receive claim st atus updates, and set pickup 
+appointments for recovered belongings. The system was web -based and utilized Oracle and PHP 
+technologies (Shamshur & Nabilah, 2016). 
+ 
+Figure 2.4 shows the navigation design chart of the e -Aduan platform, outlining how the web 
+interface communicates with the Oracle back -end to manage item reports and user submissions. 
+The framework reflects a traditional client-server model, where all verification and validation tasks 
+are conducted manually by administrative staff. 
+ 
+Despite its functionality, e -Aduan was built more as a passive reporting tool than an intelligent 
+matching system. As shown in Figure 2.5, the lost item report form was limited to manual text 
+inputs without any support for image uploads or automated classi fication. The system did not 
+leverage machine learning, image recognition, or tagging features, meaning the entire process of 
+claim validation relied on human comparison by staff. It also lacked mobile responsiveness, 
+limiting accessibility for students who primarily use smartphones. 
+
+--- PAGE 26 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 25 
+ 
+In contrast, Qreclaim  enhances this concept by introducing image upload capabilities and 
+automatic tag generation using AI-based object detection and captioning. These features allow the 
+system to semantically match reported and found items more accurately without full relianc e on 
+manual inputs. Combined with a mobile -friendly interface and integrated biometric and RFID 
+verification, Qreclaim offers a more intelligent, secure, and user-centric solution for managing lost 
+and found processes in modern university environments. 
+ 
+ 
+Figure 2.4 Navigation Design of UTeM System 
+
+
+--- PAGE 27 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 26 
+ 
+Figure 2.5 Manual Lost Item Report Form 
+2.2 Project Background 
+In recent years, university campuses such as TAR UMT Johor have encountered growing 
+challenges in managing lost and found operations due to the absence of a centralized digital system. 
+Currently, students and staff rely on fragmented communication tools su ch as WhatsApp, 
+Telegram, and Facebook groups to report and search for lost items. These informal platforms are 
+not designed for structured item tracking and often result in missed connections between lost and 
+found reports. Consequently, many items remain unclaimed, leading to frustration among students 
+and additional burden for administrative staff responsible for storing and verifying items. 
+ 
+In response to address these issues, the proposed system Qreclaim introduces a structured, AI -
+powered platform that streamlines the entire lost and found process through the integration of 
+image recognition, RFID verification, and real time data synchroniz ation. This system aims not 
+only to enhance the efficiency of item recovery but also to reduce false claims and ensure greater 
+transparency throughout the item's lifecycle. This section highlights the major limitations of TAR 
+UMT’s current system and presents the specific solutions that Qreclaim offers to overcome them. 
+ 
+
+
+--- PAGE 28 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 27 
+2.2.1 Limitations of Current Systems 
+ 
+Lack of a Centralized and Structured Reporting Platform 
+Currently, the lost and found process at TAR UMT Johor campus lacks a centralized platform 
+for managing item reports. Students who lose belongings often turn to informal channels such 
+as WhatsApp, Telegram, or WeChat groups to post about missing items (Figure 2.6). However, 
+these communication methods are disorganized and difficult to track. Since different faculties 
+or departments may operate their own separate groups, the process becomes fragmented and 
+inconsistent. 
+ 
+This disconnection results in redundancy and wastes time, as students may post on multiple 
+social media platforms or visit various offices without knowing whether an item has already 
+been recovered elsewhere. This becomes particularly frustrating in urgent  cases involving 
+important items like student ID cards, wallets, or laptops. The reliance on unstructured 
+platforms such as the “OnlyTARCianKnow Lost and Found” Facebook group illustrates this 
+problem while it helps publicize lost items, it lacks systemati c categorization or verification, 
+which reduces the chances of successful recovery (OnlyTARCianKnow, n.d.). 
+ 
+This weakness is similarly observed in other institutions such as UMP and UTeM, where item 
+reporting is also conducted through general-purpose digital forms or community posts that do 
+not provide centralized oversight. These systems, although digital, do not unify records across 
+departments, resulting in siloed data and ineffective searches. 
+ 
+In the role t o overcome this limitation, Qreclaim introduces a centralized web -based system 
+that allows students and staff to submit, view, and manage lost and found records within a single 
+digital platform. With real -time data synchronization, all records become acces sible to 
+authorized users, enabling consistent and traceable item management. This centralized 
+approach eliminates communication gaps and promotes a more efficient and transparent 
+recovery process. 
+ 
+  
+
+--- PAGE 29 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 28 
+No Structured Method to Categorize or Match Lost and Found Items 
+The current manual approach to handling lost and found items lacks a structured method for 
+categorizing or matching records. Found items are often described vaguely, while lost item 
+reports from students use inconsistent terminology. Without standardized t ags or automated 
+similarity detection, staff must rely on subjective visual inspection to attempt a match an  
+inefficient and error-prone process. 
+ 
+This issue becomes more problematic when handling commonly lost items like USB drives, 
+water bottles, or stationery. For example, if a student reports losing a "blue thumb drive," but 
+the item is recorded as a "small black storage device," it becomes difficult to determine whether 
+they refer to the same object. The inconsistency in item descriptions, along with the absence of 
+photos or structured metadata, significantly reduces retrieval accuracy. Ghazal et al. (2016) 
+emphasize that multi-feature image matching and structured metadata greatly improve object 
+retrieval accuracy in digital systems. 
+ 
+Other universities, such as UMP and UTHM, also show this shortcoming, as their systems 
+depend largely on user -written descriptions without any enforced categorization or AI -driven 
+support. The absence of intelligent suggestion or tagging functions leads to  inconsistencies, 
+making it harder for staff to efficiently match found items with lost reports. 
+ 
+Qreclaim addresses this limitation by enforcing standardized metadata input during item 
+submission, including fields for item type, color, brand, and optional photo uploads. 
+Additionally, it leverages AI-based image-text similarity models to analyze visual and textual 
+attributes, enhancing the system's ability to match lost and found reports. The combination of 
+structured data and intelligent matching significantly improves item recovery accuracy. 
+ 
+  
+
+--- PAGE 30 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 29 
+Weak and Unreliable Claim Verification Process 
+In the current campus lost-and-found system, item claim verification relies primarily on manual 
+checks and verbal descriptions provided by students. Staff typically assess ownership based on 
+general item details or student assertions, such as claiming a “b lack umbrella” or a “generic 
+charger.” This method is highly subjective and poses a significant risk of misidentifying the 
+rightful owner, especially when items lack unique identifiers. As a result, items may be released 
+to the wrong person, which can unde rmine trust in the system and create conflicts between 
+students and administrators. 
+ 
+This weak verification process becomes even more problematic for high -value items, such as 
+personal electronics or branded accessories, where ownership cannot be easily proven. The 
+manual nature of the process often causes delays, reduces operational efficiency, and lacks the 
+accountability required in a structured institutional environment. As Ismail et al. (2025) 
+highlight, integrating technologies such as RFID within campus operations improves both 
+security and traceability by enabling the system to uniquely associate users with specific actions 
+or transactions. 
+ 
+Similar verification issues have been observed in UTeM and UTHM’s systems, where claims 
+are processed through basic online forms or over -the-counter questioning, lacking secure and 
+traceable ownership validation. Without biometric or ID -based checks, these  systems are 
+vulnerable to fraud or mistaken identity. 
+ 
+To address these issues, Qreclaim introduces a structured and secure verification approach 
+through its prototype kiosk system. Students who wish to reclaim a lost item must first use the 
+Qreclaim app to generate a personal QR code. This QR code is embedded  with both the 
+student’s ID and facial data captured during registration. For valuable items, an admin approval 
+process is required before QR generation, adding an extra layer of security. When the student 
+visits the prototype kiosk, the system scans the QR code, automatically retrieving the encoded 
+student ID and face data for further verification. 
+ 
+This two-step authentication mechanism not only ensures that the student claiming the item is 
+likely the rightful owner, but it also helps prevent fraudulent claims. In cases where an item is 
+mistakenly released to a person who is later found not to be the  actual owner, the system still 
+retains their registered student ID and facial data for post-investigation. This tracking capability 
+
+--- PAGE 31 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 30 
+allows administrators to identify, trace, and take appropriate actions against individuals 
+attempting to commit fraud, thereby enhancing overall accountability and trust in the lost-and-
+found process. 
+ 
+Poor Usability and Lack of Human Centered Design  
+One of the often -overlooked issues in the current campus lost and found systems is poor 
+usability. These systems, if any exist, are typically not designed with the end -user in mind. 
+Interfaces are either too basic like spreadsheet logs and Facebook posts or too cluttered, making 
+it hard for users to intuitively know how to report, search, or claim an item. There is no 
+structured user feedback mechanism, and very few institutions ever conduct usability testing. 
+As a result, users often feel frustrated or over whelmed, especially when trying to report a lost 
+item in a stressful situation. 
+ 
+From a Human -Computer Interaction (HCI) perspective, this creates a serious barrier to 
+adoption. Students and staff are unlikely to use or trust a system that feels confusing or 
+inconsistent. This usability gap not only reduces engagement but also contributes to more lost 
+items remaining unclaimed. Bringula and Basa (2011) emphasized that system usability is a 
+key factor affecting user satisfaction, and poor navigation or design directly impacts system 
+adoption. 
+ 
+Many of the university systems studied, including those from TAR UMT’s Facebook group 
+and formal systems at UMP and UTHM, do not prioritize usability. Interfaces often lack mobile 
+optimization, use unintuitive layouts, and fail to follow standard HCI heuri stics. This 
+discourages repeated use and limits the effectiveness of the system in high -stress moments 
+when students urgently need assistance. 
+ 
+To address this, Qreclaim is built with usability and user-centered design as key priorities. The 
+interface uses a clean, mobile -responsive layout with simple forms, meaningful icons, and 
+progressive disclosure of options to avoid overwhelming first -time u sers. The design also 
+follows established HCI heuristics such as those by Nielsen (2024), ensuring that users receive 
+consistent feedback, error prevention, and visibility of system status. These design decisions 
+aim to make the system easy to use, even fo r non -technical users, thus promoting wider 
+adoption. 
+
+--- PAGE 32 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 31 
+ 
+ 
+Figure 2.6 WhatsApp Lost Item Post 
+2.3 Target Market 
+The Qreclaim system is designed specifically for a campus environment, with its target users being 
+students and staff of TAR UMT Johor. These individuals frequently move between various 
+facilities across the campus throughout the day, increasing the likeli hood of misplacing personal 
+belongings. As such, there is a clear need for a centralized, reliable, and user -friendly digital 
+platform that enables efficient reporting, searching, and claiming of lost items. By focusing on this 
+user group, Qreclaim is tailored to the behavioral patterns, routines, and technological familiarity 
+of campus users within a higher education setting. 
+2.3.1 TAR UMT Johor Students 
+Students represent the primary user group of Qreclaim , as they are the most frequent individuals 
+affected by item loss on campus. At the TAR UMT Johor branch, students regularly move between 
+the library, the ICT Centre (which contains numerous computer laboratories and classrooms), the 
+ICT Business Centre (c anteen), the DKC Block (lecture halls), the DSA Block (which includes 
+gym and swimming pool facilities), and Block F. These high -traffic areas are common locations 
+where personal items such as water bottles, power banks, books, umbrellas, student ID cards, and 
+electronic accessories are often misplaced. 
+ 
+In the absence of a centralized system, students are typically forced to rely on informal 
+communication platforms such as WhatsApp, Telegram, or Facebook to search for lost items. This 
+fragmented approach leads to confusion and inefficiency, requiring stud ents to physically visit 
+different buildings or offices to inquire about their belongings. The emotional stress associated 
+with losing important items  such as a student ID required for examination access  further 
+exacerbates the problem. 
+ 
+
+
+--- PAGE 33 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 32 
+The Qreclaim system addresses these challenges by offering a centralized, web -based platform 
+through which students can submit reports for lost items, browse categorized found item listings, 
+and receive claim status updates. Features such as AI -powered visual matching, location -based 
+filtering, and submission tracking enhance the item recovery process and reduce unnecessary effort. 
+As noted by Bringula and Basa (2011), user-centered design that aligns with the specific behaviors 
+and needs of the target audience is essential for maximizing system usability and engagement. 
+  
+
+--- PAGE 34 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 33 
+2.3.2 TAR UMT Johor Staff 
+Staff members  including security personnel, faculty assistants, and administrative personnel  
+represent secondary yet critical users within the Qreclaim system. These individuals are directly 
+involved in handling found items, ranging from initial acceptance and data recording to secure 
+storage and facilitating the final item claim process. At prese nt, these tasks are typically carried 
+out manually using physical logbooks or basic spreadsheets. Such methods are not only time  
+consuming but also highly susceptible to human error, data inconsistency, and loss of information 
+over time. 
+ 
+In addition, staff members often face difficulties in verifying item ownership, especially when 
+multiple students claim visually similar items such as black water bottles or plain pencil cases. 
+Without technological support, the verification process is bas ed primarily on subjective verbal 
+descriptions and the staff's personal memory or judgment. This lack of a standardized verification 
+protocol heightens the risk of misidentifying the rightful owner, which may lead to administrative 
+disputes, loss of user trust, and increased workload. 
+ 
+Qreclaim addresses these inefficiencies by offering a structured and secure platform. Through 
+digital logging, staff can now record found items along with rich metadata and supporting images, 
+enabling more precise item tracking and retrieval. The system al so facilitates automatic item -
+student matching, allowing staff to view potential matches based on reported lost items submitted 
+by students. Furthermore, identity verification is streamlined with integrated RFID student ID 
+scanning and facial recognition f eatures, which reduce reliance on staff intuition and provide a 
+clear audit trail. 
+ 
+Beyond operational improvements, Qreclaim also equips staff with analytics capabilities. The 
+system collects and visualizes data trends related to item categories, frequency of claims, peak lost-
+and-found periods, and commonly misplaced items. This insight allows administrators to identify 
+recurring issues, optimize locker usage, plan for resource allocation, and even launch awareness 
+campaigns to reduce item loss. These features contribute to a more accountable and data -driven 
+environment, aligning with Bringula and Basa’s (2011) observation that user satisfaction is closely 
+tied to how effectively a system supports core institutional workflows and decision -making 
+processes. 
+  
+
+--- PAGE 35 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 34 
+2.4 Domain Research 
+This section highlights the key technologies, frameworks, and tools selected to implement the 
+Qreclaim system. Each technology has been carefully chosen to fulfill specific system 
+requirements, including secure item claim verification, real -time updates, i ntelligent item 
+matching, and cross -platform deployment. Domain research not only supports technical 
+feasibility but also justifies the decision -making process by referencing proven methods in 
+similar academic or enterprise-level systems.  
+2.4.1 Firebase (Google Cloud Platform) 
+Firebase (Figure 2.7) is adopted as the primary backend infrastructure for Qreclaim  due to its 
+real-time capabilities, scalability, and strong integration with mobile and web platforms. 
+Firestore, a cloud-hosted NoSQL database within Firebase, is used to store item records, user 
+profiles, and images, allowing seamless and consistent data updates across devices even during 
+intermittent connectivity (Firebase, 2024). Firebase Authentication enables secure user login 
+linked to institutional credentials (e.g., student IDs), while Firebase Storage provides a scalable 
+solution for hosting item images. 
+ 
+Additionally, Firebase ML Kit assists in detecting and labeling images upon upload, which 
+helps in generating searchable item tags. Firebase Cloud Messaging (FCM) and Cloud 
+Functions are used to push instant notifications, such as status updates on matched  or claimed 
+items. These cloud services support scalability and responsiveness, making Firebase an ideal 
+choice over more traditional self-hosted alternative. 
+ 
+Figure 2.7 Firebase 
+ 
+  
+
+
+--- PAGE 36 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 35 
+2.4.2 Python & Flask / FastAPI 
+Python is selected as the core backend programming language for implementing business logic 
+and AI functionalities due to its extensive library ecosystem and ease of integration. 
+Frameworks like Flask or FastAPI are lightweight, fast, and well -suited for building RESTful 
+APIs, allowing Qreclaim to manage user actions, perform item tagging, and integrate with 
+machine learning inference engines. 
+ 
+Python also enables integration with TensorFlow, PyTorch, and OpenCV  tools that power 
+image processing and facial recognition. This versatility makes Python a suitable foundation 
+for rapid prototyping and production-ready deployment.  
+2.4.3 Hugging Face Transformers (CLIP/BLIP) 
+To overcome the limitations of manual keyword -based searches, Qreclaim integrates pre -
+trained transformer-based AI models such as CLIP and BLIP from Hugging Face (Figure 2.8). 
+These models convert both images and textual descriptions into embeddings, allow ing for 
+semantic similarity matching. For example, when a user submits a lost item report with a 
+description, the system can retrieve visually similar found items even if the keywords do not 
+match exactly. 
+ 
+Radford et al. (2021) demonstrated that CLIP performs well in zero-shot visual understanding 
+tasks, making it suitable for situations with incomplete or ambiguous data. Similarly, BLIP (Li 
+et al., 2023) enhances visual -language alignment and caption genera tion, which is crucial for 
+automatically generating descriptive tags from uploaded item photos. In this project, CLIP and 
+BLIP are not developed from scratch but integrated as existing models via the Hugging Face 
+platform. This integration can be achieved either through the Hugging Face Inference API for 
+cloud-based processing or by downloading the pre-trained models and running them locally on 
+the system’s backend server. 
+ 
+By leveraging these state-of-the-art models, Qreclaim significantly improves item tagging and 
+matching accuracy. The integration ensures that users can quickly find their lost belongings, 
+reducing reliance on exact keyword matches and increasing retrieval efficiency. 
+
+--- PAGE 37 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 36 
+ 
+Figure 2.8 Hugging Face 
+2.4.4 You Only Look Once (YOLOv8) 
+To ensure that AI -generated tags describe the main lost item rather than the surrounding 
+background, Qreclaim applies an advanced object detection model from the YOLO family, 
+specifically YOLOv8, as a preprocessing stage. The role of YOLO is to detect bounding boxes 
+around objects in uploaded images, allowing the system to crop and isolate each item before 
+passing it to captioning and embedding models such as BLIP and CLIP. This object -isolation 
+process minimizes the influence of background features, suppor ts cases where multiple items 
+appear in a single photo by producing one crop per detected object, and ultimately improves 
+the accuracy and reliability of tag generation. 
+ 
+In this project, YOLO is not developed from scratch but integrated using pre -trained weights, 
+with the possibility of fine-tuning on a curated dataset of campus-related items. For deployment, 
+lightweight YOLO models or optimized inference builds can run directly on a Raspberry Pi to 
+support real-time detection during item intake. When more computational power is required, 
+inference can be redirected to a backend server (e.g., Flask or FastAPI) with GPU support, 
+where the Raspberry Pi transmits either the or iginal image or an initial crop for further 
+processing. 
+ 
+The detection and tagging pipeline operates as follows: first, an image is submitted to Qreclaim; 
+second, YOLO generates bounding boxes with associated confidence scores; third, each 
+bounding box is cropped and normalized; fourth, the cropped regions are p assed to BLIP for 
+captioning and to CLIP for embedding and verification; and finally, the generated captions are 
+transformed into standardized tags for similarity -based matching in the database. To further 
+improve detection performance for locally relevant categories such as student ID cards, wallets, 
+or bottles, YOLO may also be fine-tuned using tools like OIDv4_ToolKit in combination with 
+the Open Images dataset. 
+ 
+
+
+--- PAGE 38 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 37 
+By integrating YOLO as a targeted preprocessing step, Qreclaim minimizes false positives 
+caused by background details, enables effective handling of images containing multiple items, 
+and strengthens the accuracy of BLIP/CLIP -based tagging and matching. Thi s design choice 
+significantly enhances the overall reliability and retrieval effectiveness of the system (Redmon 
+et al., 2016). 
+ 
+2.4.5 OpenCV & Facial Recognition 
+OpenCV is a widely used open-source computer vision library integrated into Qreclaim  to 
+support face detection and verification tasks. During claim processes, the system uses a webcam 
+or Raspberry Pi camera to capture and verify the user’s face in real -time. OpenCV helps with 
+preprocessing images (e.g., converting to grayscale, cropping, aligning) before comparing them 
+to registered facial templates. 
+ 
+This biometric verification method, when combined with RFID scanning, increases both 
+accuracy and accountability. According to Singh and Sharma (2021), multimodal 
+authentication (i.e., using both face and RFID) significantly reduces the chances of false claims 
+and identity spoofing enhancing trust and security in unattended self-service environments like 
+kiosks. 
+2.4.6 RFID Tagging with Raspberry Pi & RC522 Modules 
+Qreclaim uses RFID technology to identify student cards and, optionally, tag found items. The 
+system integrates an RC522 RFID reader module with a Raspberry Pi to retrieve student data 
+during claim verification. This low-cost hardware setup is commonly used in IoT-based student 
+systems and has been tested in campus-level projects, such as the RFID lost-and-found system 
+at UiTM Arau (Ilias, 2020). 
+ 
+The RFID mechanism allows for quick, touchless identification, especially useful in kiosk -
+based claim stations. In Qreclaim, RFID data is securely linked to Firebase-stored profiles and 
+paired with biometric verification to ensure legitimate item retrieval. The combination 
+improves usability and tamper resistance while remaining budget -friendly for educational 
+institutions. 
+  
+
+--- PAGE 39 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 38 
+2.5 Chapter Summary and Evaluation 
+This chapter has presented a comprehensive review of literature and technologies related to the 
+development of the Qreclaim system. It began by addressing four key limitations in the existing 
+lost and found processes at TAR UMT Johor: the absence of a cent ralized and structured 
+reporting mechanism, the lack of automated item matching, unreliable claim verification 
+methods, and the absence of user -centered usability design. These limitations not only cause 
+inefficiencies in item recovery but also contribute to miscommunication, unverified claims, and 
+a lack of accountability within the current manual-based system. 
+ 
+To overcome these issues, Qreclaim is proposed as a smart and integrated solution tailored to a 
+campus environment. It leverages cloud -based infrastructure, AI -powered image processing, 
+and RFID or facial recognition for secure claim verification. These technologies work together 
+to streamline workflows, reduce manual errors, and enhance user confidence in the lost and 
+found system. 
+ 
+An analysis of the target market highlighted that TAR UMT students and staff frequently 
+interact with multiple campus zones such as the library, ICT Centre, DKC Block, and DSA 
+Block. By understanding the movement patterns and behavioral context of users in  these 
+locations, Qreclaim is designed to be both accessible and contextually relevant. This market 
+insight ensures that usability is prioritized across all user interactions. 
+ 
+The chapter also reviewed multiple similar university systems to extract insights and identify 
+performance gaps. For example, UKM's FoundeLost system digitized item reporting but lacked 
+intelligent matching and identity verification features (Tan & Chong, 2024). UiTM's RFID -
+based notification system introduced automation but did not address usability design or 
+intelligent classification of found items (Ilias, 2020). UNIMAS and UTeM implemented basic 
+web systems, yet both relied heavily on manual processing and offered limited user verification 
+features (Sadiah & Nyambong, 2020; Shamshur & Nabilah, 2016). These systems demonstrate 
+that while progress has been made toward digitization, gaps still exist in secure verification and 
+AI integration areas in which Qreclaim provides significant improvements. 
+ 
+From a technical perspective, this chapter justified the selection of tools used in Qreclaim’s 
+implementation. Firebase was chosen for its robust cloud scalability and real -time database 
+capabilities (Firebase, 2024), while Python and FastAPI serve as efficient back-end frameworks 
+
+--- PAGE 40 ---
+Qreclaim Chapter 2 
+ 
+ 
+BMCS3403 Project I 39 
+for handling AI -based tasks. The integration of advanced models like CLIP (Radford et al., 
+2021) and BLIP (Li et al., 2023), in combination with OpenCV and RFID hardware, enables 
+the system to generate accurate tags, enhance visual matching, and ensure sec ure identity 
+validation. These components were selected based on established academic research and their 
+proven performance in similar applications, confirming the technical feasibility of the proposed 
+approach. 
+ 
+In conclusion, the literature review and related studies in this chapter support the formulation 
+of Qreclaim’s core objectives and validate its overall feasibility. The analysis demonstrates how 
+Qreclaim addresses the specific challenges faced by the current system at TAR UMT Johor by 
+applying modern technologies and user-centered principles. The insights gathered here provide 
+a strong conceptual and technical foundation for the system design and implementation phases 
+that follow in subsequent chapters. 
+
+--- PAGE 41 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 40 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Chapter 3 
+ 
+Methodology and Requirements 
+Analysis 
+
+--- PAGE 42 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 41 
+3 Methodology and Requirements Analysis 
+This chapter outlines the methodological approach and the process of identifying and analyzing 
+the requirements for the Qreclaim system. The methodology describes the software development 
+model adopted for the project and justifies its suitability in guiding the development process. The 
+requirements analysis section details how information was collected, recorded, and analyzed to 
+derive both functional and non-functional requirements of the system. By systematically applying 
+requirement recording techniques  and fact analysis tools such as input/output analysis, decision 
+tables, and structure charts, the collected data were transformed into a structured Software 
+Requirements Specification (SRS). This chapter therefore establishes the foundation for the 
+subsequent system design, ensuring that the proposed solution is technically feasible, user -
+centered, and aligned with the objectives of improving the campus lost-and-found process. 
+3.1 Methodology 
+The Incremental Model is a software development methodology that delivers the system in 
+smaller, functional increments rather than as a single, final product. Each increment involves a 
+complete cycle of requirements gathering, design, implementation, and t esting, resulting in a 
+working subset of the system that can be evaluated before moving to the next stage. Unlike the 
+linear Waterfall model, incremental development allows partial deployment and early feedback, 
+making it easier to refine the system progre ssively. According to GeeksforGeeks (2024), this 
+model enables early delivery of core features, simplifies error detection through modularity, and 
+allows feedback -driven improvements between iterations. This ensures a balance between 
+structured planning and flexibility, which is particularly beneficial in research-oriented projects. 
+ 
+For this project, the Incremental Model was selected because it aligns with the modular and 
+testable nature of the system while still maintaining a structured development process. Academic 
+projects benefit from incremental delivery as they enable the resea rcher to focus on one 
+functional area at a time, ensuring higher quality before moving on to the next. Since the proposed 
+system consists of interdependent modules including authentication, AI-powered image tagging, 
+automated lost –found item matching, RFID -based claim verification, and kiosk integration 
+developing these features incrementally reduces the risk of large -scale integration issues and 
+allows for earlier usability testing. Additionally, this approach supports supervisor feedback at 
+multiple points, making it easier to adjust system features or workflows without reworking the 
+entire project. 
+ 
+
+--- PAGE 43 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 42 
+In applying this methodology, the project will progress through several iterative cycles, with each 
+cycle targeting a specific set of features. During the requirements analysis of each increment, 
+fact-gathering techniques such as observation and interviews  will be used to refine user needs, 
+which will then be captured in an updated Software Requirement Specification (SRS). The design 
+phase will translate these requirements into architectural models, database schemas, and interface 
+mockups for the targeted m odule, using tools such as Entity Relationship Diagrams (ERDs), 
+flowcharts, and Unified Modeling Language (UML) diagrams. Implementation will focus on 
+coding and integrating the selected feature set, beginning with fundamental modules like user 
+authentication before advancing to higher-level components such as AI-powered image tagging, 
+RFID verification, and kiosk operation. 
+ 
+Testing will be conducted for every increment to ensure reliability and consistency before 
+integration into the full system. Unit testing will verify each module independently, while 
+integration testing will confirm that newly developed modules work seamle ssly with existing 
+ones. For example, the automated matching and image tagging components will be evaluated 
+using accurate metrics such as precision and recall, whereas RFID verification will be tested in 
+real scenarios to confirm its reliability. After su ccessful testing, the increment will be deployed 
+in a controlled environment, such as a campus pilot, allowing stakeholders to provide feedback 
+before the next cycle begins. 
+ 
+Figure 3.1 shows the Incremental Model process flow adopted for this project. The diagram 
+shows how development begins with requirements definition and architecture design, followed 
+by the construction of the first subsystem. Each subsequent subsystem is built and integra ted in 
+a stepwise manner, with verification tests performed at each stage to ensure correctness. Finally, 
+the fully integrated system undergoes validation testing to confirm that all requirements have 
+been met. This staged approach mirrors the planned development of the Qreclaim system, where 
+early increments will deliver foundational functionality such as user authentication and item 
+reporting, while later increments will integrate advanced modules like AI -powered image 
+tagging, automated matching, and kiosk-based verification. By following this model, each phase 
+produces a usable and testable outcome, reducing integration risks and ensuring that issues are 
+detected early rather than at the end of development. 
+ 
+
+--- PAGE 44 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 43 
+ 
+Figure 3.1 Incremental Model 
+ 
+By adopting the Incremental Model, the project gains both structure and flexibility. Each 
+increment produces a tangible, working version of the system, which ensures continuous progress 
+tracking and early risk detection. The combination of modular development, frequent testing, and 
+stakeholder feedback supports the creation of a robust and user-centered solution that meets the 
+project’s objectives while minimizing last -minute issues. This methodology is therefore well -
+suited to the development of a complex,  multi-module system within the constraints of a final -
+year project. 
+3.2 Requirements Gathering Techniques (Fact Gathering) 
+To ensure that the requirements of the Qreclaim system are accurately defined and aligned with 
+user expectations, several fact -gathering techniques were applied during the early stages of 
+development. Requirements gathering is a critical process in system development, as it helps 
+bridge the gap between user needs and the final system design (Al-Badi, 2018). For this project, 
+both qualitative and quantitative approaches were considered, ensuring that the collected 
+requirements reflected both functional and non-functional perspectives. 
+  
+
+
+--- PAGE 45 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 44 
+3.2.1 Research 
+Research was carried out to understand the main problems in the current lost and found process. 
+This included reading academic papers, looking at system documentation, and reviewing case 
+studies from other universities. The research showed that manual systems often have problems 
+like unstructured reporting, slow or no matching of lost and found items, and weak claim 
+verification. These findings became the basis for proposing new solutions such as AI-powered 
+image tagging and RFID verification. The use of AI APIs is especially powerful because they 
+can automatically identify and tag objects from images, making the process faster and reducing 
+human error. According to Sommerville (2020), research is a valuable fact -gathering method 
+for identifying best practic es and ensuring that new systems address real -world problems 
+effectively. 
+3.2.2 Observation 
+Observation was done directly at TAR UMT Johor campus to see how the lost and found 
+process works in real situations. This included watching how students report missing items, 
+how staff keep records, and how they confirm who owns an item before returning i t. The 
+observation showed problems such as manual record -keeping and dependence on informal 
+communication channels like word of mouth.  As shown in Figure 3. 2, many lost items were 
+observed being placed openly in a common area without a structured storage o r claim 
+verification process. This practice highlights the lack of a centralized and secure system, where 
+items are at risk of being misplaced or claimed by the wrong person. These findings matched 
+what students and staff said during interviews and showed that automation is needed to improve 
+the process. As Glinz (2020) states, observation helps capture what really happens in practice, 
+which can sometimes be different from what people say in interviews. 
+ 
+ 
+Figure 3.2 Unclaimed Lost Item At ICT 
+
+
+--- PAGE 46 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 45 
+3.2.3 Questionnaire 
+A questionnaire was created using Google Forms (Appendix 1.1 ) and shared with students 
+through social media groups so they could easily access and fill it in. The questionnaire 
+contained a mix of question types, including multiple-choice questions, Likert scale questions 
+(to measure agreement with statements), and a  few open -ended questions for additional 
+feedback (Appendix 1.2 – Appendix 1.14). This combination allowed both quantitative and 
+qualitative data to be collected, making the results more reliable and meaningful. The responses 
+confirmed common issues such as delays in retrieving items, the absence of a notification 
+system, and challenges in proving item ownership. Questionnaires were chosen because they 
+allow collecting feedback from many people in a short amount of time, which is helpful to 
+support the findings from interviews and observations (Pacheco & García, 2019). 
+3.3 Requirements Analysis (Fact Analysis) 
+Requirements Analysis is a foundational phase in the systems development lifecycle, focused on 
+identifying, defining, and documenting the needs and constraints that a new system must fulfill. 
+For the Qreclaim system, this process involves gathering quantitative and qualitative data directly 
+from primary stakeholders students and administrative staff to formulate a clear and justified set 
+of requirements. This ensures the final product is not based on assumption but is rigorously 
+aligned with user expectations and operational realities, thereby maximizing its potential for 
+adoption and success. The ana lysis synthesizes feedback from 20 survey respondents, and its 
+outcomes directly inform the system's architectural design and feature prioritization, serving as 
+a critical bridge between user needs and technical implementation. 
+ 
+The questionnaire results formed the empirical foundation for the Qreclaim system requirements. 
+The survey gathered 20 valid responses, comprising 19 students primarily from the Faculty of 
+Computing and Information Technology (FOCS) and the Faculty of Acco untancy, Finance and 
+Business (FAFB), and one staff member from the DCIT department. A thorough analysis of this 
+dataset highlights not only the significant deficiencies in the current manual lost -and-found 
+process but also precisely identifies the feature s, workflows, and quality attributes that users 
+expect from a digital, AI-enhanced solution. The findings are systematically organized into three 
+core parts: (i) an analysis of current process deficiencies that justify the project's necessity, (ii) a 
+derivation of functional requirements that define the system's features, and (iii) a derivation of 
+non-functional requirements that establish the system's quality standards. 
+  
+
+--- PAGE 47 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 46 
+3.3.1 Analysis of Current Process Deficiencies 
+The survey data establishes an unequivocal and pressing need for systemic intervention. A 
+significant majority of student respondents (73.7%, n=14/19, Figure 3.3) rated the existing lost-
+and-found process at TAR UMT as “Average” (3) or worse on a 5-point scale, with over 42% 
+(n=8/19) rating it as "Poor" (2) or "Very Poor" (1) (Appendix 2.6). This overwhelming 
+sentiment indicates a process that is failing to meet b asic user expectations for efficiency, 
+transparency, and reliability. A qualitative analysis of  the specific problems faced (Q5, 
+Appendix 2.7) reveals four recurring and interconnected pain points that collectively define the 
+systemic failures of the existing, fragmented approach. 
+ 
+Figure 3.3 Student Response 
+ 
+Absence of a Centralized Platform – This was the most prominent problem, cited by 63.2% of 
+student respondents (n=12/19, Figure 3.4). The current reliance on disparate, isolated locations 
+(e.g., faculty offices, security desks, hostels) creates an inefficient and frustrating user 
+experience. Individuals must rely on word -of-mouth or physically visit multiple locations to 
+report or inquire about items, a process that is time -consuming and often figuring. This 
+fragmentation drastically increases the probability of items remaining unclaimed and creates a 
+inconsistent, confusing experience for users. 
+ 
+Lack of Proactive Communication – 57.9% of respondents (n=11/19, Figure 3.4) reported the 
+absence of proper notifications or updates. The current process is almost entirely reactive, 
+placing the burden of follow-up entirely on the user. Without proactive communication, users 
+are quickly discouraged, leading to abandoned searches and prolonged item recovery times, if 
+recovery happens at all. This deficiency highlights the critical need for automated feedback 
+mechanisms to close the loop between item discovery and owner retrieval. 
+
+
+--- PAGE 48 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 47 
+ 
+Ineffective Ownership Verification – 42.1% of respondents (n=8/19 , Figure 3.4 ) highlighted 
+significant difficulties in proving ownership of a found item. The ad -hoc nature of the current 
+process lacks a standardized, reliable method for verification, which acts as a barrier for 
+legitimate owners and introduces substantial security risks. It creates opportunities for false 
+claims, misappropriation, and impersonation, undermining trust in the entire system. 
+ 
+Processing Delays – 31.6% of respondents (n=6/19 , Figure 3.4 ) cited noticeable delays in 
+retrieving items even after they were located. These delays, often caused by bureaucratic 
+hurdles or the inability to locate the staff member holding the item, further erode user trust and 
+increase the likelihood that items will be permanently lost or forgotten. 
+ 
+ 
+Figure 3.4 Existing Problems Response 
+ 
+Taken together, these deficiencies paint a clear picture of a process that is manual, opaque, and 
+inefficient. They provide a compelling justification for the core purpose of the Qreclaim system: 
+to replace this outdated model with a standardized, transparent, and efficient digital ecosystem 
+that benefits all stakeholders. 
+3.3.2 Derivation of Functional Requirements 
+The user feedback strongly validated the proposed feature set of Qreclaim , allowing for the 
+derivation of specific, data -driven Functional Requirements (FRs). These FRs form the 
+blueprint for the system's architecture and development, ensuring every feature addresses an 
+expressed user need or pain point. 
+ 
+FR1 – Centralized Digital Platform 
+The concept of a unified, online platform for all lost-and-found activities was deemed “Useful” 
+or “Very Useful” (rated 4 or 5) by 84.2% of student respondents (n=16/19, Appendix 2.8, Figure 
+3.5). This overwhelming support mandates the development of a centralised system that acts as 
+
+
+--- PAGE 49 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 48 
+a single source of truth. This requirement directly translates into the creation of two core 
+modules: a User Module for students to report and claim items, and an Admin Module for staff 
+to manage the process, thereby solving the primary pain point of fragmentation. 
+ 
+Figure 3.5 Centralized System Important Response 
+ 
+FR2 – Multimedia Support for Item Reporting 
+Respondents placed high importance on the ability to upload photographs, with 89.4% 
+(n=17/19) rating it a 4 or 5 (mean score ~4.4/5, Appendix 2.9). This functionality is crucial as 
+visual evidence significantly enhances the accuracy of item descriptions, a ids owners in 
+identifying their property, and reduces the potential for false claims. Consequently, the Lost 
+and Found Module must be designed with robust image upload capabilities, including client -
+side cropping and resizing to optimize user experience an d server storage, and secure cloud 
+storage for efficient retrieval. 
+ 
+FR3 – Advanced Search and Filtering 
+An overwhelming 94.7% of student respondents (n=18/19, Appendix 2.10) confirmed a strong 
+preference (answered "Yes") for browsing and searching items by attributes such as category, 
+location, and date. This feedback necessitates the implementation of an ad vanced, intuitive 
+search interface powered by optimized database queries and indexed metadata. The goal is to 
+minimize the time and effort required for users to locate their lost items, directly addressing the 
+inefficiencies of the current process. 
+ 
+FR4 – Secure, Dual-Factor Claim Verification  
+The survey revealed strong user demand for a secure claiming process. A significant 89.5% of 
+respondents (n=17/19, Appendix 2.11) agreed or strongly agreed (rated 4 or 5) that claiming 
+items should require a system -generated QR code. Furthermore, 78.9% (n= 15/19, Appendix 
+2.12) expressed a preference for using an RFID student card as a secondary verification factor 
+over facial recognition or having no preference. These responses directly guide the design of 
+the Prototype Kiosk Module, which will implement a dual-factor authentication mechanism 
+
+
+--- PAGE 50 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 49 
+(QR code + RFID) to ensure that only the legitimate owner can claim an item, thereby solving 
+the critical problem of ownership verification. 
+ 
+FR5 – AI-Powered Image Tagging and Matching 
+The proposed AI-powered features were among the most positively received innovations. AI -
+based automatic image tagging (e.g., generating tags like “black wallet,” “red umbrella”) was 
+rated 4 or 5 by 73.7% of respondents (n=14/19, Appendix 2.14 , Figure 3.6 ). Even more 
+compelling, the feature for receiving automatic notifications upon a found item matching a lost 
+report was rated 4 or 5 by 84.2% (n=16/19, Appendix 2.15). This strong validation supports the 
+inclusion of an AI Image Analysis Module for automat ed tag generation and an AI Tag 
+Matching Module to provide real -time notifications, transforming the system from a passive 
+database into a proactive recovery tool. 
+ 
+Figure 3.6 AI Feature Response 
+ 
+FR6 – Admin Approval Workflow for Valuables 
+The concept of requiring administrator approval for high -value items (wallets, electronics, ID 
+cards) received the most unanimous support, with 94.7% of student respondents (n=18/19) 
+rating it 4 or 5 (mean score ~4.4/5, Appendix 2.13). This requirement ens ures a differentiated 
+security workflow where such items are placed in a secure holding state. A designated 
+administrator must manually verify the claimant's identity and approve the release within the 
+system before a QR code for claiming is generated. Thi s is implemented within the Lost and 
+Found Module as a crucial additional security layer to protect sensitive and high-value assets. 
+  
+
+
+--- PAGE 51 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 50 
+3.3.3 Derivation of Non-Functional Requirements 
+Beyond defining what the system should do, the survey identified critical quality attributes that 
+define how well the Qreclaim system must perform. These Non -Functional Requirements 
+(NFRs) establish measurable benchmarks for system design, ensuring it is r obust, secure, and 
+user-friendly. 
+ 
+NFR1 – Performance 
+System responsiveness is a critical user expectation. 65% of all respondents (n=13/20) rated 
+fast system response times (e.g., less than 5 seconds for search or tagging) as “Very Important” 
+(5). When including those who rate it a 4, this importance rises t o 90% (n=18/20, Appendix 
+2.17). This sets a strict performance benchmark that influences key architectural decisions, 
+necessitating the use of caching strategies, optimized database indexing, efficient algorithms, 
+and asynchronous processing for long-running tasks like AI tagging to maintain a snappy and 
+responsive user interface underload. 
+ 
+NFR2 – Security and Data Privacy 
+Data protection was the highest -rated concern among all quality attributes. 80% of all 
+respondents (n=16/20) rated the protection of personal data (IDs, RFID tags, facial recognition 
+data) as “Very Important” (5), and 95% (n=19/20) rated it a 4 or 5 (Appen dix 2.18). These 
+findings mandate a security-first design approach. This includes end-to-end encryption of data 
+in transit (HTTPS), robust hashing with salt for passwords, encryption of sensitive data at rest, 
+adherence to the principle of least privilege through Role-Based Access Control (RBAC), and 
+strict data governance policies to ensure user privacy is paramount. 
+ 
+NFR3 – Reliability and Availability 
+Users require a dependable system. System reliability (no frequent errors or downtime) was 
+rated “Very Important” (5) by 65% of respondents (n=13/20), and 90% (n=18/20) when 
+including a rating of 4 (Appendix 2.19). Furthermore, 90% of respondents (n=18/20, Appendix 
+2.20) required the system to be available 24/7, not just during campus operating hours. These 
+requirements justify the need for fault -tolerant architecture. This includes implementing 
+automated monitoring, regular backups, redundant server compon ents, and a clear disaster 
+recovery plan to ensure uninterrupted service and data integrity. 
+ 
+NFR4 – Scalability and Future Expansion 
+The strong consensus (95%, n=19/20, Appendix 2.21) that Qreclaim should be expanded to 
+other TAR UMT campuses indicates that scalability must be a core design consideration from 
+the outset. The database schema, application programming interface (API) desig n, and cloud 
+
+--- PAGE 52 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 51 
+server deployment strategy must all support horizontal scaling (adding more servers) and be 
+designed with a multi-tenant architecture in mind to facilitate cost-effective and efficient future 
+rollouts to other campuses. 
+ 
+NFR5 – Administrative Utility and Insights 
+The single staff respondent, whose role involves managing lost items, provided critical 
+validation for administrative features. They rated a dashboard with statistics (e.g., most lost 
+items, recovery time) as "Very Useful" (5) (Appendix 2.22) and also rate d remote locker 
+management as "Very Important" (5) (Appendix 2.23). They also confirmed that admin 
+approval for valuable items is helpful (Appendix 2.24). While from a single data point, this 
+feedback is vital as it confirms that the proposed Admin Module features align with the practical 
+needs of the staff who will ultimately operate and manage the system, ensuring its long -term 
+operational sustainability. 
+ 
+This comprehensive analysis demonstrates that the Qreclaim system is meticulously designed 
+to address explicitly identified deficiencies through a feature set validated by end-users, while 
+also adhering to stringent quality standards for performance, security, and reliability. This user-
+centered, data-driven approach forms a solid foundation for the system's subsequent design, 
+implementation, and testing phases. 
+ 
+ 
+3.4 Project Scope 
+The Qreclaim  system is specifically developed for use within the TAR UMT Johor Branch 
+campus and is currently designed for two main user groups: students and administrators. The 
+student module allows students to report lost items, view matched found items and verify t heir 
+claims. The administrator module enables staff to manage to find item records, approve claims 
+for valuable items, and handle locker management. At this stage of development, administrators 
+do not have access to student module functions, as the system is intentionally separated to 
+maintain clear role boundaries. However, future enhancements are planned to introduce extended 
+administrative access and additional integrated functions that could support more efficient 
+oversight and improve the overall usability of the platform. 
+ 
+Figure 3.4.1 illustrates the Qreclaim System Hierarchy Chart, and Figure 3.4.2 presents the 
+Qreclaim Use Case Diagram, which together defines the overall functional scope of the project. 
+ 
+
+--- PAGE 53 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 52 
+ 
+ 
+Figure 3.4.1 Qreclaim System Hierarchy Chart 
+ 
+
+
+--- PAGE 54 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 53 
+ 
+Figure 3.4.2 Qreclaim System Hierarchy Chart 
+ 
+  
+
+
+--- PAGE 55 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 54 
+3.5 Software Requirements Specification (SRS) 
+The Software Requirements Specification (SRS) is a formal document that defines what the 
+system is expected to do and the conditions under which it must operate. It provides a detailed 
+description of both the functional requirements, which specify the feat ures and services the 
+system must provide, and the non -functional requirements, which outline the quality attributes 
+such as performance, security, usability, and reliability. The purpose of the SRS is to serve as a 
+clear agreement between stakeholders, de velopers, and users, ensuring that the system is 
+developed according to the intended objectives and meets the needs of its users. 
+ 
+3.5.1 Functional Requirement 
+The functional requirements of the Qreclaim  system are derived from its hierarchical 
+architecture, which consists of both user -facing and administrative modules. Each module 
+provides specific capabilities that collectively ensure a structured, intelligent, and secure lost -
+and-found process within the campus environment. 
+ 
+A. Users Module 
+1. Account Management Module 
+The Account Management Module governs access to the system. When users (students or staff) 
+launch the Qreclaim web application, they are presented with a secure login interface. They 
+must enter their institutional credentials (student or staff ID and passw ord) which are 
+authenticated against the Firebase Authentication service. Upon successful verification, users 
+gain access to the system dashboard based on their role. At the end of their session, users can 
+log out to terminate their access. This process en sures that unauthorized individuals cannot 
+access sensitive data or submit fraudulent reports. 
+ 
+2. Lost and Found Module 
+The Lost and Found Module forms the core of the system, allowing students to report and track 
+misplaced items while also managing the process of reclaiming them. When a student loses an 
+item, they complete a structured “Lost Item Report” form that captures key details such as the 
+item name, category, location, and an optional photo. Similarly, when an item is found, a 
+“Found Item Report” is submitted with supporting details and images, ensuring that all entries 
+are stored in real -time through Firebase and v isible to other users. Students can also browse 
+
+--- PAGE 56 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 55 
+categorized records of lost and found items, applying filters such as category, location, or date 
+to simplify the search process. 
+ 
+The Lost and Found Module forms the core of the system, allowing students to browse, report, 
+and reclaim items. Students are able to browse all available found items that have been posted 
+by administrators, with the option to apply filters such as category, location, or date to narrow 
+down the results and simplify their search process. When a student loses an item, they can use 
+the “Report Lost Item” function to fill in the required information through a structured form, 
+including details such as item name, category, and location. Once submitted, the report is sent 
+to administrators, who will assist in checking records and notifying the student if a matching 
+found item is identified. 
+ 
+A key feature of this module is the ability to register a QR code for item claiming. The QR code 
+acts as a digital token that links a student to a specific claim request and is mandatory for 
+retrieval at the prototype kiosk. The registration process, howev er, differs depending on 
+whether the item is categorized as valuable or non-valuable: 
+ 
+For non-valuable items (e.g., stationery, umbrellas, water bottles), students can directly register 
+a QR code after confirming their intent to claim. During this process, the system requires the 
+student to first complete a facial recognition check, which serves as an initial verification step. 
+Once their face is verified, they are prompted to select their preferred second verification 
+method either RFID student card scanning or facial recognition which will be used later at the 
+kiosk for completing the dual verification process. After these steps, the QR code is successfully 
+generated and stored in the student’s profile. 
+ 
+For valuable items (e.g., wallets, electronics, student ID cards), the QR registration process 
+requires additional approval. When a student attempts to register a QR code for such items, the 
+request is automatically sent to an administrator for review. The  administrator evaluates the 
+claim based on the available records and supporting details. Only after the administrator grants 
+approval can the student proceed with QR code registration. As with non -valuable items, the 
+student must still complete the facial recognition step and select a preferred second verification 
+method (RFID or face recognition) before the QR code is generated. 
+ 
+
+--- PAGE 57 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 56 
+This distinction between valuable and non-valuable items ensures that higher-value possessions 
+receive stricter oversight, while common items can still be reclaimed efficiently. Regardless of 
+the category, the QR registration process guarantees that every claim is tied to a verified identity 
+and a preselected verification method, thereby ensuring security and accountability at the kiosk. 
+ 
+3. Prototype Kiosk Module 
+The Prototype Kiosk Module provides secure item claim verification through a dual -factor 
+authentication process. When a student arrives at the kiosk to retrieve their item, they must first 
+present their QR code for scanning. The system validates the QR cod e and retrieves the 
+student’s chosen verification method, which was specified during QR registration. The student 
+then completes the second step of verification using either facial recognition or RFID student 
+card scanning, depending on the option they selected earlier. 
+• Facial Recognition Path: The kiosk camera captures a live image of the student and 
+compares it to the registered facial template. If the match is successful, the claim 
+process continues. 
+• RFID Path: The student taps their registered RFID enabled student card on the kiosk 
+reader. The card ID is verified against the student’s profile in the database. 
+Only when both steps are successfully completed will the system instruct the kiosk locker to 
+unlock and release the stored item. This process ensures that items are claimed only by their 
+rightful owners, with every transaction logged securely for accountability. 
+ 
+B. Admins Module 
+1. Lost and Found Management Module 
+The Lost and Found Management Module equips administrators with tools for monitoring and 
+controlling the system. When campus staff or security personnel submit found items, 
+administrators verify the submissions and may attach additional details if needed. 
+Administrators can browse both student -submitted lost item reports and existing found item 
+records, allowing them to quickly cross -check and identify potential matches. They are also 
+responsible for managing QR register requests by reviewing and approving or rejecting 
+applications for valuable item claims. 
+ 
+In addition, administrators are responsible for registering student RFID cards into the system 
+to support future claim verifications. Beyond item management, administrators have access to 
+
+--- PAGE 58 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 57 
+a dashboard that provides analytics on lost -and-found trends, such as the most frequently 
+misplaced items, average recovery times, and unclaimed item statistics. This data supports 
+informed decision-making, for example, planning awareness campaigns or optimizing storage 
+space. These combined capabilities ensure administrators can maintain a well -organized, 
+secure, and efficient lost-and-found process. 
+ 
+2. Prototype Kiosk Management Module 
+The Prototype Kiosk Management Module allows administrators to oversee the physical kiosk 
+lockers. They can remotely view locker availability, assign lockers to specific found items, and 
+monitor locker usage. In cases of technical issues or disputes, admin istrators may manually 
+override the system to lock or unlock a locker. These controls ensure that items are stored 
+securely until retrieval and that the kiosk infrastructure remains reliable and tamper resistant. 
+ 
+C. AI Features 
+1. AI Image Tagging  
+The AI Image Tagging feature is applied during both student lost item reporting and 
+administrator found item reporting. When an image is uploaded, the system prompts the user 
+to crop the photo to focus on the object of interest. The cropped image is then analyzed by the 
+BLIP model, which automatically generates descriptive AI tags (e.g., “red water bottle,” “black 
+wallet,” “blue umbrella”). These tags are stored as metadata in the database and linked to the 
+item record. Users can review, add, or remove tags to ensure the description is accurate before 
+submission. This process standardizes item descriptions and improves searchability for faster 
+matching. 
+2. AI Matching  
+The AI Matching feature intelligently links lost and found records by comparing their generated 
+tags. Each time a new report is submitted, the system performs a similarity comparison between 
+the new record and existing records using semantic matching techn iques. For example, if a 
+student reports a “black wireless mouse,” the system will search for found item records with 
+similar tags and calculate a similarity score. If a strong match is detected, the student receives 
+a notification with the potential match  details, enabling them to verify the result and proceed 
+with QR code generation for claiming. 
+ 
+
+--- PAGE 59 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 58 
+3.5.2 Non-Functional Requirement 
+Non-functional requirements (NFRs) specify the quality attributes that define how a system 
+performs its functions rather than what the functions are. Unlike functional requirements, which 
+describe specific tasks such as item reporting or claim verification, NFRs determine the overall 
+system qualities such as reliability, security, usability, and scalability. These attributes are 
+particularly critical for Qreclaim, as the system is expected to handle sensitive student data and 
+support AI -powered services lik e automated tagging and RFID verification. The following 
+NFRs are essential to ensure Qreclaim meets both user expectations and institutional standards. 
+ 
+Performance 
+Performance is a key requirement for Qreclaim, as both students and administrators expect the 
+system to deliver fast and seamless interactions. When reporting or searching for lost and found 
+items, delays can cause frustration and reduce system adoption. Specifically, AI-powered image 
+tagging, which automatically extracts metadata from uploaded item images, must be executed 
+within a few seconds to provide real -time feedback. Similarly, database queries for lost and 
+found matching should return results quickly, even as the number of records increases over 
+time. If the system takes too long to respond, users may perceive it as  inefficient, which can 
+directly reduce trust and usability. Therefore, Qreclaim must be optimized at both the 
+application and database layers to ensure consistent performance. 
+ 
+Usability 
+Usability is crucial because the system targets a wide range of students, some of whom may not 
+possess advanced technical skills. The interface of Qreclaim must be designed to be intuitive, 
+with straightforward navigation and minimal learning effort. For e xample, the web platform 
+should allow students to report or search for items in just a few steps, while the prototype kiosk 
+must provide clear step -by-step instructions during claim verification using RFID or facial 
+recognition. Prior studies confirm that usability directly impacts adoption rates in university 
+service systems, where poorly designed interfaces discourage participation (Nielsen, 2012). By 
+adhering to usability heuristics and prioritizing a user -centered design, Qreclaim can ensure 
+inclusivity and encourage consistent usage. 
+ 
+ 
+ 
+
+--- PAGE 60 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 59 
+Reliability 
+Reliability ensures that Qreclaim consistently delivers its services without frequent errors, 
+crashes, or data loss. Since the system is expected to store critical records of lost and found 
+items, students must be confident that their data will not be corr upted or lost due to technical 
+failures. The AI tagging module, RFID verification, and facial recognition components must 
+operate with high accuracy and consistency, as even small errors could lead to wrongful claim 
+approvals or unclaimed items. As emphasi zed in software engineering literature, reliability 
+builds user trust and is one of the most important attributes of institutional systems that handle 
+sensitive processes (Avizienis et al., 2004). Consequently, Qreclaim must implement thorough 
+error handling, redundancy, and robust testing strategies to achieve this requirement. 
+ 
+Security 
+Security is one of the most critical attributes for Qreclaim, as it processes personal and sensitive 
+data such as student IDs, face recognition profiles, and contact details. To prevent misuse or 
+unauthorized access, the system must enforce strict authenti cation, access control, and 
+encryption policies. For instance, claim verification must ensure that only the rightful owner of 
+an item can retrieve it, whether through RFID scanning or facial recognition. As universities 
+are often targets of data breaches, adherence to data protection principles such as 
+confidentiality, integrity, and availability is mandatory (Shamala et al., 2017). By incorporating 
+secure coding practices and compliance with relevant data protection regulations, Qreclaim can 
+safeguard student information while maintaining trust and institutional credibility. 
+ 
+Maintainability 
+Maintainability refers to the ease with which Qreclaim can be updated, modified, or extended 
+in the future. Since the system includes multiple components such as the student module, admin 
+module, and AI tagging module, its architecture must be modular and well -documented. This 
+will enable future developers to implement improvements, fix issues, or integrate new 
+technologies without causing disruptions. Maintainability is also a critical factor in reducing 
+the long-term cost of software ownership, as systems that lack modularity are harder to adapt 
+to evolving requirements. For Qreclaim, maintainability ensures that the system remains 
+sustainable and adaptable even after the initial deployment. 
+ 
+ 
+
+--- PAGE 61 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 60 
+Scalability 
+Scalability is essential because Qreclaim was initially designed for TAR UMT Johor campus 
+but has the potential to expand to other branches of the university. As more students, staff, and 
+lost-and-found records are added to the system, its performance and reliability must not 
+degrade. For example, the database must support a growing volume of records, while AI tagging 
+should remain efficient as more images are processed daily. Studies confirm that scalability is 
+fundamental for systems in educational institutions, as they often evolve from small -scale 
+deployments to larger, multi -campus environments (Almorsy, Grundy, & Müller, 2016). By 
+designing Qreclaim with scalability in mind, the system can support both current and future 
+institutional needs without requiring major redesign. 
+ 
+Availability 
+Availability ensures that Qreclaim is accessible whenever users need it, particularly during 
+university operational hours when students are most likely to report or search for items. 
+Downtime can disrupt the lost-and-found process, leading to unclaimed items and reduced trust 
+in the system. The web platform should achieve high uptime with mechanisms for fault 
+tolerance and recovery in the event of system failures. As noted in research on availability 
+engineering, even short downtimes can significantly affec t user satisfaction and institutional 
+operations (Torres et al., 2017). By prioritizing high availability, Qreclaim guarantees 
+continuous service delivery and reinforces reliability for students and administrators alike. 
+ 
+3.6 Chapter Summary and Evaluation 
+This chapter presented the methodology and requirements analysis that form the foundation of 
+Qreclaim’s development. The project adopts the Incremental Software Development Model, 
+which breaks the development process into multiple, manageable increments rather than a single 
+release. Each increment delivers a subset of system features, starting with essential components 
+such as user and admin account management, structured lost-and-found reporting, and search and 
+browsing functions. Subsequent increments focus on AI-powered features such as image tagging 
+and similarity matching, followed by prototype kiosk integration for secure claim verification. 
+This phased approach enables early release of core functionality, continuous requirement 
+validation, iterative r efinement, and timely risk mitigation —an essential strategy for a time -
+constrained academic project. 
+ 
+
+--- PAGE 62 ---
+Qreclaim Chapter 3 
+ 
+BMCS3403 Project I 61 
+The chapter also introduced a detailed Software Requirements Specification (SRS) that formally 
+defines what Qreclaim must achieve and the conditions under which it will operate. The 
+functional requirements were organized into clear modules for both students and administrators. 
+For students, the system provides secure login/logout, the ability to submit lost item reports with 
+image uploads and AI-generated tags, browse and filter items using advanced search options, and 
+register QR codes to claim items. Dist inct workflows are implemented for valuable and non -
+valuable items, with valuable items requiring administrator approval before QR code generation. 
+Verification at the prototype kiosk uses dual-factor authentication, allowing students to validate 
+ownership through QR code scanning and either RFID card verification or facial recognition. 
+ 
+For administrators, the functional requirements specify key capabilities including posting found 
+item reports with AI-generated tags, verifying and approving item records, managing QR register 
+requests for valuables, assigning lockers, registering RFID cards, and monitoring claim activity. 
+An analytics dashboard provides statistics such as the most frequently lost items and average 
+claim times, while locker management functions enable remote control and manual override of 
+the kiosk when required. Together, these features create a secure, structured, and transparent 
+process for managing lost-and-found operations on campus. 
+ 
+The non -functional requirements complement the functional aspects by focusing on critical 
+quality attributes. Performance expectations include fast system response (<5 seconds), 
+optimized database queries, and real -time synchronization through Firebase. Us ability 
+requirements ensure that both the web interface and kiosk remain intuitive and user -friendly, 
+lowering the learning curve for students. Reliability and availability requirements emphasize 
+fault tolerance, automated backups, and 24/7 access to ensur e data integrity and minimal 
+downtime. Security requirements enforce strict authentication, encryption, and role-based access 
+control (RBAC) to protect sensitive data such as student IDs, RFID tags, and facial recognition 
+records. Scalability and maintainability are also prioritized to support future expansion to other 
+campuses and ensure the system remains adaptable to evolving needs. 
+ 
+In conclusion, this chapter translates the findings from fact -finding and questionnaire analysis 
+into a well -defined set of functional and non -functional requirements. The adoption of the 
+incremental model ensures progressive delivery, early user feedback,  and continuous 
+improvement, which are crucial for a multi -feature solution like Qreclaim. The comprehensive 
+SRS serves as a shared reference point for all stakeholders, minimizing ambiguity and aligning 
+expectations. By clearly defining both the system’s capabilities and quality standards, this chapter 
+lays a solid groundwork for the design and implementation phases, ensuring Qreclaim is 
+developed systematically and remains aligned with user needs and institutional objectives. 
+
+--- PAGE 63 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 62 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Chapter 4 
+ 
+System Design 
+
+--- PAGE 64 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 63 
+4 System Design 
+In this phase, all analyzed system requirements will be transformed and visualized as several types 
+of diagrams not only to help the development team for better understanding but also document 
+readers. This chapter covers Software Architecture Design, Process Design, Data Design, Security 
+Design, Report Design, and User Interface Design. 
+4.1 Software Architecture Design 
+Figure 4.1 shows the updated software architecture design of Qreclaim, which adopts a modular, 
+layered approach to ensure scalability, maintainability, and security while fulfilling the functional 
+requirements of the system. The architecture follows a three -tier structure comprising the 
+Presentation Layer, Application Layer, and Data Layer, all connected via a RESTful API built 
+with Flask. This layered design enforces a clear separation of concerns, simplifies debugging, 
+and supports future enhancements such as improved AI matching, mobile application integration, 
+or additional verification mechanisms. 
+ 
+The Presentation Layer consists of two primary components: the Student/Admin Web Browser 
+and the Prototype Kiosk. The web browser provides a responsive interface for students and 
+administrators to report lost and found items, generate QR codes, manage clai ms, and monitor 
+system activity. The Prototype Kiosk is designed to handle in -person claim verification by 
+sending verification requests, such as RFID scans or facial recognition data, to the backend. All 
+communication between this layer and the Flask API is secured via HTTPS, protecting sensitive 
+user data during transmission. 
+ 
+The Application Layer is the core of the system and is powered by the Flask API. It handles all 
+incoming HTTPS requests, applies server -side validation, and coordinates communication 
+between the front end and the database. This layer is organized into several key modules: 
+ 
+• Login Authentication – Handles user login by validating credentials directly against Firestore 
+collections, without relying on Firebase Authentication. 
+• Session Management  – Maintains user sessions securely, ensuring that only authenticated 
+users can access protected resources. 
+• Users Module – Manages user profiles, including registration, updates, and access control. 
+• Admins Module  – Provides administrators with management tools for overseeing reports, 
+claims, and system operations. 
+
+--- PAGE 65 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 64 
+• AI Tagging and Matching Features – Uses AI models to automatically generate descriptive 
+tags for found items and match them with reported lost items, reducing manual workload and 
+improving efficiency. 
+• Notification Module – Sends alerts to users when item matches are found or claim statuses are 
+updated, improving user engagement and response time. 
+ 
+The Data Layer is implemented using Firebase Firestore, a cloud -hosted NoSQL database. It 
+stores structured data for users, lost and found items, claims, and system logs. Firestore’s real 
+time update capability ensures that any data changes, such as new item postings or claim status 
+updates, are immediately reflected in the web interface, creating a seamless user experience. All 
+read and write operations are routed through the Flask API to ensu re centralized access control 
+and data validation. 
+ 
+Overall, this architecture is designed to be modular, secure, and scalable. Its clear separation of 
+layers allows easy maintenance and future feature expansion, while its use of Flask as the API 
+gateway ensures consistent request handling. By integrating AI-powered tagging, matching, and 
+notification features, Qreclaim provides an efficient, intelligent, and user -friendly platform for 
+automating TAR UMT Johor’s lost-and-found process. 
+
+--- PAGE 66 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 65 
+ 
+Figure 4.1 Software Architecture Diagram 
+  
+
+
+--- PAGE 67 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 66 
+4.2 Use Case Diagram 
+The use case diagram (Figure 4.2)  illustrates the main interactions between users and the 
+Qreclaim system. It identifies the primary actors, including students and administrators, and 
+shows the key functions they can perform such as reporting lost items, posting found items, 
+generating an d scanning QR codes, verifying claims using RFID or facial recognition, and 
+managing item records. This diagram provides a high -level overview of the system’s 
+functionality and ensures that all user requirements are addressed during development.  
+ 
+Figure 4.2 Use Case Diagram of Qreclaim 
+ 
+  
+
+
+--- PAGE 68 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 67 
+ 
+4.2.1 Use Case Description 
+A use case description is a textual representation that details how different actors interact with 
+the system to achieve specific objectives. It outlines the preconditions, triggers, step -by-step 
+interactions, alternative flows, and postconditions associated with each function. While the use 
+case diagram provides a visual overview of the system, the use case description explains the 
+processes in greater depth by capturing the logical sequence of actions and outcomes. In the 
+context of Qreclaim, the use case  descriptions illustrate the complete working flows of the 
+system, such as reporting a lost item, submitting a found item, verifying claims through RFID 
+or facial recognition, and managing locker storage. By documenting these flows, the use case 
+descriptions provide a clear understanding of how Qreclaim supports both students and 
+administrators in streamlining the lost-and-found process. The following tables present the use 
+case descriptions for each main function of the system. 
+ 
+Table 4.1 Use case of Login 
+Name of Use Case: Login 
+Brief Description:  This module allows  user enters their ID and password to access the 
+system. The system validates credentials and grants access to their respective dashboard 
+(student or admin). 
+Actors: Student, Admin 
+Precondition: User must be registered in the system. 
+Actor Action System Response 
+ 
+2. Actor enters their id and password. 
+1. System displays the login page with the 
+login form. 
+3. System validates information. 
+4. System redirects the actor to respective 
+dashboard. 
+Alternative Flow:  
+A1. Step 3: If Actor enters an invalid information or leaves input fields empty then system 
+will prompt the error messages. 
+Postcondition: User is successfully logged in or receives an error message for invalid 
+credentials. 
+ 
+  
+
+--- PAGE 69 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 68 
+Table 4.2 Use case of Report Lost Item 
+Name of Use Case: Report Lost Item 
+Brief Description: This module allows students to report their lost item to admin. 
+Actors: Student 
+Precondition: Student must be logged in. Student must have an image of their lost item. 
+Actor Action System Response 
+1. Student clicks on “Report Lost Item” 
+button. 
+3. Student fills up the detail’s information of 
+lost item. 
+4. Student uploads the image of the lost item 
+(mandatory). 
+7. Student may delete unwanted tags or add 
+new custom tags but must keep at least one 
+tag before submission. 
+8. Student check and submits the report. 
+2. System navigates and displays the form 
+with required fields (item name, description, 
+date, location, image upload). 
+5. System runs AI image tagging and 
+generates a set of suggested tags 
+6. System displays the auto-generated tags 
+to student. 
+9. System saves the lost item record with 
+image, description, and final tag list. 
+Alternative Flow:  
+A1. Step 3: Student must fill up all the required field before submitting the form. 
+Postcondition: Lost item record is created in the database. 
+ 
+Table 4.3 Use case of Browse Found Item 
+Name of Use Case: Browse Found Item 
+Brief Description: This module allows students to view all found items in the system and 
+use search/filter features. 
+Actors: Student 
+Precondition: Student must be logged in. 
+Actor Action System Response 
+1. Student clicks on  “Browse Found Item ” 
+button. 
+3. Student enters some criteria and filter by 
+category, date, etc. 
+5. Student clicks an item to view full details. 
+2. System navigate and displays all available 
+found items posted by admin. 
+4. System filters and display all available 
+found items based on criteria. 
+Alternative Flow: - 
+Postcondition: System displays a list of found items matching criteria. 
+ 
+
+--- PAGE 70 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 69 
+Table 4.4 Use case of Request QR Register Approval 
+Name of Use Case:  Request QR Register Approval 
+Brief Description: This module allows students to send QR register request for get the QR 
+register permission for valuables. 
+Actors: Student, Admin 
+Precondition: Student must be logged in and navigated to found item details page  that is 
+marked as a valuables item. 
+Actor Action System Response 
+1. Student clicks on “Request Approval” 
+button. 
+3. Student enters the information that can 
+proof found item belong to them and 
+submit. 
+2. System display a remark input box for 
+student to provide proof that the item 
+belongs to them. 
+4. System validates the input and store the 
+request in the database and mark the request 
+as Pending. 
+5. System display a successful message to 
+students and send to admin for approval. 
+6. Admin approval the request and student 
+get the notification. 
+ 
+Alternative Flow:  
+A1. Step 3: If student leave the input field empty, the system will prompt error messages. 
+Postcondition:  
+Students can register QR code for valuables item. 
+ 
+Table 4.5 Use case of Register QR Code for Claim 
+Name of Use Case: Register QR Code for Claim 
+Brief Description: This module allows students to generate and register a QR code 
+containing their student ID and face recognition data for self-claim back lost item. 
+Actors: Student 
+Precondition: Student must be logged in and click to view the item details page. If the item 
+is valuables, student must pass by User case of Request QR Register Approval. 
+Actor Action System Response 
+1. Student clicks “Register QR Code for 
+Claim” button. 
+3. Student makes confirm. 
+5. Student chooses the option. 
+2. S ystem prompts out a confirmation 
+messages box. 
+
+--- PAGE 71 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 70 
+7. Student scan and registers face data. 
+ 
+ 
+4. System display an option box for  student 
+to choose verification method (e.g., face 
+recognition registration). 
+6. System display a face recognize box to 
+capture user face data. 
+8. System generate a temporary QR code to 
+student. 
+Alternative Flow:  
+A1. Step 3: If student click no, then close the QR register window. 
+Postcondition: Student get a temporary QR code and able to scan for collect the item. 
+ 
+Table 4.6 Use case of Claim Item 
+Name of Use Case: Claim Item 
+Brief Description: This module allows students to claim a found item using QR code and 
+identity verification at the prototype kiosk. 
+Actors: Student 
+Precondition: QR code must be registered. 
+Actor Action System Response 
+1. Student scans QR code at prototype 
+kiosk. 
+4. Student completes the double 
+verifications. 
+7. Student collects the found item. 
+ 
+2. System reads the student’s QR code data. 
+3. System prompts the double verification 
+method (student have been chosen when 
+register QR) and required student inputs. 
+5. System validate all the information 
+6. System unlocks the locker. 
+Alternative Flow:  
+A1. Step 4: If student fail the double verification, system retry maximum 3 times, after that 
+invalid the QR code and end the process. 
+Postcondition: Student successful collect the item from the locker. 
+ 
+  
+
+--- PAGE 72 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 71 
+Table 4.7 Use case of Report Found Item 
+Name of Use Case: Report Found Item 
+Brief Description: This module allows admin to record items that have been found and 
+stored in the locker. 
+Actors: Admin 
+Precondition: Admin must be logged in 
+Actor Action System Response 
+1. Admin clicks “Report Lost Item” button. 
+3. Admin fills up the detail’s information of 
+found item. 
+4. Admin uploads the image of the lost item 
+(mandatory). 
+7. Admin may delete unwanted tags or add 
+new custom tags but must keep at least one 
+tag before submission. 
+8. Admin checks and submits the form. 
+2. System displays a form with required 
+fields (item name, description, date, location, 
+image upload). 
+5. System runs AI image tagging and 
+generates a set of suggested tags 
+6. System displays the auto-generated tags to 
+student. 
+9. System saves the lost item record with 
+image, description, and final tag list. 
+Alternative Flow:  
+A1 – Step 9: After submitting and store the report found data in the system, if found any 
+record that got the high similarity with the lost item that student posted, the system will send 
+the notification to user. 
+Postcondition: Found item record is saved to database and locker is updated as occupied. 
+ 
+Table 4.8 Use case of Manage Found Items 
+Name of Use Case:  Manage Found Items 
+Brief Description: This module allows admin to search, filter, edit, or delete found items 
+they reported. 
+Actors: Admin  
+Precondition: Admin must be logged in. 
+Actor Action System Response 
+1. Admin click on “Manage Found Items ” 
+button. 
+3. Admin searches/filters to find a specific 
+item with enter the criteria. 
+5. Admin clicks item to view or edit details. 
+ 
+2. System navigates to “Manage Found 
+Items” page  and displays list of all found 
+items. 
+4. System display the result based on criteria. 
+6. System updates information and saves 
+changes. 
+
+--- PAGE 73 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 72 
+Alternative Flow: - 
+Postcondition:  Selected item is updated or removed. 
+ 
+Table 4.9 Use case of Manage Lost Reports 
+Name of Use Case: Manage Lost Reports 
+Brief Description: This module allows admin to view all reported lost items, mark them as 
+matched, or close reports when item is claimed. 
+Actors: Admin 
+Precondition: Admin must be logged in. Student have been posted the lost item report. 
+Actor Action System Response 
+1. Admin clicks on "Manage Lost Reports"  
+buttons. 
+3. Admin selects a report to view details. 
+5. Admin can update status (pending, 
+matched, closed). 
+ 
+2. System navigates to “Manage Lost 
+Reports” page  and displays all lost item 
+reports. 
+4. System display the selected lost item 
+report details. 
+6. System update the selected lost item report 
+status. 
+Alternative Flow: - 
+Postcondition: Lost report status is updated. 
+ 
+Table 4.10 Use case of Manage QR Register Request Approval 
+Name of Use Case: Manage QR Register Request Approval 
+Brief Description: This module allows admin verifies claim requests and approves or rejects 
+them. 
+Actors: Admin 
+Precondition: Student must have submitted the QR register request. Admin must be logged 
+in 
+Actor Action System Response 
+1. Admin click on  "Manage QR Requests" 
+button. 
+3. Admin manually verifies student’s identity 
+proof and click approval. 
+5. Admin makes confirm. 
+2. System navigate to “ Manage QR 
+Requests” page and displays all pending 
+approve QR request. 
+4. System prompt a confirmation messages. 
+6. System approval the student QR register 
+request. 
+Alternative Flow:  
+
+--- PAGE 74 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 73 
+A1. Step 5: If admin click no, then go back to Step 2. 
+Postcondition: QR register request status is updated, and student is notified. 
+ 
+Table 4.11 Use case of View Analytics and Reports 
+Name of Use Case: View Analytics and Reports 
+Brief Description: This module allows a dmin to view dashboard statistics and generate 
+reports (e.g., number of lost items, claim success rate). 
+Actors: Admin 
+Precondition: Admin must be logged in 
+Actor Action 
+ 
+System Response 
+1. Admin clicks on "View Report Analytics" 
+button. 
+3. Admin select the graphs or statistics they 
+want to export. 
+ 
+2. System navigates to “View Report 
+Analytics” page then generates and display 
+the graphs and statistics. 
+4. System export the selected as the reports. 
+Alternative Flow: - 
+Postcondition: Reports are displayed or exported. 
+ 
+Table 4.12 Use case of Register RFID Card for Student 
+ 
+Name of Use Case: Register RFID Card for Student 
+Brief Description: The module allows admin to register the RFID card to student. 
+Actors: Admin 
+Precondition: Student must be registered. RFID and RFID writer/reader was prepared. 
+Actor Action System Response 
+1. Admin click on "Register RFID" button. 
+3. Admin select the student id that want to 
+register 
+2. System navigates to “Register RFID” page 
+and display all the available student in list. 
+4. System prompt admin to tap the RFID at 
+the reader. 
+4. System write the data into RFID card and 
+update the data in the system. 
+Alternative Flow: -  
+Postcondition: RFID card ID is saved to student profile. 
+ 
+
+--- PAGE 75 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 74 
+4.2.2 Activity Diagram 
+The activity diagram shows the sequence of actions and decision points that take place within 
+the Qreclaim system. It maps out how processes are carried out step by step, including the flow 
+of activities, the conditions that guide different paths, and the outcomes of each process. In 
+Qreclaim, the activity diagram represents workflows such as reporting a lost item, submitting 
+a found item, verifying a claim, and storing items in lockers. This helps to clearly illustrate how 
+the system operates and how each function progresses from start to finish. The following figures 
+present each activity diagram to illustrate how these processes are executed within the system 
+from start to finish. 
+ 
+Figure 4.3 Activity Diagram for Login 
+
+
+--- PAGE 76 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 75 
+ 
+Figure 4.4 Activity Diagram for Report Lost Item 
+ 
+ 
+
+
+--- PAGE 77 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 76 
+ 
+Figure 4.5 Activity Diagram for Browse Found Item 
+ 
+Figure 4.6 Activity Diagram for Request QR Register Approval 
+
+
+--- PAGE 78 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 77 
+ 
+Figure 4.7 Activity Diagram for Register QR Code for Register QR Code for Claim 
+
+
+--- PAGE 79 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 78 
+ 
+Figure 4.8 Activity Diagram for Claim Item 
+
+
+--- PAGE 80 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 79 
+ 
+Figure 4.9 Activity Diagram for Report Found Item 
+ 
+
+
+--- PAGE 81 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 80 
+ 
+Figure 4.10 Activity Diagram for Manage Found Items 
+
+
+--- PAGE 82 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 81 
+ 
+Figure 4.11 Activity Diagram for Manage Lost Reports 
+ 
+
+
+--- PAGE 83 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 82 
+ 
+Figure 4.12 Activity Diagram for Manage QR Register Request Approval 
+ 
+Figure 4.13 Activity Diagram for View Analytics and Reports 
+
+
+--- PAGE 84 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 83 
+ 
+Figure 4.14 Activity Diagram for Register RFID Card for Student 
+ 
+ 
+  
+
+
+--- PAGE 85 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 84 
+4.3 Data Design 
+The data design of Qreclaim  defines the overall structure and organization of information that 
+supports the system’s operations. It specifies how data is stored, managed, and connected to 
+ensure reliability, accuracy, and efficiency across all processes. Since Qreclaim is built to handle 
+sensitive information such as student details, lost and found item records, and claim verification 
+data, the data design plays a critical role in maintaining data integrity and security. A well -
+planned data design also ensures that different modules of the system, such as item reporting, 
+claim verification, and locker management, can work seamlessly together by relying on a 
+consistent and structured data foundation.  
+ 
+4.3.1 ERD Diagram 
+The Entity Relationship Diagram (ERD) models the logical structure of the Qreclaim database 
+by identifying the main entities, their attributes, and the relationships between them. It provides 
+a clear representation of how data related to users, lost items, found items, claims, and lockers 
+are connected within the system. Through this diagram, the database structure ensures that each 
+process such as reporting a lost item, submitting a found item, or verifying a claim supported 
+by accurate and well -linked data. By organizing information into entities and defining their 
+relationships, the ERD helps maintain data consistency, reduces redundancy, and ensures 
+efficient retrieval of records, which is crucial for the smooth functioning of Qreclaim.  Figure 
+4.15 shows the ERD diagram of Qreclaim system. 
+ 
+
+--- PAGE 86 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 85 
+ 
+Figure 4.15 Qreclaim ERD Diagram 
+ 
+ 
+ 
+  
+
+
+--- PAGE 87 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 86 
+4.3.2 Class Diagram 
+The class diagram represents Qreclaim  from an object -oriented perspective by modeling the 
+system’s main classes, their attributes, methods, and associations. It translates the database 
+structure into objects that interact with one another during system operations. In Qreclaim, the 
+class diagram captures essential components such as users, items, claims, and lockers, along 
+with their relationships and behaviors. This allows developers to understand not only how data 
+is stored but also how it is manipulated within the application. By defining th ese classes and 
+their interactions, the class diagram provides a blueprint for system implementation and ensures 
+that the design remains consistent with the functional requirements. 
+ 
+ 
+Figure 4.16 Qreclaim Class Diagram 
+
+
+--- PAGE 88 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 87 
+4.3.3 Data Dictionary  
+The data dictionary provides a detailed description of the collections and attributes used in the 
+Qreclaim system. Since the system is built on Firestore, a NoSQL document-oriented database, 
+attributes do not require fixed lengths as in relational database s (e.g., varchar (50)). Instead, 
+each field is defined by general data types such as string, number, boolean, or timestamp. The 
+data dictionary documents the key constraints, data types, nullability, and descriptions of each 
+attribute, ensuring clarity and consistency in data management. The following tables(Table 4.13 
+– Table 4.20) show the data dictionary of Qreclaim system. 
+ 
+Table 4.13 user table 
+users 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+ 
+user_id 
+Unique identifier for the user 
+(student/admin). 
+string No 
+ name Full name of the user. string No 
+ 
+email 
+Email address used for login and 
+notifications. 
+string No 
+ password Hashed password for authentication. string No 
+ role Role of the user (student or admin). string No 
+ department Department of the user (for students). string No 
+ 
+rfid_id 
+RFID tag ID associated with the student 
+card. 
+string No 
+ status Current account status (active, inactive). string No 
+ contact_number User’s phone number for communication. string No 
+ 
+  
+
+--- PAGE 89 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 88 
+Table 4.14 lost_items table 
+lost_items 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+PK lost_item_id Unique identifier for the lost item record. string No 
+ 
+reported_by 
+User ID of the student who reported the lost 
+item. 
+string No 
+ lost_item_name Name or title of the lost item. string No 
+ category Category (e.g., electronic, card, stationery). string No 
+ description Detailed description of the lost item. string No 
+ image_url URL of the lost item’s image. string No 
+ tags Keywords/tags for search and matching. string No 
+ place_lost Location where the item was lost. string No 
+ time_lost Date and time when the item was lost. datetime No 
+ 
+is_valuable 
+Indicates if the item is valuable (requires 
+admin review). 
+boolean No 
+ 
+remarks 
+Additional remarks provided by the 
+reporter. 
+string No 
+ status Current status (pending, matched, closed). string No 
+ created_at Timestamp when the record was created. datetime No 
+ 
+ 
+  
+
+--- PAGE 90 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 89 
+Table 4.15 found_items table 
+found_items 
+Key 
+Constraint 
+Attributes Description Data 
+type 
+Nullable 
+PK 
+found_item_id 
+Unique identifier for the found item 
+record. 
+string No 
+ 
+uploaded_by 
+User ID of the admin who uploaded the 
+record. 
+string No 
+ 
+locker_id 
+Locker where the item is stored (nullable 
+if not stored). 
+string Yes 
+ found_item_name Name or title of the found item. string No 
+ 
+category 
+Category (e.g., electronic, card, 
+stationery). 
+string No 
+ description Detailed description of the found item. string No 
+ image_url URL of the found item’s image. string No 
+ tags Keywords/tags for search and matching. string No 
+ place_found Location where the item was found. string No 
+ time_found Date and time when the item was found. datetime No 
+ 
+is_valuable 
+Indicates if the item is valuable (requires 
+admin approval). 
+boolean No 
+ 
+is_assigned_to_locker 
+Whether the item has been placed in a 
+locker. 
+boolean No 
+ remarks Admin’s remarks on the found item. string No 
+ status Current status (available, claimed). string No 
+ created_at Timestamp when the record was created. datetime No 
+ 
+ 
+  
+
+--- PAGE 91 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 90 
+Table 4.16 lockers table 
+lockers 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+PK locker_id Unique identifier for the locker. string No 
+ status Locker status (occupied, empty). string No 
+ location Physical location of the locker. string No 
+ last_updated Timestamp of last update to locker status. string No 
+ 
+Table 4.17 claims table 
+claims 
+Key 
+Constraint 
+Attributes Description Data 
+type 
+Nullable 
+PK, FK claim_id Unique identifier for the claim record. string No 
+ found_item_id ID of the found item being claimed. string No 
+ user_id ID of the user making the claim. string No 
+ 
+face_embedding 
+Face data embedding for identity 
+verification. 
+string No 
+ verification_method Selected verification method (rfid, face). string No 
+ 
+status 
+Claim status ( pending, approved, 
+rejected). 
+string No 
+ 
+qr_token 
+Unique token embedded in generated QR 
+code. 
+string No 
+ qr_image_url URL to the generated QR code image. string No 
+ 
+admin_remarks 
+Remarks added by admin during claim 
+processing. 
+string No 
+ expires_at Expiration date of the claim request. datetime No 
+ approved_by Admin ID who approved the claim. string No 
+ approved_at Date and time when claim was approved. datetime No 
+
+--- PAGE 92 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 91 
+ 
+verified_at 
+Date and time when claim was verified at 
+kiosk. 
+datetime No 
+ 
+ 
+Table 4.18 qr_register_requests table 
+qr_register_requests 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+PK 
+request_id 
+Unique identifier for the QR register 
+request. 
+string No 
+ claim_id ID of the claim linked to this request. string No 
+ user_id ID of the student making the request. string No 
+ student_remarks Optional remarks added by the student. string No 
+ 
+status 
+Request status ( pending, approved, 
+rejected). 
+string No 
+ 
+approved_by 
+Admin ID who approved the request (if 
+applicable). 
+string No 
+ approved_at Date and time when request was approved. datetime No 
+ 
+ 
+  
+
+--- PAGE 93 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 92 
+Table 4.19 notifications table 
+notifications 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+PK notification_id Unique identifier for the notification. string No 
+ found_item_id Related found item ID (if applicable). string Yes 
+ lost_item_id Related lost item ID (if applicable). string Yes 
+ user_id Target user receiving the notification. string No 
+ 
+type 
+Type of notification ( match, 
+reminder, info). 
+string No 
+ message Notification message content. string No 
+ 
+read 
+Whether the notification has been 
+read. 
+boolean No 
+ 
+sent_at 
+Date and time when the notification 
+was sent. 
+datetime  
+ 
+Table 4.20 admin_reviews table 
+admin_reviews 
+Key 
+Constraint 
+Attributes Description Data type Nullable 
+PK 
+review_id 
+Unique identifier for the admin 
+review record. 
+string No 
+ found_item_id ID of the found item under review. string No 
+ 
+reviewed_by 
+Admin user ID who performed the 
+review. 
+string No 
+ 
+review_status 
+Review outcome ( approved, 
+rejected). 
+string No 
+ review_date Date and time of the review. datetime No 
+ 
+notes 
+Additional notes from the admin 
+reviewer. 
+string No 
+
+--- PAGE 94 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 93 
+4.4 Security Design 
+The security design of Qreclaim  establishes the measures and mechanisms needed to protect 
+sensitive data and ensure safe interactions between users and the system. Because the platform 
+manages critical information such as student details, lost -and-found records, and identity 
+verification data, it must be safeguarded against unauthorized access, misuse, and system threats. 
+The design covers multiple layers of security, including access control, authentication, session 
+management, data validation, and logging, as well as specific protectio ns for the kiosk, RFID, 
+facial recognition, and QR-based claim process. By applying these measures, Qreclaim ensures 
+confidentiality, integrity, and availability of information while maintaining user trust and system 
+reliability. 
+4.4.1 Access Control 
+Qreclaim applies to a role-based access control (RBAC) model to ensure users can only perform 
+permitted actions. Students can view their own profile, register QR codes, and submit claims, 
+while administrators have additional permissions to approve valuable claims, manage lockers, 
+and view all records. These permissions are enforced through Firebase security rules, which 
+check the user’s role before allowing read or write operations. This approach follows 
+established RBAC principles, where permissions are ti ed to roles and verified server -side to 
+prevent privilege escalation (Firebase, n.d.; Sandhu et al., 1996). 
+4.4.2 Authentication 
+All users must authenticate via Firebase Authentication before interacting with the system. 
+Students and staff log in with their registered credentials, while administrators use separate 
+privileged accounts to access management features. Firebase Authentication helps ensure only 
+verified users can perform actions, reducing the likelihood of unauthorized data access 
+(Firebase, n.d.-b). 
+4.4.3 Session Management 
+Session tokens generated by Firebase maintain the login state and expire after a fixed period. 
+When a token expires or a user remains inactive for too long, re-authentication is required. This 
+reduces the risk of unauthorized users exploiting an unattended session (Firebase, n.d.-b). 
+4.4.4 QR Token and Claim Security 
+Each claim is associated with a unique QR code containing the claim ID and student ID. The 
+kiosk verifies this code against Firestore before permitting the claim process to continue. Once 
+the QR code is used, its status is updated so it cannot be reused, mitigating replay attacks. Using 
+dynamic, single-use QR codes is a recommended countermeasure against QR code cloning and 
+replay attempts (Hong Kong Computer Emergency Response Team Coordination Centre 
+
+--- PAGE 95 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 94 
+[HKCERT], 2023; Pageloot, 2024). For valuable items, QR code registration is allowed only 
+after administrative approval, ensuring only legitimate owners proceed. 
+4.4.5 Biometric and RFID Security 
+The kiosk supports RFID card scanning and facial recognition for additional verification. The 
+scanned RFID UID or facial data is compared against stored records in Firestore. Only 
+successful matches allow the locker to be unlocked. This multi -step verifica tion prevents 
+unauthorized students from claiming items even if they gain access to a valid QR code. 
+4.4.6 Input Validation 
+Qreclaim validates all user inputs, such as student ID, item information, and claim details, on 
+both the client and server sides. This prevents invalid or malicious data from being written into 
+Firestore and maintains system reliability (OWASP Foundation, 2021). 
+4.4.7 Logging 
+The system records key actions such as QR code generation, claim attempts, verification 
+results, and locker unlocking events. These logs provide administrators with the ability to 
+trace activity, investigate misuse, and resolve disputes when necessary 
+ 
+4.4.8 Kiosk Security 
+The Raspberry Pi kiosk is configured to work only with Qreclaim’s backend. Locker unlocking 
+occurs only after Firestore confirms the claim’s validity. Failed verifications are logged for 
+administrator review, helping detect and prevent misuse at the kiosk level. 
+ 
+4.5 Report Design 
+The report design in Qreclaim focuses on presenting information in a professional, structured, 
+and user-friendly format. Reports serve as an important feature for monitoring claim activities 
+and providing administrators with accurate records of lost -and-found operations. To achieve 
+clarity and readability, the design follows key reporting principles, ensuring that printed reports 
+are both attractive and easy to interpret. 
+ 
+In particular, the report layout considers essential elements such as report headers and footers, 
+page headers and footers, column headings with proper alignment, and the grouping of detail 
+lines to organize related information. These design principles allow reports to highlight important 
+details while maintaining a consistent format across different sections. By following these 
+
+--- PAGE 96 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 95 
+guidelines, Qreclaim ensures that generated reports not only provide accurate data but also 
+support effective decision-making by administrators and clear references for students. 
+ 
+Figure 4.18 presents the on -demand claims report designed for Qreclaim, which demonstrates 
+how these reporting principles are applied in practice. 
+ 
+ 
+ 
+ 
+Figure 4.18 Report Design Table 
+ 
+  
+
+
+--- PAGE 97 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 96 
+4.6 User Interface (UI) Design 
+The user interface (UI) design of Qreclaim provides a clear and user -friendly platform for 
+students and administrators to interact with the system. It focuses on simplicity and ease of use, 
+ensuring that users can perform key tasks such as reporting lost i tems, submitting found items, 
+and verifying claims without confusion. 
+ 
+The interface uses consistent layouts, clear labels, and simple navigation to guide users through 
+each process. Forms, buttons, and feedback messages are designed to be straightforward, helping 
+users’ complete actions efficiently. The design also supports accessibility across different 
+devices, including desktops, laptops, and kiosks. 
+ 
+The following figures show the general layout and design of Qreclaim’s user interface. 
+ 
+A. User Module 
+This page shows the login for both user and admin, they can choose either login as user or admin. 
+ 
+Figure 4.19 Login Page 
+
+
+--- PAGE 98 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 97 
+This page shows the students dashboard(main) page 
+ 
+Figure 4.20 Student Dashboard Page 
+ 
+This page shows the lost item report form for user(student) to report and submit their lost item to 
+admin, once the admin receives the report, they can help to take notes on the lost item. At the same 
+time, after the student posted the report once they are any posted found items in the system got high 
+similarity, then the student will receive the notifications. 
+ 
+Figure 4.21 Report Lost Item Page 
+ 
+ 
+ 
+
+
+--- PAGE 99 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 98 
+This page shows the details information of the found items, the users can also click “Register For QR 
+code ” button to register the QR for claim. 
+ 
+Figure 4.22 Found Item Details Page 
+ 
+This page shows the QR register process when the user want to register the QR for claim, there will 
+be a box pop out for user to choose what is the double verification that want to use. 
+ 
+Figure 4.23 QR Register Page 
+
+
+--- PAGE 100 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 99 
+ 
+Figure 4.24 QR Code History Page 
+B. Admin Module 
+This page shows the post found item form for admin to fill up all the found items details and store them 
+in the system. 
+ 
+Figure 4.25 Report Found Item Page 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 101 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 100 
+This page shows all the lost item reports posted by users for admin to view. Admins are allowed to 
+update the lost item reports status manually once the item is found and view the details of the lost item 
+report. 
+ 
+Figure 4.26 Manage Lost Item Report Page 
+ 
+This page shows all the found items that are posted by admins in the table format to view. Admin are 
+allowed to click on each found item to edit the details. 
+ 
+Figure 4.27 Manage Found Items Page 
+ 
+ 
+ 
+
+
+--- PAGE 102 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 101 
+This page shows the analytics for admin to view the deep details numbered graph or table. 
+ 
+Figure 4.28 Item Analytics Page 
+ 
+This page shows what QR register requested by the user(student) , the admin can decide to approve or 
+reject their request. 
+ 
+Figure 4.29 QR Request Approval Page 
+ 
+  
+
+
+--- PAGE 103 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 102 
+4.7 Chapter Summary and Evaluation 
+This chapter detailed the system design of Qreclaim, translating the requirements gathered earlier 
+into a comprehensive technical blueprint. In total, six designs were developed: software 
+architecture design, process design, data design, security design, report design, and user interface 
+design. Each of th ese was carefully planned to ensure that the system is functional, secure, 
+scalable, and user-friendly. 
+ 
+At the architectural level, Qreclaim adopts a layered three -tier design that separates the 
+presentation, application, and data layers. This modular structure enhances scalability and 
+maintainability while securing communication through a Flask RESTful API. The use of Firebase 
+Firestore as the database allows real-time updates and reliable storage, while features such as AI-
+based tagging, automated item matching, and notifications strengthen the efficiency of the lost -
+and-found process. The design demonstrates foresight by incorporating features that can support 
+future enhancements, such as mobile integration or expanded verification methods. 
+ 
+The functional aspects of the system were expressed through case diagrams, activity diagrams, 
+and detailed descriptions. These models clearly map how students and administrators will interact 
+with the system, from reporting items to verifying claims using QR codes, RFID, and facial 
+recognition. Together, they ensu re that the system addresses the full spectrum of user 
+requirements. While comprehensive, these processes may also introduce a degree of complexity, 
+particularly in the claim verification flow, which could require additional user guidance during 
+deployment. 
+ 
+The data design established a strong foundation by defining the entities, relationships, and 
+attributes required for the system. The inclusion of an ERD, class diagram, and data dictionary 
+ensures consistency and clarity in handling sensitive records such as student details, item reports, 
+and claim information. The choice of a NoSQL database supports flexibility and scalability, 
+though considerations around performance and operational costs will become important as the 
+system grows. 
+ 
+Security design was given significant attention, reflecting the sensitivity of the data being 
+managed. Role -based access control, secure authentication, session management, input 
+validation, and detailed logging were incorporated to protect against unautho rized access or 
+misuse. The multi-layered verification process combining QR codes, RFID, and biometric checks 
+
+--- PAGE 104 ---
+Qreclaim Chapter 4 
+ 
+ 
+BMCS3403 Project I 103 
+offers a high degree of assurance in claim validation. Nonetheless, issues such as biometric data 
+privacy, hardware reliability at kiosks, and compliance with data protection standards will require 
+ongoing vigilance. 
+ 
+The report design contributes to administrative oversight by providing clear, structured 
+summaries of system activity, while the user interface design focuses on accessibility and ease 
+of use. The interfaces for both students and administrators emphasize c larity, consistency, and 
+intuitive navigation, ensuring that the system remains practical even for users with limited 
+technical background. 
+ 
+Overall, the system design of Qreclaim is thorough, well-structured, and aligned with its intended 
+purpose. It demonstrates a balanced integration of functionality, security, and usability, offering 
+clear improvements over traditional lost -and-found practices. Its modular architecture provides  
+room for growth, while AI-driven features and multi-factor verification improve both efficiency 
+and reliability. The main challenges lie in areas such as safeguarding biometric information, 
+maintaining kiosk hardware, and ensuring smooth performance at sc ale. These are not 
+weaknesses of the design itself but practical considerations for implementation. With careful 
+attention to these aspects, Qreclaim has the potential to serve as a reliable and user -friendly 
+solution for automating TAR UMT Johor’s lost-and-found process. 
+ 
+
+--- PAGE 105 ---
+Qreclaim Reference 
+ 
+BMCS3403 Project I 
+Reference 
+1. Bringula, R. P., & Basa, R. S. (2011). Factors affecting faculty web portal usability. 
+Educational Technology & Society, 14(4), 253–265. https://ifets.info/journals/14_4/25.pdf 
+2. Firebase. (2024). Firebase documentation. Google Cloud. https://firebase.google.com/docs 
+3. Ghazal, M., Alkhalil, Y., Ali, S. S., Haneefa, F., & Rashed, E. (2016). Archival and retrieval of 
+lost objects using multi-feature image matching in mobile applications. International Journal 
+of Computing and Digital Systems, 5(1), 129–137. https://doi.org/10.12785/ijcds/050107 
+4. Ilias, N. F. I. M. (2020). A web -based lost and found items system using RFID and email 
+notification [Bachelor’s thesis, UiTM]. 
+https://ir.uitm.edu.my/id/eprint/45937/1/FullText%2045937.pdf 
+5. Ismail, N. K., Wahab, S. A., & Haron, H. (2025). Integrated RFID solution for students entry 
+and exit monitoring system. International Journal of Synergy in Engineering and Technology, 
+6(1), 32–42. 
+6. Li, J., Li, D., Savarese, S., & Yu, S. (2023). BLIP: Bootstrapping language-image pretraining. 
+CVPR 2023. https://arxiv.org/abs/2201.12086 
+7. Malaysia Digital. (2024). Malaysia Government Design System (MYDS) – Overview. 
+https://design.digital.gov.my 
+8. Moran, K. (2019). Usability testing 101. Nielsen Norman Group . 
+https://www.nngroup.com/articles/usability-testing-101/ 
+9. 
+   Nielsen, J. (2024). 10 usability heuristics for user interface design. Nielsen Norman Group. 
+https://www.nngroup.com/articles/ten-usability-heuristics/ 
+10. OnlyTARCianKnow. (n.d.). OnlyTARCianKnow Lost and Found  [Facebook group]. 
+https://www.facebook.com/groups/OnlyTARCianKnow.Lost.and.Found/ 
+11. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., & Sutskever, I. (2021). Learning transferable 
+visual models from natural language supervision. ICML. https://arxiv.org/abs/2103.00020 
+12. Sadiah, S., & Nyambong, A. (2020). FCSIT Lost and Found Management System [Unpublished 
+final project, UNIMAS]. 
+https://ir.unimas.my/id/eprint/34661/1/Sylvia%20Sadiah%20ak%20Andrew%20Nyambong%
+20-%2024%20pgs.pdf 
+13. Shamshur, A., & Nabilah, T. (2016). e-Aduan Lost and Found Item System  [Project report, 
+UTeM]. https://digitalcollection.utem.edu.my/32684/2/e-
+Aduan%20lost%20and%20found%20item.pdf 
+14. Singh, R., & Sharma, R. (2021). Biometric -based security and authentication system using 
+multimodal biometrics: A review. Journal of Biometrics and Bioinformatics, 13(1), 104–112. 
+https://www.omicsonline.org/open-access/biometricbased-security-and-authentication-
+system-using-multimodal-biometrics-a-review-2155-6180-1000104.pdf 
+
+--- PAGE 106 ---
+Qreclaim Reference 
+ 
+BMCS3403 Project I 105 
+15. Suárez-Armas, J., & Caballero -Gil, P. (2017). Access control system based on Raspberry Pi 
+and Android smartphones. Computer Science & Information Technology, 7 (16), 25 –32. 
+https://doi.org/10.5121/csit.2017.71603 
+16. Tan, S. Y., & Chong, C. R. (2024). An effective lost and found system in university campus. 
+Journal of Information System and Technology Management, 8 (32), 99 –112. 
+https://gaexcellence.com/jistm/article/view/2714/2381 
+17. Shivaramakrishnaan, B., & Logesh, B. (2025). Smart campus lost and found portal with IoT 
+sensors. International Journal of Research Publication and Reviews, 6 (3), 6136 –6139. 
+https://ijrpr.com/uploads/V6ISSUE3/IJRPR40493.pdf 
+18. Umo, S. D. (2023). Automated campus lost and found management system (Case study of 
+University of Uyo). https://nairaproject.com/projects/6177-automated-campus-lost-and-found-
+management-system-a-case-study-of-university-of-uyo.html 
+19. Mishra, A., & Alzoubi, Y. I. (2023). Structured software development versus agile software 
+development: A comparative analysis. International Journal of System Assurance Engineering 
+and Management. https://doi.org/10.1007/s13198-023-01958-5 
+20. Rao, D. B. J., Kalpana, P., Kumar, G. S. N., & Atcha, N. M. (2025). A comparative analysis of 
+software development models: Waterfall, Agile and DevOps. In V. S. Reddy, V. K. Prasad, J. 
+Wang, & N. M. R. Dasari (Eds.), Intelligent Systems and Sustainable Com puting (ICISSC 
+2024) (SIST, Vol. 417, pp. 589–599). Springer. https://doi.org/10.1007/978-981-97-8355-7_51 
+21. Almorsy, M., Grundy, J., & Müller, I. (2016). An analysis of the cloud computing security 
+problem. Proceedings of the 2016 Asia -Pacific Software Engineering Conference (APSEC) , 
+45–52. IEEE. https://doi.org/10.1109/APSEC.2016.021 
+22. Avizienis, A., Laprie, J.-C., Randell, B., & Landwehr, C. (2004). Basic concepts and taxonomy 
+of dependable and secure computing. IEEE Transactions on Dependable and Secure 
+Computing, 1(1), 11–33. https://doi.org/10.1109/TDSC.2004.2 
+23. Nielsen, J. (2012). Usability 101: Introduction to usability . Nielsen Norman Group. 
+https://www.nngroup.com/articles/usability-101-introduction-to-usability/ 
+24. Shamala, P., Ahmad, R., & Zolait, A. H. (2017). Information security policies compliance: A 
+perspective for higher education institutions. Journal of Computer Information Systems, 57(3), 
+193–203. https://doi.org/10.1080/08874417.2016.1181494 
+25. Torres, A., Koziolek, A., & Koziolek, H. (2017). Capacity management for availability of 
+distributed software systems. Journal of Systems and Software, 123,  96–113. 
+https://doi.org/10.1016/j.jss.2016.03.004 
+26. GeeksforGeeks. (2024). Incremental Process Model in Software Engineering. Retrieved from 
+https://www.geeksforgeeks.org/software-engineering/software-engineering-incremental-
+process-model 
+
+--- PAGE 107 ---
+Qreclaim Reference 
+ 
+BMCS3403 Project I 106 
+27. Redmon, J., Divvala, S., Girshick, R., & Farhadi, A. (2016). You only look once: Unified, real-
+time object detection. In Proceedings of the IEEE conference on computer vision and pattern 
+recognition (pp. 779–788). IEEE. https://doi.org/10.1109/CVPR.2016.91 
+
+--- PAGE 108 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 
+Appendix 
+Appendix A - Questionnaire Survey 
+Questionnaires Survey Google Form Link: https://docs.google.com/forms/d/e/1FAIpQLSdv-
+tn8HenaDS Fx7KyyZRnsjzY2OJ2VhboP1eVb1eoHGnuGA/viewform 
+ 
+ 
+Appendix 1.1 Google Forms 
+
+
+--- PAGE 109 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 108 
+ 
+Appendix 1.2 Question Template (General) - Q1 
+ 
+Appendix 1.2 Question Template (Student) - Q2 and Q3 
+ 
+ 
+
+
+--- PAGE 110 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 109 
+ 
+Appendix 1.3 Question Template (Student) – Q4 and Q5 
+
+
+--- PAGE 111 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 110 
+ 
+Appendix 1.4 Question Template (Student) – Q6, Q7 and Q8 
+ 
+
+
+--- PAGE 112 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 111 
+ 
+Appendix 1.5 Question Template (Student) – Q9 and Q10 
+ 
+ 
+ 
+Appendix 1.6 Question Template (Student) – Q11 
+ 
+ 
+
+
+--- PAGE 113 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 112 
+ 
+Appendix 1.7 Question Template (Student) – Q12 and Q13 
+ 
+
+
+--- PAGE 114 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 113 
+ 
+Appendix 1.8 Question Template (Student) – Q14 and Q15 
+
+
+--- PAGE 115 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 114 
+ 
+Appendix 1.9 Question Template (Admin) – Q2a 
+ 
+ 
+ 
+Appendix 1.10 Question Template (Admin) – Q3a and Q4a 
+ 
+
+
+--- PAGE 116 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 115 
+ 
+ 
+Appendix 1.11 Question Template (Admin) – Q5a, Q6a and Q7a 
+ 
+
+
+--- PAGE 117 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 116 
+ 
+Appendix 1.12 Question Template (General) – Q15, Q16 and Q17 
+ 
+
+
+--- PAGE 118 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 117 
+ 
+Appendix 1.13 Question Template (General) – Q18 and Q19 
+ 
+ 
+ 
+Appendix 1.14 Question Template (General) – Q20 and Q21 
+  
+
+
+--- PAGE 119 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 118 
+Appendix B - Results of the Questionnaire Survey 
+ 
+ 
+Appendix 2.1 Questionnaire Result (CSV) 
+ 
+Appendix 2.2 Questionnaire Survey Results 
+ 
+
+
+--- PAGE 120 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 119 
+ 
+ 
+Appendix 2.3 Questionnaire Survey Results – Q1 
+ 
+ 
+ 
+Appendix 2.4 Questionnaire Survey Results (Students) – Q2 
+ 
+ 
+ 
+
+
+--- PAGE 121 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 120 
+ 
+Appendix 2.5 Questionnaire Survey Results (Students) – Q3 
+ 
+ 
+ 
+ 
+Appendix 2.6 Questionnaire Survey Results (Students) – Q4 
+ 
+ 
+ 
+
+
+--- PAGE 122 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 121 
+ 
+Appendix 2.7 Questionnaire Survey Results (Students) – Q5 
+ 
+ 
+ 
+Appendix 2.8 Questionnaire Survey Results (Students) – Q6 
+ 
+ 
+
+
+--- PAGE 123 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 122 
+ 
+Appendix 2.9 Questionnaire Survey Results (Students) – Q7 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Appendix 2.10 Questionnaire Survey Results (Students) – Q8 
+ 
+ 
+
+
+--- PAGE 124 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 123 
+ 
+Appendix 2.11 Questionnaire Survey Results (Students) – Q9 
+ 
+ 
+ 
+ 
+Appendix 2.12 Questionnaire Survey Results (Students) – Q10 
+ 
+ 
+
+
+--- PAGE 125 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 124 
+ 
+Appendix 2.13 Questionnaire Survey Results (Students) – Q11 
+ 
+ 
+ 
+Appendix 2.14 Questionnaire Survey Results (Students) – Q12 
+ 
+ 
+ 
+
+
+--- PAGE 126 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 125 
+ 
+Appendix 2.15 Questionnaire Survey Results (Students) – Q13 
+ 
+ 
+ 
+Appendix 2.16 Questionnaire Survey Results (Students) – Q14 
+ 
+ 
+
+
+--- PAGE 127 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 126 
+ 
+Appendix 2.17 Questionnaire Survey Results – Q15 
+ 
+ 
+ 
+Appendix 2.18 Questionnaire Survey Results – Q16 
+ 
+ 
+
+
+--- PAGE 128 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 127 
+ 
+Appendix 2.19 Questionnaire Survey Results – Q17 
+ 
+ 
+ 
+Appendix 2.20 Questionnaire Survey Results (Admins) – Q18 
+ 
+ 
+ 
+
+
+--- PAGE 129 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 128 
+ 
+Appendix 2.21 Questionnaire Survey Results (Admins) – Q19 
+ 
+ 
+ 
+ 
+Appendix 2.22 Questionnaire Survey Results (Admins) – Q5a 
+ 
+ 
+ 
+
+
+--- PAGE 130 ---
+Qreclaim Appendix 
+ 
+BMCS3403 Project I 129 
+ 
+Appendix 2.23 Questionnaire Survey Results (Admins) – Q6a 
+ 
+ 
+ 
+ 
+Appendix 2.24 Questionnaire Survey Results (Admins) – Q7a 
+ 
+

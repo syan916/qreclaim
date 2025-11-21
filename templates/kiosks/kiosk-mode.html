@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobile-first PWA viewport for responsive layout -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <title>QReclaim - Kiosk Mode</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kiosk-mode.css') }}">
+    <!-- Shared scanner frame styles (mobile-first, high-contrast) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scanner-frame.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- HTML5 QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <!-- Face-API.js for face recognition -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+</head>
+<body>
+ 
+    
+    <main class="kiosk-container" role="main" id="main-content">
+        <!-- Header -->
+        <div class="kiosk-header">
+            <i class="fas fa-qrcode" aria-hidden="true"></i>
+            <h1>QReclaim Kiosk</h1>
+        </div>
+
+        <!-- Main Body -->
+        <section class="kiosk-body" aria-label="Kiosk scanner">
+            <!-- Step Indicator -->
+            <div class="step-indicator" id="step-indicator">
+                <div class="step active" id="step-1">
+                    <span class="step-number">1</span>
+                    <span>Scan QR Code</span>
+                </div>
+                <div class="step" id="step-2">
+                    <span class="step-number">2</span>
+                    <span>Verify Identity</span>
+                </div>
+                <div class="step" id="step-3">
+                    <span class="step-number">3</span>
+                    <span>Collect Item</span>
+                </div>
+            </div>
+
+            <!-- Instructions Panel -->
+            <div class="instructions-panel" id="instructions-panel">
+                <div class="instructions-title">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <span id="instructions-title">How to Use This Kiosk</span>
+                </div>
+                <ul class="instructions-list" id="instructions-list">
+                    <li>Position your <strong>QR code</strong> within the scanner frame</li>
+                    <li>Keep your phone steady until the code is recognized</li>
+                    <li>Follow the on-screen prompts for identity verification</li>
+                    <li>Wait for the locker to open automatically</li>
+                    <li>Collect your item and close the locker door</li>
+                </ul>
+            </div>
+
+            <!-- QR Code Reader -->
+            <div id="qr-reader">
+                <!-- QR Scanner Overlay -->
+                <div class="qr-scanner-overlay">
+                    <div class="qr-scanner-frame">
+                        <div class="qr-scanner-corner top-left"></div>
+                        <div class="qr-scanner-corner top-right"></div>
+                        <div class="qr-scanner-corner bottom-left"></div>
+                        <div class="qr-scanner-corner bottom-right"></div>
+                        <div class="qr-scanner-line"></div>
+                    </div>
+                    <div class="qr-scanner-status" id="qr-scanner-status">Position QR code within the frame</div>
+                    <div class="qr-scanner-success" id="qr-scanner-success">
+                        <div class="success-checkmark"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Card -->
+            <div id="status-card" class="status-card">
+                <!-- Status icon container: child <i> will be injected by kioskApp.js -->
+                <div id="status-icon" class="status-icon"></div>
+                <h2 id="status-title" class="status-title">Initializing...</h2>
+                <p id="status-message" class="status-message">Please wait while we set up the kiosk.</p>
+                <div id="progress-bar" class="progress-bar hidden">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Manual Controls (always available) -->
+            <div id="kiosk-controls" class="kiosk-controls" aria-label="Kiosk controls">
+                <button id="restart-scanner-btn" class="btn btn-secondary" aria-label="Restart scanner">Restart Scanner</button>
+            </div>
+
+            <!-- Claim Information -->
+            <div id="claim-info" class="claim-info hidden"></div>
+
+            <!-- Video Container for Face Verification -->
+            <div id="video-container" class="video-container hidden" aria-label="Face verification camera">
+                <video id="verification-video" autoplay muted playsinline></video>
+                <canvas id="verification-canvas"></canvas>
+                <!-- Face scanner overlay with enlarged, centered frame -->
+                <div id="face-scanner-overlay" class="face-scanner-overlay">
+                    <!-- Square face scanner frame variant for kiosk mode -->
+                    <div class="face-scanner-frame square" aria-label="Face scanner frame (square)">
+                        <div class="frame-corner top-left"></div>
+                        <div class="frame-corner top-right"></div>
+                        <div class="frame-corner bottom-left"></div>
+                        <div class="frame-corner bottom-right"></div>
+                        <!-- 1:1 aspect ratio indicator -->
+                        <div class="aspect-ratio-indicator" id="aspect-ratio-indicator">1:1</div>
+                    </div>
+                    <!-- Instruction bubble moved to a separate text zone to avoid overlaying the face -->
+                </div>
+            </div>
+
+            <!-- Dedicated instruction and feedback zone (separate from scanning region) -->
+            <div id="face-instruction-zone" class="face-instruction-zone hidden" aria-live="polite" aria-atomic="true">
+                <div class="face-instruction-text" id="face-instruction-text">Center your face within the blue frame</div>
+                <div class="face-feedback" id="face-feedback" role="status" aria-label="Real-time face scanning feedback">
+                    <div class="feedback-item" id="feedback-alignment">
+                        <span class="icon" aria-hidden="true">📐</span>
+                        <span class="label">Alignment</span>
+                        <span class="value" id="feedback-alignment-value">–</span>
+                    </div>
+                    <div class="feedback-item" id="feedback-brightness">
+                        <span class="icon" aria-hidden="true">💡</span>
+                        <span class="label">Lighting</span>
+                        <span class="value" id="feedback-brightness-value">–</span>
+                    </div>
+                    <div class="feedback-item" id="feedback-sharpness">
+                        <span class="icon" aria-hidden="true">🔪</span>
+                        <span class="label">Sharpness</span>
+                        <span class="value" id="feedback-sharpness-value">–</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Help Button -->
+        <button class="help-button" id="help-button" aria-label="Get help and instructions">
+            <i class="fas fa-question" aria-hidden="true"></i>
+        </button>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay hidden" id="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-title" id="loading-title">Processing...</div>
+                <div class="loading-message" id="loading-message">Please wait while we process your request.</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dev-only Firebase Config Helper -->
+    <div id="firebase-config-helper" class="config-helper hidden" role="dialog" aria-label="Firebase config helper">
+        <h3><i class="fas fa-wrench" aria-hidden="true"></i> Development: Paste Firebase Web Config</h3>
+        <p>Paste the Firebase web app configuration JSON from your Firebase Console. It will be saved locally to <code>config/firebase_web_config.json</code> and used on reload. This helper is only visible in debug mode.</p>
+        <textarea id="firebase-config-input" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"...","storageBucket":"..."}'></textarea>
+        <div class="actions">
+            <button id="save-firebase-config" class="btn-primary">Save & Reload</button>
+            <button id="close-config-helper" class="btn-secondary">Close</button>
+        </div>
+        <p id="firebase-config-error" class="text-red-600" style="display:none"></p>
+    </div>
+
+
+    <!-- Kiosk Initialization -->
+    <script>
+        // Firebase Configuration (injected from Flask)
+        const firebaseConfig = {{ (firebase_config or {}) | tojson | safe }};
+        const useFirestoreEmulator = {{ use_firestore_emulator | tojson | safe }};
+        const firestoreEmulatorConfig = {{ firestore_emulator_config | tojson | safe }};
+        const isDebug = {{ is_debug | tojson | safe }};
+
+        // Initialize Firebase if config is present, otherwise show a helpful message
+        try {
+            if (!firebaseConfig || !firebaseConfig.apiKey) {
+                console.warn('Firebase web config missing. Kiosk will operate in offline mode (Firestore features disabled).');
+                // Show dev-only helper to paste config
+                if (isDebug) {
+                    const helper = document.getElementById('firebase-config-helper');
+                    if (helper) helper.classList.remove('hidden');
+                }
+            } else {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+
+                // Optionally connect to Firestore emulator in development
+                try {
+                    if (useFirestoreEmulator && firebase.firestore) {
+                        const host = firestoreEmulatorConfig && firestoreEmulatorConfig.host || 'localhost';
+                        const port = firestoreEmulatorConfig && firestoreEmulatorConfig.port || 8080;
+                        // Prefer the useEmulator API if available, otherwise set settings
+                        if (typeof firebase.firestore().useEmulator === 'function') {
+                            firebase.firestore().useEmulator(host, port);
+                        } else {
+                            firebase.firestore().settings({ host: host + ':' + port, ssl: false });
+                        }
+                        console.log(`Connected to Firestore emulator at ${host}:${port}`);
+                    }
+                } catch (emErr) {
+                    console.warn('Firestore emulator configuration failed:', emErr);
+                }
+            }
+        } catch (e) {
+            console.error('Error initializing Firebase:', e);
+        }
+    </script>
+
+    <!-- Kiosk Modules -->
+    <!-- Adaptive brightness controller must be loaded BEFORE qrScanner/faceVerifier -->
+    <script src="{{ url_for('static', filename='js/kiosk/adaptiveBrightness.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/firebaseService.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/qrScanner.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/faceVerifier.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/rfidVerifier.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/lockerController.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/kioskInit.js') }}"></script>
+    <!-- MediaPipe FaceMesh-based auto-capture helper to match registration preprocessing -->
+    <script src="{{ url_for('static', filename='js/face-capture.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/kiosk/kioskApp.js') }}"></script>
+</body>
+</html>

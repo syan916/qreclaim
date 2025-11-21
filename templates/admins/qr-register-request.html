@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobile-first PWA viewport for responsive layouts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - QR Register Requests</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <!-- Reuse Manage Lost Item Reports styles to ensure consistent table look-and-feel -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage-lost-item-report.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/qr-register-request.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>QR Register Requests</h1>
+                <p>Approve or reject student requests to register QR codes for valuable items</p>
+            </div>
+
+            <div class="qr-requests">
+                <!-- Filters -->
+                <div class="search-filter-section">
+                    <div class="search-filter-row">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search by item or student name...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="filter-group">
+                            <select id="statusFilter" class="filter-select">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="all">All</option>
+                            </select>
+                            <button id="refreshBtn" class="clear-filters-btn">
+                                <i class="fas fa-rotate"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div id="resultsMessageBox" class="results-message-box" style="display: none;">
+                    <div class="results-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="resultsCount">0 requests</span>
+                        <span id="filterSummary"></span>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                    <div class="table-section">
+                    <div class="table-header" aria-live="polite">
+                        <h2 class="table-title">Valuable Item Claims</h2>
+                        <div class="items-count" id="itemsCount">Loading...</div>
+                        <div class="batch-actions" style="margin-top:10px;">
+                            <button id="approveSelectedBtn" class="btn-approve" disabled>
+                                <i class="fas fa-check"></i> Approve Selected
+                            </button>
+                            <button id="rejectSelectedBtn" class="btn-reject" disabled>
+                                <i class="fas fa-times"></i> Reject Selected
+                            </button>
+                            <span class="selected-count" id="selectedCountLabel" aria-live="polite">0 selected</span>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="position: relative;">
+                        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                        </div>
+
+                        <table class="lost-reports-table" aria-describedby="itemsCount">
+                            <thead>
+                                <tr>
+                                    <th class="select-col" scope="col">
+                                        <input type="checkbox" id="selectAllCheckbox" aria-label="Select all rows">
+                                    </th>
+                                    <th class="sortable" data-sort="item_name" scope="col" tabindex="0">Item <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="category" scope="col" tabindex="0">Category <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="place_found" scope="col" tabindex="0">Found Location <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="time_found" scope="col" tabindex="0">Found Time <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="student_name" scope="col" tabindex="0">Student <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="student_remarks" scope="col" tabindex="0">Remarks <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th class="sortable" data-sort="status" scope="col" tabindex="0">Status <span class="sort-indicator" aria-hidden="true"></span></th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qrRequestsTableBody">
+                                <tr>
+                                    <td colspan="8" class="empty-state">
+                                        <div>
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <h3>Loading requests...</h3>
+                                            <p>Please wait while we fetch the data</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-section">
+                        <div class="pagination-info" id="paginationInfo">Showing 0-0 of 0</div>
+                        <div class="pagination-controls" id="paginationControls"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/qr-register-request.js') }}"></script>
+
+    <!-- Admin Remarks Modal -->
+    <div id="adminRemarksModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="adminRemarksTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="adminRemarksTitle">Admin Remarks</h3>
+            </div>
+            <div class="modal-body">
+                <p class="field-hint">Please provide remarks for this action. Remarks are required for rejection, optional for approval.</p>
+                <textarea id="adminRemarksInput" class="remarks-textarea" placeholder="Type your remarks here..." maxlength="500" aria-describedby="remarksHint"></textarea>
+                <div id="remarksHint" class="field-hint">Max 500 characters.</div>
+                <div id="remarksError" class="error-text" role="alert">Remarks are required for rejection.</div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelRemarksBtn" class="btn-secondary">Cancel</button>
+                <button id="continueRemarksBtn" class="btn-approve">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmActionModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirmActionTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmActionTitle">Confirm Action</h3>
+            </div>
+            <div class="modal-body" id="confirmActionBody">
+                <!-- Filled dynamically -->
+            </div>
+            <div class="modal-actions">
+                <button id="cancelConfirmBtn" class="btn-secondary">Cancel</button>
+                <button id="proceedConfirmBtn" class="btn-approve">Proceed</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    {% include 'partials/admin-msg-box.html' %}

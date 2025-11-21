@@ -1,0 +1,431 @@
+/**
+ * QReclaim Tab System Styles
+ * Responsive, accessible tab component with smooth animations
+ * Compatible with existing theme and carousel indicator patterns
+ */
+
+/* Base Tab Container */
+.tab-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color, #e1e8ed);
+    padding-bottom: 0;
+}
+
+/* Individual Tab Indicators */
+.tab-indicator {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #6c757d);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 8px 8px 0 0;
+    outline: none;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+/* Tab Hover State */
+.tab-indicator:hover {
+    color: var(--primary-color, #3498db);
+    background-color: rgba(52, 152, 219, 0.05);
+    transform: translateY(-1px);
+}
+
+/* Tab Focus State for Accessibility */
+.tab-indicator:focus {
+    outline: 2px solid var(--primary-color, #3498db);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Active Tab State */
+.tab-indicator.active {
+    color: var(--primary-color, #3498db);
+    background-color: var(--background-color, #ffffff);
+    font-weight: 600;
+    border-bottom: 3px solid var(--primary-color, #3498db);
+    transform: translateY(1px);
+}
+
+/* Active Tab with Primary Background */
+.tab-indicator.active.primary-style {
+    background-color: var(--primary-color, #3498db);
+    color: white;
+    border-bottom-color: var(--primary-dark, #2980b9);
+}
+
+/* Tab Content Panels */
+.tab-content {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    padding: 1.5rem 0;
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Active Tab Content */
+.tab-content.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Tab Content Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Alternative Tab Styles - Pills */
+.tab-navigation.pills {
+    border-bottom: none;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.tab-navigation.pills .tab-indicator {
+    border-radius: 25px;
+    background-color: var(--light-background, #f8f9fa);
+    border: 1px solid var(--border-color, #e1e8ed);
+    transition: all 0.2s ease;
+}
+
+.tab-navigation.pills .tab-indicator:hover {
+    background-color: var(--hover-background, #e9ecef);
+    border-color: var(--primary-color, #3498db);
+}
+
+.tab-navigation.pills .tab-indicator.active {
+    background-color: var(--primary-color, #3498db);
+    color: white;
+    border-color: var(--primary-color, #3498db);
+    transform: scale(1.05);
+}
+
+/* Vertical Tab Layout */
+.tab-container.vertical {
+    display: flex;
+    gap: 2rem;
+}
+
+.tab-container.vertical .tab-navigation {
+    flex-direction: column;
+    border-bottom: none;
+    border-right: 2px solid var(--border-color, #e1e8ed);
+    min-width: 200px;
+    margin-bottom: 0;
+}
+
+.tab-container.vertical .tab-indicator {
+    border-radius: 0;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border-right: 3px solid transparent;
+    margin-bottom: 2px;
+}
+
+.tab-container.vertical .tab-indicator.active {
+    border-right-color: var(--primary-color, #3498db);
+    border-bottom: none;
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.tab-container.vertical .tab-content-wrapper {
+    flex: 1;
+    padding-left: 1rem;
+}
+
+/* Compact Tab Style */
+.tab-navigation.compact {
+    gap: 1px;
+    margin-bottom: 1rem;
+}
+
+.tab-navigation.compact .tab-indicator {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px 6px 0 0;
+}
+
+/* Icon Tabs */
+.tab-indicator .tab-icon {
+    margin-right: 0.5rem;
+    font-size: 1.1em;
+    vertical-align: middle;
+}
+
+.tab-indicator .tab-badge {
+    margin-left: 0.5rem;
+    background-color: var(--secondary-color, #6c757d);
+    color: white;
+    border-radius: 10px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tab-indicator.active .tab-badge {
+    background-color: var(--primary-color, #3498db);
+}
+
+/* Loading State */
+.tab-content.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.tab-content.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.tab-content.loading::after {
+    content: '\f110';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: var(--primary-color, #3498db);
+    animation: fa-spin 1s infinite linear;
+    z-index: 11;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tab-navigation {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 1px;
+    }
+    
+    .tab-navigation::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab-indicator {
+        min-width: 120px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .tab-container.vertical {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .tab-container.vertical .tab-navigation {
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color, #e1e8ed);
+        min-width: auto;
+        overflow-x: auto;
+    }
+    
+    .tab-container.vertical .tab-indicator {
+        border-radius: 8px 8px 0 0;
+        border-right: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: 0;
+        margin-right: 2px;
+    }
+    
+    .tab-container.vertical .tab-indicator.active {
+        border-bottom-color: var(--primary-color, #3498db);
+        border-right: none;
+    }
+    
+    .tab-container.vertical .tab-content-wrapper {
+        padding-left: 0;
+        padding-top: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-indicator {
+        min-width: 100px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .tab-indicator .tab-icon {
+        margin-right: 0.3rem;
+        font-size: 1em;
+    }
+    
+    .tab-indicator .tab-badge {
+        margin-left: 0.3rem;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .tab-indicator {
+        border: 2px solid transparent;
+    }
+    
+    .tab-indicator.active {
+        border: 2px solid currentColor;
+    }
+    
+    .tab-indicator:focus {
+        outline: 3px solid currentColor;
+        outline-offset: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .tab-indicator,
+    .tab-content {
+        transition: none;
+        animation: none;
+    }
+    
+    .tab-indicator:hover {
+        transform: none;
+    }
+    
+    .tab-navigation.pills .tab-indicator.active {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .tab-indicator {
+        color: var(--text-secondary-dark, #adb5bd);
+    }
+    
+    .tab-indicator:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: var(--primary-color-dark, #5dade2);
+    }
+    
+    .tab-indicator.active {
+        color: var(--primary-color-dark, #5dade2);
+        background-color: var(--background-color-dark, #2c3e50);
+    }
+    
+    .tab-navigation {
+        border-bottom-color: var(--border-color-dark, #34495e);
+    }
+    
+    .tab-navigation.pills .tab-indicator {
+        background-color: var(--light-background-dark, #34495e);
+        border-color: var(--border-color-dark, #4a5f7a);
+    }
+    
+    .tab-navigation.pills .tab-indicator.active {
+        background-color: var(--primary-color-dark, #5dade2);
+        color: white;
+    }
+}
+
+/* Theme Integration - Coffee Palette */
+.tab-indicator.active.coffee-theme {
+    color: var(--coffee-primary, #8b4513);
+    border-bottom-color: var(--coffee-primary, #8b4513);
+}
+
+.tab-indicator.active.coffee-theme.primary-style {
+    background-color: var(--coffee-primary, #8b4513);
+    color: white;
+    border-bottom-color: var(--coffee-dark, #654321);
+}
+
+.tab-navigation.pills .tab-indicator.active.coffee-theme {
+    background-color: var(--coffee-primary, #8b4513);
+    border-color: var(--coffee-primary, #8b4513);
+}
+
+/* Integration with existing carousel indicators */
+.carousel-indicators .indicator {
+    transition: all 0.3s ease;
+}
+
+.carousel-indicators .indicator.active {
+    transform: scale(1.2);
+    background-color: var(--primary-color, #3498db);
+}
+
+/* Utility Classes */
+.tab-hidden {
+    display: none !important;
+}
+
+.tab-fade-in {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.tab-slide-left {
+    animation: slideInLeft 0.3s ease forwards;
+}
+
+.tab-slide-right {
+    animation: slideInRight 0.3s ease forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

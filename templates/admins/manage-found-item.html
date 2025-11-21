@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Manage Found Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage-found-item.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Manage Found Items</h1>
+                <p>View and manage all found items in the system</p>
+            </div>
+            
+            <div class="manage-found-items">
+                <!-- Search and Filter Section -->
+                <div class="search-filter-section">
+                    <div class="search-filter-row">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search by item name, description, tags, or location...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="filter-group">
+                            <select id="categoryFilter" class="filter-select">
+                                <option value="">All Categories</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="unclaimed">Unclaimed</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="returned">Returned</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="donated">Donated</option>
+                                <option value="discarded">Discarded</option>
+                            </select>
+                            <select id="locationFilter" class="filter-select">
+                                <option value="">All Locations</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <button id="clearFiltersBtn" class="clear-filters-btn">
+                                <i class="fas fa-times"></i> Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Count Message Box -->
+                <div id="resultsMessageBox" class="results-message-box" style="display: none;">
+                    <div class="results-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="resultsCount">0 items found</span>
+                        <span id="filterSummary"></span>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="table-title">Found Items</h2>
+                        <div class="items-count" id="itemsCount">Loading...</div>
+                    </div>
+                    
+                    <div class="table-container" style="position: relative;">
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        
+                        <table class="found-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th class="sortable" data-sort="found_item_name">
+                                        Item Name
+                                    </th>
+                                    <th class="sortable" data-sort="category">
+                                        Category
+                                    </th>
+                                    <th class="sortable" data-sort="place_found">
+                                        Location Found
+                                    </th>
+                                    <th class="sortable" data-sort="time_found">
+                                        Time Found
+                                    </th>
+                                    <th class="sortable" data-sort="storage_duration">
+                                        Storage Duration (Days)
+                                    </th>
+                                    <th class="sortable" data-sort="status">
+                                        Status
+                                    </th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="foundItemsTableBody">
+                                <!-- Table rows will be populated dynamically -->
+                                <tr>
+                                    <td colspan="8" class="loading-state">
+                                        <div class="loading-container">
+                                            <div class="loading-spinner">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <div class="loading-content">
+                                                <h3>Loading found items...</h3>
+                                                <p>Please wait while we fetch the data</p>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill"></div>
+                                                </div>
+                                                <span class="loading-text">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Section -->
+                    <div class="pagination-section">
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing 0-0 of 0 items
+                        </div>
+                        <div class="pagination-controls" id="paginationControls">
+                            <!-- Pagination buttons will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Review Modal -->
+    <div id="adminReviewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="adminReviewModalTitle">Admin Review - Item Title</h2>
+                <span class="close" onclick="closeAdminReviewModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="item-info-section">
+                    <div class="item-header">
+                        <h3>Item Details</h3>
+                    </div>
+                    
+                    <div class="item-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Item ID:</span>
+                            <span id="reviewItemId" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Item Name:</span>
+                            <span id="reviewItemName" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span id="reviewItemCategory" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Current Status:</span>
+                            <span id="reviewCurrentStatus" class="detail-value status-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Is Valuable:</span>
+                            <span id="reviewItemValuable" class="detail-value valuable-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Locker Assignment:</span>
+                            <span id="reviewItemLocker" class="detail-value locker-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Found Date:</span>
+                            <span id="reviewFoundDate" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <form id="adminReviewForm" onsubmit="event.preventDefault(); submitAdminReview();">
+                        <input type="hidden" id="reviewFoundItemId" name="found_item_id">
+                        
+                        <div class="form-group">
+                            <label for="reviewStatus">Review Status:</label>
+                            <select id="reviewStatus" name="review_status" required>
+                                <option value="">Select Status</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="donated">Donated</option>
+                                <option value="discarded">Discarded</option>
+                                <option value="returned">Returned</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewNotes">Notes/Remarks:</label>
+                            <textarea id="reviewNotes" name="notes" rows="3" placeholder="Enter review notes and remarks..." required></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeAdminReviewModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="statusUpdateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="statusModalTitle">Update Status</h2>
+                <span class="close" onclick="closeStatusUpdateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="item-info-section">
+                    <div class="item-header">
+                        <h3>Item Details</h3>
+                    </div>
+                    
+                    <div class="item-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Item ID:</span>
+                            <span id="statusItemId" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Item Name:</span>
+                            <span id="statusItemName" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span id="statusItemCategory" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Current Status:</span>
+                            <span id="statusCurrentStatus" class="detail-value status-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Is Valuable:</span>
+                            <span id="statusIsValuable" class="detail-value valuable-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Locker Assignment:</span>
+                            <span id="statusLockerAssignment" class="detail-value locker-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item" id="lockerIdSection" style="display: none;">
+                            <span class="detail-label">Locker ID:</span>
+                            <span id="statusLockerId" class="detail-value locker-id">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Found Date:</span>
+                            <span id="statusFoundDate" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <form id="statusUpdateForm" onsubmit="event.preventDefault(); submitStatusUpdate();">
+                        <input type="hidden" id="statusFoundItemId" name="found_item_id">
+                        
+                        <div class="form-group">
+                            <label for="newStatus">New Status:</label>
+                            <select id="newStatus" name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="returned">Returned</option>
+                                <option value="donated">Donated</option>
+                                <option value="discarded">Discarded</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeStatusUpdateModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Update Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/manage-found-item.js') }}"></script>
+</body>
+</html>
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}

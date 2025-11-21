@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Scan QR Code</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Scan QR Code</h1>
+                <p>Scan QR codes for item verification and management</p>
+            </div>
+            
+            <div class="content-container">
+                <!-- Action cards: Start Manual Scan and Start Kiosk Scan -->
+                <section class="scan-actions" aria-label="Scan action choices">
+                    <!-- Manual Scan Card -->
+                    <article class="action-card manual" role="region" aria-labelledby="manual-scan-title">
+                        <div class="action-icon" aria-hidden="true"><i class="fas fa-camera"></i></div>
+                        <h2 id="manual-scan-title">Start Manual Scan</h2>
+                        <p class="action-desc">Use the device camera to scan a QR code directly from this page.</p>
+                        <button id="btnManualScan" class="action-btn primary" type="button">Start Manual Scan</button>
+                    </article>
+
+                    <!-- Kiosk Scan Card -->
+                    <article class="action-card kiosk" role="region" aria-labelledby="kiosk-scan-title">
+                        <div class="action-icon" aria-hidden="true"><i class="fas fa-computer"></i></div>
+                        <h2 id="kiosk-scan-title">Start Kiosk Scan</h2>
+                        <p class="action-desc">Launch the dedicated Kiosk Mode in a new window for scanning at physical kiosks.</p>
+                        <button id="btnKioskScan" class="action-btn" type="button">Start Kiosk Scan</button>
+                    </article>
+                </section>
+
+                <!-- Manual scanner area (hidden until activated) -->
+                <section id="manualScannerSection" class="manual-scanner hidden" aria-label="Manual scanner">
+                    <div class="scanner-header">
+                        <h3>Manual Scanner</h3>
+                        <button id="btnCloseScanner" type="button" class="close-btn" aria-label="Close manual scanner">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="scanner-body">
+                        <!-- Video preview for camera stream -->
+                        <video id="scannerVideo" autoplay playsinline class="scanner-video"></video>
+                        <!-- Canvas used to grab frames for decoding -->
+                        <canvas id="scannerCanvas" class="scanner-canvas" hidden></canvas>
+                    </div>
+                    <div id="scannerStatus" class="scanner-status">Camera starting...</div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page-specific styles scoped to the scan actions; responsive/mobile-first -->
+    <style>
+        /* Responsive grid for action cards */
+        .scan-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+
+        /* Action card styling using admin theme tokens */
+        .action-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow-sm);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        }
+        .action-card:hover { transform: translateY(-2px); box-shadow: var(--box-shadow-lg); }
+
+        .action-icon { font-size: 1.75rem; color: var(--primary-color); }
+        .action-card.manual .action-icon { color: var(--info-color); }
+        .action-card.kiosk .action-icon { color: var(--primary-color); }
+
+        .action-desc { color: var(--gray-600); }
+
+        /* Buttons */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .action-btn:hover { background-color: var(--primary-dark); box-shadow: var(--box-shadow); }
+        .action-btn.primary { background: linear-gradient(to right, var(--info-light), var(--info-color)); }
+
+        /* Manual scanner section */
+        .manual-scanner { 
+            margin-top: var(--spacing-xl);
+            background: #fff; border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow-sm);
+        }
+        .manual-scanner.hidden { display: none; }
+        .scanner-header { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--gray-200); }
+        .scanner-body { display: grid; grid-template-columns: 1fr; gap: var(--spacing-md); padding: var(--spacing-lg); }
+        .scanner-video { width: 100%; max-height: 50vh; border-radius: var(--border-radius); background: var(--gray-100); }
+        .scanner-status { padding: 0 var(--spacing-lg) var(--spacing-lg); color: var(--gray-600); }
+        .close-btn { background: none; border: none; cursor: pointer; color: var(--gray-600); font-size: 1.25rem; }
+
+        @media (min-width: 768px) {
+            .scanner-body { grid-template-columns: 2fr 1fr; align-items: start; }
+        }
+    </style>
+
+    <!-- Lightweight QR decoder: jsQR via CDN for manual scan; loaded only on this page -->
+    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script>
+        // Handle "Start Kiosk Scan": open kiosk mode in a new window (per requirement)
+        document.getElementById('btnKioskScan').addEventListener('click', function () {
+            // Use Flask url_for to get the correct route to kiosk-mode
+            const kioskUrl = "{{ url_for('kiosk_mode') }}"; // opens templates/kiosks/kiosk-mode.html
+            // Open in a new tab/window; noopener for security
+            window.open(kioskUrl, '_blank', 'noopener');
+        });
+
+        // Basic manual scanner implementation using the device camera and jsQR
+        // Note: This is a minimal implementation to meet the "Start Manual Scan" requirement
+        //       and can be extended with result handling and validation as needed.
+        const manualScannerSection = document.getElementById('manualScannerSection');
+        const videoEl = document.getElementById('scannerVideo');
+        const canvasEl = document.getElementById('scannerCanvas');
+        const statusEl = document.getElementById('scannerStatus');
+        const closeBtn = document.getElementById('btnCloseScanner');
+
+        let stream = null;
+        let scanInterval = null;
+
+        async function startManualScanner() {
+            // Show the scanner UI
+            manualScannerSection.classList.remove('hidden');
+            statusEl.textContent = 'Requesting camera access...';
+
+            try {
+                // Prefer rear camera on mobile, fallback to any camera
+                const constraints = { video: { facingMode: { ideal: 'environment' } } };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = stream;
+                await videoEl.play();
+
+                statusEl.textContent = 'Scanning for QR codes...';
+
+                const ctx = canvasEl.getContext('2d');
+                // Poll frames at ~10fps to balance performance and accuracy
+                scanInterval = setInterval(() => {
+                    if (videoEl.readyState !== HTMLMediaElement.HAVE_ENOUGH_DATA) return;
+                    canvasEl.width = videoEl.videoWidth;
+                    canvasEl.height = videoEl.videoHeight;
+                    ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+                    const imageData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+                    const code = jsQR(imageData.data, canvasEl.width, canvasEl.height, { inversionAttempts: 'dontInvert' });
+                    if (code && code.data) {
+                        // Notify and stop scanning once a code is found
+                        statusEl.textContent = 'QR detected: ' + code.data;
+                        stopManualScanner();
+                        // TODO: Integrate with backend verification or navigation logic
+                        // Example: window.location.href = `/admin/verify-qr?code=${encodeURIComponent(code.data)}`;
+                    }
+                }, 100);
+            } catch (err) {
+                console.error('Camera error:', err);
+                statusEl.textContent = 'Failed to access camera. Please check permissions and try again.';
+            }
+        }
+
+        function stopManualScanner() {
+            if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+            if (stream) {
+                // Stop all tracks to release camera
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+            // Keep UI open but indicate stopped, or hide as preferred
+            statusEl.textContent += ' — Scanner stopped.';
+        }
+
+        document.getElementById('btnManualScan').addEventListener('click', () => {
+            // Start the manual scanner when clicked
+            startManualScanner();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            stopManualScanner();
+            manualScannerSection.classList.add('hidden');
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobile-first viewport for PWA responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Claim History • QReclaim</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap (align with other user pages) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-footer.css') }}">
+
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/claim-history.css') }}">
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header (must be included as requested) -->
+    {% include 'partials/user-header.html' %}
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header py-4" data-aos="fade-down">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title mb-2"><i class="fas fa-history me-2"></i> My Claim History</h1>
+                        <p class="page-subtitle mb-0">Track your item claims from the last 7 days and manage their status</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Claim History</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls and Stats -->
+        <section class="py-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="container">
+                <div class="controls-row d-flex flex-wrap gap-3 align-items-center justify-content-between">
+                    <!-- Filters -->
+                    <div class="filter-controls d-flex flex-wrap gap-3" aria-label="Claim filters">
+                        <div class="filter-group">
+                            <label for="statusFilter" class="form-label mb-0">Status</label>
+                            <select id="statusFilter" class="form-select form-select-sm">
+                                <option value="all">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="completed">Completed</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="expired">Expired</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sortOrder" class="form-label mb-0">Sort</label>
+                            <select id="sortOrder" class="form-select form-select-sm">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="status">By Status</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label mb-0">Date Range</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="date" id="startDate" class="form-control form-control-sm" />
+                                <span class="text-muted">to</span>
+                                <input type="date" id="endDate" class="form-control form-control-sm" />
+                                <button id="applyDateBtn" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-filter"></i> Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="header-stats d-flex gap-3" aria-label="Claim statistics">
+                        <div class="stat-item" title="Total claims submitted">
+                            <span class="stat-number" id="totalClaims">0</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat-item" title="Pending claims">
+                            <span class="stat-number" id="pendingClaims">0</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat-item" title="Completed claims">
+                            <span class="stat-number" id="completedClaims">0</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <button id="refreshBtn" class="btn btn-secondary btn-sm" title="Refresh list">
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Claims List -->
+        <section class="py-2" data-aos="fade-up" data-aos-delay="200">
+            <div class="container">
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading your claims...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <h3>No Claims Found</h3>
+                    <p>You don't have any claim yet. Start by browsing found items!</p>
+                    <a href="{{ url_for('user.browse_found_items') }}" class="cta-button">
+                        <i class="fas fa-search"></i> Browse Found Items
+                    </a>
+                </div>
+
+                <!-- Grid -->
+                <div id="claimsGrid" class="claims-grid" style="display: none;"></div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="pagination" style="display: none;">
+                    <button id="prevPage" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                    <button id="nextPage" class="pagination-btn" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (must be included as requested) -->
+    {% include 'partials/user-footer.html' %}
+
+    <!-- Cancel Confirmation Modal -->
+    <div id="cancelModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Cancel Claim</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this claim?</p>
+                <div class="claim-preview" id="claimPreview"></div>
+                <p class="warning-text">
+                    <i class="fas fa-info-circle"></i>
+                    This action cannot be undone. You'll need to create a new claim if you change your mind.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModalBtn">Keep Claim</button>
+                <button class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times"></i> Cancel Claim
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    {% include 'partials/user-msg-box.html' %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/user-header.js') }}"></script>
+    <!-- React island for Claim History -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="{{ url_for('static', filename='js/claim-history-utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/claim-history-react.js') }}"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 700, easing: 'ease-in-out', once: true, offset: 100 });
+    </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+/**
+ * Admin Dashboard Specific Styles
+ * This file contains styles specific to the admin dashboard page
+ * For common admin styles, see admin.css
+ */
+
+/* Dashboard Container */
+.dashboard-container {
+    padding: 2rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Dashboard Header Styles */
+.dashboard-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dashboard-title {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-top: 0.25rem;
+    margin-bottom: 2rem;
+}
+
+.user-highlight {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(to right, var(--primary-light), var(--primary-color));
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(67, 97, 238, 0.3);
+}
+
+.refresh-btn:hover {
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.5);
+    transform: translateY(-2px);
+}
+
+.date-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--gray-200);
+    border-radius: var(--border-radius);
+    color: var(--gray-700);
+    font-size: 0.9rem;
+}
+
+/* Dark theme overrides */
+.dark-theme .dashboard-title {
+    color: var(--primary-light);
+}
+
+.dark-theme .dashboard-subtitle {
+    color: var(--gray-500);
+}
+
+.dark-theme .date-display {
+    background-color: var(--gray-300);
+    color: var(--gray-800);
+}
+
+.dark-theme .user-highlight {
+    color: var(--accent-color);
+}
+
+/* Use the shared header styles from admin.css for consistency */
+/* Intentionally not overriding .dashboard-header here */
+
+/* Dashboard Stats - Modern Design */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.75rem;
+    box-shadow: var(--box-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--primary-color);
+    transform: scaleX(0.3);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::after {
+    transform: scaleX(1);
+}
+
+.stat-card.qr-requests::after {
+    background-color: var(--primary-color);
+}
+
+.stat-card.lost-items::after {
+    background-color: var(--warning-color);
+}
+
+.stat-card.found-items::after {
+    background-color: var(--success-color);
+}
+
+.stat-card.claimed-items::after {
+    background-color: var(--info-color);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.qr-requests .stat-icon {
+    background-color: rgba(var(--primary-rgb), 0.15);
+    color: var(--primary-color);
+}
+
+.lost-items .stat-icon {
+    background-color: rgba(var(--warning-rgb), 0.15);
+    color: var(--warning-color);
+}
+
+.found-items .stat-icon {
+    background-color: rgba(var(--success-rgb), 0.15);
+    color: var(--success-color);
+}
+
+.claimed-items .stat-icon {
+    background-color: rgba(var(--info-rgb), 0.15);
+    color: var(--info-color);
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.stat-value {
+    font-size: 2.75rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--gray-900);
+    line-height: 1;
+}
+
+.stat-meta {
+    font-size: 0.9rem;
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-trend-up {
+    color: var(--success-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.stat-trend-down {
+    color: var(--danger-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+/* Recent Activity - Modern Design */
+.recent-activity {
+    background-color: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.75rem;
+    box-shadow: var(--box-shadow-sm);
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+}
+
+.recent-activity::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.recent-activity h2 {
+    color: var(--gray-800);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    letter-spacing: -0.5px;
+}
+
+.recent-activity h2 i {
+    margin-right: 12px;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background-color: var(--gray-50);
+    transform: translateX(5px);
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius);
+    background-color: rgba(var(--primary-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.25rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover .activity-icon {
+    transform: scale(1.1);
+}
+
+.activity-icon.found {
+    background-color: rgba(var(--success-rgb), 0.1);
+    color: var(--success-color);
+}
+
+.activity-icon.lost {
+    background-color: rgba(var(--warning-rgb), 0.1);
+    color: var(--warning-color);
+}
+
+.activity-icon.claimed {
+    background-color: rgba(var(--info-rgb), 0.1);
+    color: var(--info-color);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.activity-meta {
+    display: flex;
+    align-items: center;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    gap: 1rem;
+}
+
+.activity-meta i {
+    margin-right: 5px;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+}
+
+.activity-time {
+    margin-left: auto;
+    color: var(--gray-500);
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: var(--gray-100);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Quick Actions Section - Modern Design */
+.quick-actions {
+    background-color: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.75rem;
+    box-shadow: var(--box-shadow-sm);
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-actions::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+}
+
+.quick-actions h2 {
+    color: var(--gray-800);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    letter-spacing: -0.5px;
+}
+
+.quick-actions h2 i {
+    margin-right: 12px;
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+    background-color: rgba(var(--secondary-rgb), 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(145deg, white, var(--gray-100));
+    border-radius: var(--border-radius-lg);
+    text-decoration: none;
+    color: var(--gray-800);
+    transition: all 0.3s ease;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.action-button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+}
+
+.action-button:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.action-button:hover::after {
+    transform: scaleX(1);
+}
+
+.action-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    width: 70px;
+    height: 70px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    color: var(--gray-800);
+}
+
+.action-button:hover .action-icon {
+    transform: scale(1.1);
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.action-button:hover .action-label {
+    color: var(--primary-color);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .dashboard-container {
+        padding: 0 1.5rem 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 2rem;
+    }
+    
+    .activity-time {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-container {
+        padding: 0 1rem 1rem;
+    }
+    
+    .stat-card, .recent-activity, .quick-actions {
+        padding: 1.25rem;
+    }
+}

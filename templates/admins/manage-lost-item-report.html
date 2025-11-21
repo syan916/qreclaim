@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Manage Lost Item Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage-lost-item-report.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Manage Lost Item Reports</h1>
+                <p>View, manage, and match lost item reports in the system</p>
+            </div>
+            
+            <div class="manage-lost-reports">
+                <!-- Search and Filter Section -->
+                <div class="search-filter-section">
+                    <div class="search-filter-row">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search by item name, description, tags, or reporter...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="filter-group">
+                            <select id="categoryFilter" class="filter-select">
+                                <option value="">All Categories</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="matched">Matched</option>
+                                <option value="completed">Completed</option>
+                                <option value="closed">Closed</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                            <select id="locationFilter" class="filter-select">
+                                <option value="">All Locations</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <button id="clearFiltersBtn" class="clear-filters-btn">
+                                <i class="fas fa-times"></i> Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Count Message Box -->
+                <div id="resultsMessageBox" class="results-message-box" style="display: none;">
+                    <div class="results-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="resultsCount">0 reports found</span>
+                        <span id="filterSummary"></span>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="table-title">Lost Item Reports</h2>
+                        <div class="items-count" id="itemsCount">Loading...</div>
+                    </div>
+                    
+                    <div class="table-container" style="position: relative;">
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        
+                        <table class="lost-reports-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th class="sortable" data-sort="lost_item_name">
+                                        Item Name
+                                    </th>
+                                    <th class="sortable" data-sort="category">
+                                        Category
+                                    </th>
+                                    <th class="sortable" data-sort="place_lost">
+                                        Location Lost
+                                    </th>
+                                    <th class="sortable" data-sort="time_lost">
+                                        Time Lost
+                                    </th>
+                                    <th class="sortable" data-sort="report_duration">
+                                        Report Duration (Days)
+                                    </th>
+                                    <th class="sortable" data-sort="status">Status</th>
+                                    <th>Similar Found IDs</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lostReportsTableBody">
+                                <!-- Table rows will be populated dynamically -->
+                                <tr>
+                                    <td colspan="9" class="empty-state">
+                                        <div>
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <h3>Loading lost item reports...</h3>
+                                            <p>Please wait while we fetch the data</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Section -->
+                    <div class="pagination-section">
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing 0-0 of 0 reports
+                        </div>
+                        <div class="pagination-controls" id="paginationControls">
+                            <!-- Pagination buttons will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Review Modal -->
+    <div id="adminReviewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="adminReviewModalTitle">Admin Review - Report Title</h2>
+                <span class="close" onclick="closeAdminReviewModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="item-info-section">
+                    <div class="item-header">
+                        <h3>Report Details</h3>
+                    </div>
+                    
+                    <div class="item-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Report ID:</span>
+                            <span id="reviewReportId" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Item Name:</span>
+                            <span id="reviewItemName" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span id="reviewItemCategory" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Current Status:</span>
+                            <span id="reviewCurrentStatus" class="detail-value status-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Reporter:</span>
+                            <span id="reviewReporter" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Contact Info:</span>
+                            <span id="reviewContactInfo" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Report Date:</span>
+                            <span id="reviewReportDate" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <form id="adminReviewForm" onsubmit="event.preventDefault(); submitAdminReview();">
+                        <input type="hidden" id="reviewLostReportId" name="lost_report_id">
+                        
+                        <div class="form-group">
+                            <label for="reviewStatus">Review Status:</label>
+                            <select id="reviewStatus" name="review_status" required>
+                                <option value="">Select Status</option>
+                                <option value="matched">Matched</option>
+                                <option value="closed">Closed</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewNotes">Notes/Remarks:</label>
+                            <textarea id="reviewNotes" name="notes" rows="3" placeholder="Enter review notes and remarks..." required></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeAdminReviewModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="statusUpdateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="statusModalTitle">Update Status</h2>
+                <span class="close" onclick="closeStatusUpdateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="item-info-section">
+                    <div class="item-header">
+                        <h3>Report Details</h3>
+                    </div>
+                    
+                    <div class="item-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Report ID:</span>
+                            <span id="statusReportId" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Item Name:</span>
+                            <span id="statusItemName" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span id="statusItemCategory" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Current Status:</span>
+                            <span id="statusCurrentStatus" class="detail-value status-badge">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Reporter:</span>
+                            <span id="statusReporter" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Contact Info:</span>
+                            <span id="statusContactInfo" class="detail-value">-</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Report Date:</span>
+                            <span id="statusReportDate" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <form id="statusUpdateForm" onsubmit="event.preventDefault(); submitStatusUpdate();">
+                        <input type="hidden" id="statusLostReportId" name="lost_report_id">
+                        
+                        <div class="form-group">
+                            <label for="newStatus">New Status:</label>
+                            <select id="newStatus" name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="open">Open</option>
+                                <option value="matched">Matched</option>
+                                <option value="closed">Closed</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeStatusUpdateModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Update Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/manage-lost-item-report.js') }}"></script>
+</body>
+</html>
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}

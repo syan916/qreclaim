@@ -1,0 +1,21 @@
+Install dependencies:
+pip install -r requirements.txt
+
+Set environment variables (for QR encryption, optional):
+set QRECLAIM_FERNET_KEYS={"v1":"<base64_key>"}
+set QRECLAIM_FERNET_ACTIVE=v1
+
+Provide Firebase Web config for kiosk (one of):
+- Save JSON to config\firebase_web_config.json
+- Or set FIREBASE_WEB_CONFIG_JSON with the JSON value
+
+Run the app (development):
+python app.py
+
+Run with Gunicorn (production, WSL/Linux):
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+
+Optional: Firestore emulator
+set USE_FIRESTORE_EMULATOR=true
+set FIRESTORE_EMULATOR_HOST=localhost
+set FIRESTORE_EMULATOR_PORT=8080

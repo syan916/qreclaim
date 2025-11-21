@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Register Student RFID</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-rfid.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Register Student RFID</h1>
+                <p>Assign an RFID card to a student profile</p>
+            </div>
+
+            <div class="content-container rfid-grid">
+                <section class="card rfid-card">
+                    <h3>Raspberry Pi Connection</h3>
+                    <div class="rfid-row">
+                        <div class="rfid-field">
+                            <label for="piHost">Pi Host</label>
+                            <input id="piHost" type="text" placeholder="http://localhost:5001">
+                        </div>
+                        <div class="rfid-field">
+                            <label for="wsPath">WebSocket Path</label>
+                            <input id="wsPath" type="text" placeholder="/rfid">
+                        </div>
+                    </div>
+                    <div class="rfid-actions">
+                        <button id="connectBtn" class="btn primary"><i class="fas fa-plug"></i> Connect</button>
+                        <button id="disconnectBtn" class="btn"><i class="fas fa-unplug"></i> Disconnect</button>
+                        <div id="connStatus" class="status badge">Disconnected</div>
+                    </div>
+                </section>
+
+                <section class="card rfid-card">
+                    <h3>Select Student</h3>
+                    <div class="rfid-field">
+                        <label for="studentSelect">Student</label>
+                        <select id="studentSelect">
+                            <option value="">Select a student...</option>
+                            {% for s in students %}
+                                <option value="{{ s.user_id }}" data-name="{{ s.name }}" data-course="{{ s.course }}" data-email="{{ s.email }}">{{ s.name }} ({{ s.user_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="rfid-row">
+                        <div class="rfid-field">
+                            <label for="userId">User ID</label>
+                            <input id="userId" type="text" readonly>
+                        </div>
+                        <div class="rfid-field">
+                            <label for="name">Name</label>
+                            <input id="name" type="text" readonly>
+                        </div>
+                    </div>
+                    <div class="rfid-row">
+                        <div class="rfid-field">
+                            <label for="course">Course</label>
+                            <input id="course" type="text" readonly>
+                        </div>
+                        <div class="rfid-field">
+                            <label for="email">Email</label>
+                            <input id="email" type="text" readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card rfid-card">
+                    <h3>RFID Card</h3>
+                    <div class="rfid-actions">
+                        <button id="scanBtn" class="btn"><i class="fas fa-rss"></i> Scan UID</button>
+                        <button id="readBtn" class="btn"><i class="fas fa-download"></i> Read Card</button>
+                        <button id="writeBtn" class="btn success"><i class="fas fa-upload"></i> Write Card</button>
+                    </div>
+                    <div class="rfid-row">
+                        <div class="rfid-field">
+                            <label for="cardUid">Card UID</label>
+                            <input id="cardUid" type="text" readonly>
+                        </div>
+                        <div class="rfid-field">
+                            <label for="cardPayload">Card Data</label>
+                            <textarea id="cardPayload" rows="4" readonly></textarea>
+                        </div>
+                    </div>
+                    <div id="rfidAlert" class="alert" hidden></div>
+                </section>
+
+                <section class="card rfid-card">
+                    <h3>Activity</h3>
+                    <div id="log" class="log"></div>
+                </section>
+            </div>
+        </div>
+
+        <script>
+            window.studentsData = {{ students|tojson }};
+        </script>
+        <script src="{{ url_for('static', filename='js/admin-rfid.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    </div>
+</body>
+</html>

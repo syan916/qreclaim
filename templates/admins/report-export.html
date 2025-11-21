@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Report Export</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/report-export.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Report Export</h1>
+                <p>Export system reports and analytics data</p>
+            </div>
+            
+            <div class="content-container">
+                <div class="cards" role="list" aria-label="Report categories">
+                    <button class="report-card active" role="listitem" data-panel="verification">
+                        <div class="card-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="card-title">Claim Verification</div>
+                        <div class="card-sub">Joined claims, users, items, lockers</div>
+                    </button>
+                    <button class="report-card" role="listitem" data-panel="found">
+                        <div class="card-icon"><i class="fas fa-box-open"></i></div>
+                        <div class="card-title">Found Items Summary</div>
+                        <div class="card-sub">Category aggregates and time series</div>
+                    </button>
+                    <button class="report-card" role="listitem" data-panel="unclaimed">
+                        <div class="card-icon"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="card-title">Long-Term Unclaimed</div>
+                        <div class="card-sub">Days unclaimed, reviews, notifications</div>
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <label for="startDate">Start</label>
+                    <input type="date" id="startDate">
+                    <label for="endDate">End</label>
+                    <input type="date" id="endDate">
+                    <button id="applyFiltersBtn" class="btn btn-primary"><i class="fas fa-filter"></i> Apply</button>
+                    <button id="refreshBtn" class="btn btn-secondary"><i class="fas fa-rotate"></i> Refresh</button>
+                    <button id="exportPdfBtn" class="btn btn-export"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                    <button id="exportExcelBtn" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Export Excel</button>
+                </div>
+
+                <div id="panel-verification" class="panel active" role="tabpanel" aria-labelledby="verification">
+                    <div class="card">
+                        <div class="loading" id="loadingVerification"><div class="spinner"></div><div class="sr-only">Loading verification report</div></div>
+                        <table class="table" id="verificationTable" aria-describedby="verificationSummary"></table>
+                        <div id="verificationSummary" class="sr-only"></div>
+                        <div class="pagination" id="verificationPagination"></div>
+                    </div>
+                </div>
+
+                <div id="panel-found" class="panel" role="tabpanel" aria-labelledby="found">
+                    <div class="card">
+                        <div class="loading" id="loadingFound"><div class="spinner"></div><div class="sr-only">Loading found items summary</div></div>
+                        <canvas id="foundDistributionChart" height="120" aria-label="Found items time distribution" role="img"></canvas>
+                        <table class="table" id="foundSummaryTable"></table>
+                        <div class="pagination" id="foundPagination"></div>
+                    </div>
+                </div>
+
+                <div id="panel-unclaimed" class="panel" role="tabpanel" aria-labelledby="unclaimed">
+                    <div class="card">
+                        <div class="loading" id="loadingUnclaimed"><div class="spinner"></div><div class="sr-only">Loading long-term unclaimed items</div></div>
+                        <table class="table" id="unclaimedTable"></table>
+                        <div class="pagination" id="unclaimedPagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <div id="reportConfig" data-logo-url="{{ url_for('static', filename='images/favicon.png') }}" class="sr-only"></div>
+    <script defer src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/report-export.js') }}"></script>
+</body>
+</html>

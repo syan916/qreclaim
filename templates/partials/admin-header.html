@@ -1,0 +1,141 @@
+<!-- Admin Header with Side Navigation Bar -->
+<header class="admin-header">
+    <!-- Mobile Menu Toggle Button -->
+    <div class="mobile-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Admin Header Content -->
+    <div class="header-content">
+        <div class="header-title">QReclaim Admin</div>
+        <div class="header-actions">
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </div>
+            <a href="{{ url_for('admin.admin_notifications') }}" class="notification-icon">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </a>
+            <div class="admin-profile">
+                <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Admin" class="profile-img">
+                <span class="profile-name">{{ session.name }}</span>
+                <div class="profile-dropdown">
+                    <a href="{{ url_for('admin.admin_setting') }}" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Side Navigation Bar -->
+<nav class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+        <a href="{{ url_for('admin.dashboard') }}" class="logo-container">
+            <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="QReclaim Logo" class="sidebar-logo">
+        </a>
+        <div class="sidebar-close" id="sidebarClose">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+
+    <div class="sidebar-content">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item{% if request.endpoint == 'admin.dashboard' %} active{% endif %}">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+
+            <li
+                class="sidebar-item has-submenu{% if 'found-item' in request.path or request.endpoint == 'admin.admin_review_history' %} active{% endif %}">
+                <a href="#" class="sidebar-link submenu-toggle">
+                    <i class="fas fa-box-open"></i>
+                    <span>Found Items</span>
+                    <i class="fas fa-chevron-right submenu-icon"></i>
+                </a>
+                <ul class="submenu">
+                    <li class="submenu-item{% if request.endpoint == 'admin.post_found_item' %} active{% endif %}">
+                        <a href="{{ url_for('admin.post_found_item') }}" class="submenu-link">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Post Found Item</span>
+                        </a>
+                    </li>
+                    <li class="submenu-item{% if request.endpoint == 'admin.manage_found_item' %} active{% endif %}">
+                        <a href="{{ url_for('admin.manage_found_item') }}" class="submenu-link">
+                            <i class="fas fa-tasks"></i>
+                            <span>Manage Found Items</span>
+                        </a>
+                    </li>
+                    <li class="submenu-item{% if request.endpoint == 'admin.admin_review_history' %} active{% endif %}">
+                        <a href="{{ url_for('admin.admin_review_history') }}" class="submenu-link">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Found Item Review</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.manage_lost_item_report' %} active{% endif %}">
+                <a href="{{ url_for('admin.manage_lost_item_report') }}" class="sidebar-link">
+                    <i class="fas fa-search"></i>
+                    <span>Manage Lost Reports</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.qr_register_request' %} active{% endif %}">
+                <a href="{{ url_for('admin.qr_register_request') }}" class="sidebar-link">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QR Register Requests</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.scan_qr_code' %} active{% endif %}">
+                <a href="{{ url_for('admin.scan_qr_code') }}" class="sidebar-link">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Scan QR Code</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.report_analytics' %} active{% endif %}">
+                <a href="{{ url_for('admin.report_analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Report Analytics</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.report_export' %} active{% endif %}">
+                <a href="{{ url_for('admin.report_export') }}" class="sidebar-link">
+                    <i class="fas fa-file-export"></i>
+                    <span>Report Export</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.manage_locker' %} active{% endif %}">
+                <a href="{{ url_for('admin.manage_locker') }}" class="sidebar-link">
+                    <i class="fas fa-lock"></i>
+                    <span>Manage Lockers</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.register_student_rfid' %} active{% endif %}">
+                <a href="{{ url_for('admin.register_student_rfid') }}" class="sidebar-link">
+                    <i class="fas fa-id-card"></i>
+                    <span>Register RFID</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item{% if request.endpoint == 'admin.admin_setting' %} active{% endif %}">
+                <a href="{{ url_for('admin.admin_setting') }}" class="sidebar-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

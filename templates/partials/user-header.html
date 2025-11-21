@@ -1,0 +1,199 @@
+<!-- Modern User Header with Navigation Bar -->
+<header class="user-header">
+    <!-- Mobile Menu Toggle Button -->
+    <div class="mobile-toggle" id="userMenuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <!-- User Header Content -->
+    <div class="header-content">
+        <!-- Logo Section -->
+        <div class="header-logo">
+            <a href="{{ url_for('user.dashboard') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="QReclaim Logo" class="logo-img">
+            </a>
+        </div>
+        
+        <!-- Desktop Navigation Menu -->
+        <nav class="desktop-nav">
+            <ul class="nav-menu">
+                <li class="nav-item{% if request.endpoint == 'user.dashboard' %} active{% endif %}">
+                    <a href="{{ url_for('user.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item{% if request.endpoint in ['user.browse_found_items', 'user.found_item_details'] %} active{% endif %}">
+                    <a href="{{ url_for('user.browse_found_items') }}" class="nav-link">
+                        <i class="fas fa-search"></i>
+                        <span>Browse Items</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown{% if request.endpoint in ['user.report_lost_item', 'user.lost_item_history', 'user.lost_item_report_details'] %} active{% endif %}">
+                    <a href="#" class="nav-link dropdown-toggle" id="lostItemDropdown">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Lost Items</span>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('user.report_lost_item') }}" class="dropdown-link">Report Lost Item</a></li>
+                        <li><a href="{{ url_for('user.lost_item_history') }}" class="dropdown-link">My Reports</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item{% if request.endpoint == 'user.claim_history' %} active{% endif %}">
+                    <a href="{{ url_for('user.claim_history') }}" class="nav-link">
+                        <i class="fas fa-hand-holding"></i>
+                        <span>My Claims</span>
+                    </a>
+                </li>
+                <li class="nav-item{% if request.endpoint == 'user.my_qr_code' %} active{% endif %}">
+                    <a href="{{ url_for('user.my_qr_code') }}" class="nav-link">
+                        <i class="fas fa-qrcode"></i>
+                        <span>My QR Code</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- User Profile Section -->
+        <div class="header-actions">
+            <!-- Notifications Button -->
+            <div class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </div>
+            <div class="notification-panel" id="notificationPanel" aria-hidden="true">
+                <div class="panel-header">
+                    <span>Notifications</span>
+                    <button class="mark-all" id="markAllNotifications">Mark all as read</button>
+                </div>
+                <div class="panel-body">
+                    <div class="panel-loading" id="notificationLoading">Loading...</div>
+                    <div class="panel-empty" id="notificationEmpty" style="display:none">No notifications</div>
+                    <ul class="notification-list" id="notificationList"></ul>
+                </div>
+            </div>
+            
+            <!-- Theme Toggle Button -->
+            <div class="theme-toggle" id="userThemeToggle">
+                <i class="fas fa-moon"></i>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="user-profile dropdown">
+                <button class="profile-btn dropdown-toggle" id="profileDropdown">
+                    <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="User" class="profile-img">
+                    <span class="profile-name">{{ session.name or 'Student' }}</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </button>
+                <ul class="dropdown-menu profile-dropdown-menu">
+                    <li><a href="{{ url_for('user.profile') }}" class="dropdown-link">My Profile</a></li>
+                    <li><a href="{{ url_for('user.settings') }}" class="dropdown-link">Settings</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="dropdown-link" onclick="return confirmLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Navigation Menu -->
+<nav class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-header">
+        <div class="mobile-logo">
+            <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="QReclaim Logo" class="mobile-logo-img">
+            <!-- Text removed per request -->
+        </div>
+        <div class="mobile-close" id="mobileClose">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+    
+    <div class="mobile-nav-content">
+        <ul class="mobile-menu">
+            <li class="mobile-item{% if request.endpoint == 'user.dashboard' %} active{% endif %}">
+                <a href="{{ url_for('user.dashboard') }}" class="mobile-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="mobile-item{% if request.endpoint in ['user.browse_found_items', 'user.found_item_details'] %} active{% endif %}">
+                <a href="{{ url_for('user.browse_found_items') }}" class="mobile-link">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Items</span>
+                </a>
+            </li>
+            <li class="mobile-item mobile-dropdown{% if request.endpoint in ['user.report_lost_item', 'user.lost_item_history', 'user.lost_item_report_details'] %} active{% endif %}">
+                <a href="#" class="mobile-link mobile-dropdown-toggle">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Lost Items</span>
+                    <i class="fas fa-chevron-down mobile-dropdown-arrow"></i>
+                </a>
+                <ul class="mobile-dropdown-menu">
+                    <li><a href="{{ url_for('user.report_lost_item') }}" class="mobile-dropdown-link">Report Lost Item</a></li>
+                    <li><a href="{{ url_for('user.lost_item_history') }}" class="mobile-dropdown-link">My Reports</a></li>
+                </ul>
+            </li>
+            <li class="mobile-item{% if request.endpoint == 'user.claim_history' %} active{% endif %}">
+                <a href="{{ url_for('user.claim_history') }}" class="mobile-link">
+                    <i class="fas fa-hand-holding"></i>
+                    <span>My Claims</span>
+                </a>
+            </li>
+            <li class="mobile-item{% if request.endpoint == 'user.my_qr_code' %} active{% endif %}">
+                <a href="{{ url_for('user.my_qr_code') }}" class="mobile-link">
+                    <i class="fas fa-qrcode"></i>
+                    <span>My QR Code</span>
+                </a>
+            </li>
+            <li class="mobile-item{% if request.endpoint == 'user.notifications' %} active{% endif %}">
+                <a href="{{ url_for('user.notifications') }}" class="mobile-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                    <span class="notification-badge" id="mobileNotificationBadge" style="display: none;"></span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="mobile-profile">
+            <div class="mobile-profile-info">
+                <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="User" class="mobile-profile-img">
+                <span class="mobile-profile-name">{{ session.name or 'Student' }}</span>
+            </div>
+            <div class="mobile-profile-actions">
+                <a href="{{ url_for('user.profile') }}" class="mobile-profile-link">
+                    <i class="fas fa-user"></i> My Profile
+                </a>
+                <a href="{{ url_for('user.settings') }}" class="mobile-profile-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="{{ url_for('logout') }}" class="mobile-profile-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Navigation Overlay -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<!-- Firebase SDK for notifications -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+  window.currentUserId = '{{ session.user_id }}';
+  async function initFirebaseForUser() {
+    try {
+      const res = await fetch('/user/api/firebase-config');
+      if (!res.ok) return;
+      const data = await res.json();
+      const cfg = (data && data.config) || null;
+      if (!cfg || !cfg.apiKey) return;
+      if (!firebase.apps.length) firebase.initializeApp(cfg);
+    } catch (e) {}
+  }
+  initFirebaseForUser();
+</script>
+<script src="{{ url_for('static', filename='js/notification-badge.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notification-handler.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>

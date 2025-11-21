@@ -1,0 +1,16 @@
+.user-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:10001}
+.user-confirm-overlay.show{display:flex}
+.user-confirm-modal{width:380px;max-width:92vw;background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(149,157,165,0.2);overflow:hidden}
+.user-confirm-header{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,0.08)}
+.user-confirm-title{font-weight:700}
+.user-confirm-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.user-confirm-icon.success{background:#04e40048;color:#269b24}
+.user-confirm-icon.error{background:#fc0c0c48;color:#d10d0d}
+.user-confirm-icon.warning{background:#ffa30d48;color:#db970e}
+.user-confirm-icon.info{background:#4777ff48;color:#124fff}
+.user-confirm-body{padding:12px 14px}
+.user-confirm-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;border-top:1px solid rgba(0,0,0,0.08)}
+.user-btn{padding:8px 12px;border-radius:6px;border:1px solid rgba(0,0,0,0.15);background:#fff;color:#333}
+.user-btn.primary{background:#124fff;color:#fff;border:none}
+.user-btn.primary:hover{background:#0d3fe6}
+.user-btn.cancel:hover{background:#f5f5f5}

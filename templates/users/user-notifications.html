@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications • QReclaim</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-footer.css') }}">
+</head>
+<body>
+    {% include 'partials/user-header.html' %}
+    <main class="main-content" style="padding: 90px 16px 24px; max-width: 980px; margin: 0 auto;">
+        <section>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h1 style="font-size:1.5rem;">Notifications</h1>
+                <button id="pageMarkAll" class="btn btn-primary">Mark all as read</button>
+            </div>
+            <div id="pageLoading" class="panel-loading">Loading...</div>
+            <div id="pageEmpty" class="panel-empty" style="display:none">No notifications</div>
+            <ul id="pageList" class="notification-list"></ul>
+        </section>
+    </main>
+    {% include 'partials/user-footer.html' %}
+    <script>
+    (function(){
+      function fmt(ts){try{return new Date(ts.seconds?ts.seconds*1000:ts).toLocaleString();}catch(_){return ''}}
+      async function load(){
+        const res=await fetch('/user/api/notifications/list?limit=200&days=30',{credentials:'same-origin'});
+        const data=await res.json();
+        const list=(data&&data.notifications)||[];
+        const listEl=document.getElementById('pageList');
+        const loading=document.getElementById('pageLoading');
+        const empty=document.getElementById('pageEmpty');
+        loading.style.display='none';
+        listEl.innerHTML='';
+        if(!list.length){empty.style.display='block';return}
+        empty.style.display='none';
+        list.forEach(n=>{
+          const li=document.createElement('li');
+          li.className='notification-item'+(n.isRead?'':' unread');
+          li.innerHTML=`<div class="item-main"><div class="item-title">${escapeHtml(n.title||'')}</div><div class="item-message">${escapeHtml(n.message||'')}</div></div><div class="item-meta"><span class="item-time">${fmt(n.timestamp)}</span></div>`;
+          li.addEventListener('click',async()=>{try{await fetch('/user/api/notifications/mark-read',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({notificationId:n.notificationId})});}catch(_){ } window.location.href=n.link||'/user/dashboard'});
+          listEl.appendChild(li);
+        });
+      }
+      function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+      document.getElementById('pageMarkAll').addEventListener('click',async()=>{await fetch('/user/api/notifications/mark-all-read',{method:'POST',credentials:'same-origin'});load()});
+      load();
+    })();
+    </script>
+</body>
+</html>

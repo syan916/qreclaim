@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Found Item Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <!-- Reuse styles from post found item for tags, venue selector and image upload -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/post-found-item.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/post-found-item-details.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-msg-box.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/validation.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="back-btn" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Manage Items
+                        </button>
+                        <h1>Found Item Details</h1>
+                        <p>Complete information about the found item</p>
+                    </div>
+                    <!-- Updated Edit and Delete Buttons for Final State Handling -->
+                    <div class="header-actions">
+                        <button id="editBtn" class="action-btn btn-edit" onclick="toggleEditMode()" style="display: none;">
+                            <i class="fas fa-edit"></i>
+                            Edit Item
+                        </button>
+                        <button id="saveBtn" class="action-btn btn-save" onclick="saveItem()" style="display: none;">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <button id="cancelBtn" class="action-btn btn-cancel" onclick="cancelEdit()" style="display: none;">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                        <button id="deleteBtn" class="action-btn btn-delete" onclick="deleteItem()" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            Delete Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading item details...</p>
+                </div>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorText">Failed to load item details</span>
+                <button onclick="retryLoad()" class="retry-btn">
+                    <i class="fas fa-redo"></i>
+                    Retry
+                </button>
+            </div>
+            
+            <!-- Item Details Content -->
+            <div id="itemDetailsContent" class="item-details-content" style="display: none;">
+                <!-- Main Content Container with New Layout -->
+                <div class="main-layout-container">
+                    <!-- Top Section: Image and Controls -->
+                    <div class="image-section-top">
+                        <div class="image-container-main">
+                            <img id="itemImage" src="" alt="Found Item" onclick="showImageModal(this.src, this.alt)">
+                            <div class="image-overlay">
+                                <i class="fas fa-search-plus"></i>
+                                <span>Click to enlarge</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Controls and Upload -->
+                        <div class="image-controls">
+                            <div class="image-info">
+                                <p><i class="fas fa-info-circle"></i> Click image to view full size</p>
+                            </div>
+                            
+
+                            
+                            <!-- Upload New Photos (Edit Mode Only) -->
+                            <div class="edit-mode upload-new-photos" style="display: none;">
+                                <label>
+                                    <i class="fas fa-camera"></i>
+                                    Upload New Photos
+                                </label>
+                                <div id="fileUploadAreaDetails" class="file-upload-area">
+                                    <div class="upload-icon">📷</div>
+                                    <div class="upload-text">Click to upload or drag and drop</div>
+                                    <div class="upload-hint">JPG, PNG, JPEG only (Max 5MB per file)</div>
+                                    <input type="file" id="imageInput" class="file-input" multiple accept=".jpg,.jpeg,.png">
+                                </div>
+                                <div id="validation-messages-details" class="validation-messages"></div>
+                                <div id="imagePreviewContainer" class="image-preview-container" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Sections Container -->
+                    <div class="content-sections">
+                        <!-- Basic Information Section -->
+                        <div class="info-section basic-info-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-info-circle"></i> Basic Information</h2>
+                            </div>
+                            <div class="info-fields-stack">
+                                <div class="info-field">
+                                    <label>Item ID:</label>
+                                    <span id="itemId" class="item-id">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Item Name:</label>
+                                    <span id="itemName" class="display-mode">-</span>
+                                    <input type="text" id="itemNameEdit" class="edit-mode form-input" style="display: none;" placeholder="Enter item name">
+                                </div>
+                                <div class="info-field">
+                                    <label>Category:</label>
+                                    <span id="itemCategory" class="category-badge display-mode">-</span>
+                                    <select id="itemCategoryEdit" class="edit-mode form-select" style="display: none;">
+                                        <option value="">Select Category</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Clothing">Clothing</option>
+                                        <option value="Accessories">Accessories</option>
+                                        <option value="Books">Books</option>
+                                        <option value="Sports">Sports</option>
+                                        <option value="Personal Items">Personal Items</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                                <div class="info-field">
+                                    <label>Status:</label>
+                                    <span id="itemStatus" class="status-badge display-mode">-</span>
+                                    <select id="itemStatusEdit" class="edit-mode form-select" style="display: none;">
+                                        <option value="unclaimed">Unclaimed</option>
+                                        <option value="claimed">Claimed</option>
+                                        <option value="returned">Returned</option>
+                                    </select>
+                                </div>
+                                <div class="info-field full-width">
+                                    <label>Description:</label>
+                                    <div id="itemDescription" class="description-text display-mode">-</div>
+                                    <textarea id="itemDescriptionEdit" class="edit-mode form-textarea" style="display: none;" placeholder="Enter item description" rows="4"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Location & Time Section -->
+                        <div class="info-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-map-marker-alt"></i> Location & Time Details</h2>
+                            </div>
+                            <div class="info-fields-stack">
+                                <div class="info-field">
+                                    <label>Place Found:</label>
+                                    <span id="placeFound" class="display-mode">-</span>
+                                    <!-- Use predefined venue selector from Post Found Item -->
+                                    <div class="venue-selector edit-mode" style="display: none;">
+                                        <select id="venue_select" class="form-input venue-dropdown">
+                                            <option value="">Select a venue...</option>
+                                        </select>
+                                        <input type="text" id="place_found" name="place_found" class="form-input venue-custom" 
+                                               placeholder="Enter custom location..." style="display: none;">
+                                    </div>
+                                </div>
+                                <div class="info-field">
+                                    <label>Time Found:</label>
+                                    <span id="timeFound" class="display-mode">-</span>
+                                    <input type="datetime-local" id="timeFoundEdit" class="edit-mode form-input" style="display: none;">
+                                </div>
+                                <div class="info-field">
+                                    <label>Date Posted:</label>
+                                    <span id="datePosted">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Last Updated:</label>
+                                    <span id="lastUpdated">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Tags Section -->
+                        <div class="info-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-tags"></i> AI Generated Tags</h2>
+                            </div>
+                            <div id="aiTags" class="tags-container display-mode">
+                                <!-- Tags will be populated here -->
+                            </div>
+                            <!-- Tags Edit Field -->
+                            <div class="edit-mode" style="display: none;">
+                                <label>
+                                    <i class="fas fa-tags"></i>
+                                    Tags
+                                </label>
+                                <div class="tags-container">
+                                    <div id="tagsDisplay" class="tags-display"></div>
+                                    <div class="tag-input-container">
+                                        <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag...">
+                                        <button type="button" id="addTagBtn" class="tag-add-btn">
+                                            <i class="fas fa-plus"></i>
+                                            Add Tag
+                                        </button>
+                                        <button type="button" id="deleteTagBtn" class="tag-delete-btn" onclick="confirmDeleteAllTags()">
+                                            <i class="fas fa-trash"></i>
+                                            Delete Tags
+                                        </button>
+                                    </div>
+                                    <div id="tagsLoading" class="tags-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i> Generating AI tags...
+                                    </div>
+                                    <div id="tagsError" class="tags-error" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Information Section -->
+                        <div class="info-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-user-shield"></i> Admin Information</h2>
+                            </div>
+                            <div class="info-fields-stack">
+                                <div class="info-field">
+                                    <label>Posted By:</label>
+                                    <span id="adminName">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Admin Email:</label>
+                                    <span id="adminEmail">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Admin Phone:</label>
+                                    <span id="adminPhone">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Department:</label>
+                                    <span id="adminDepartment">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Item Details Section -->
+                        <div class="info-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-cog"></i> Additional Details</h2>
+                            </div>
+                            <div class="info-fields-stack">
+                                <div class="info-field">
+                                    <label>Is Valuable:</label>
+                                    <span id="isValuable" class="display-mode">-</span>
+                                    <select id="isValuableEdit" class="edit-mode form-select" style="display: none;">
+                                        <option value="true">Yes</option>
+                                        <option value="false">No</option>
+                                    </select>
+                                </div>
+                                <div class="info-field">
+                                    <label>Locker ID:</label>
+                                    <span id="lockerId" class="display-mode">-</span>
+                                    <div class="edit-mode" style="display: none;">
+                                        <div class="checkbox-group" style="margin-bottom: 8px;">
+                                            <input type="checkbox" id="is_assigned_to_locker" name="is_assigned_to_locker">
+                                            <label for="is_assigned_to_locker">
+                                                <i class="fas fa-lock"></i>
+                                                Assign to Locker?
+                                            </label>
+                                        </div>
+                                        <div id="locker-selection" class="form-row full-width" style="display: none;">
+                                            <div class="form-group">
+                                                <label for="locker_id">
+                                                    <i class="fas fa-key"></i>
+                                                    Select Locker
+                                                </label>
+                                                <select id="locker_id" name="locker_id" class="form-input form-select">
+                                                    <option value="">Loading available lockers...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="info-field full-width">
+                                    <label>Remarks:</label>
+                                    <div id="remarks" class="display-mode">-</div>
+                                    <textarea id="remarksEdit" class="edit-mode form-textarea" style="display: none;" placeholder="Enter additional remarks or notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Claim Information Section (if claimed) -->
+                        <div id="claimSection" class="info-section" style="display: none;">
+                            <div class="section-header">
+                                <h2><i class="fas fa-hand-holding"></i> Claim Information</h2>
+                            </div>
+                            <div class="info-fields-stack">
+                                <div class="info-field">
+                                    <label>Claimed By:</label>
+                                    <span id="claimerName">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Claimer Email:</label>
+                                    <span id="claimerEmail">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Claimer Phone:</label>
+                                    <span id="claimerPhone">-</span>
+                                </div>
+                                <div class="info-field">
+                                    <label>Claim Date:</label>
+                                    <span id="claimDate">-</span>
+                                </div>
+                                <div class="info-field full-width">
+                                    <label>Verification Status:</label>
+                                    <span id="verificationStatus" class="verification-badge">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Secondary Save Button -->
+                        <div class="bottom-actions edit-mode" style="display: none;">
+                            <button id="saveBtn2" class="action-btn btn-save-secondary" onclick="saveItem()">
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeImageModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeImageModal()">&times;</button>
+                <img id="modalImage" src="" alt="">
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification" style="display: none;">
+        <div class="notification-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="notificationText">Action completed successfully!</span>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/image-validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/post-found-item-details.js') }}"></script>
+</body>
+</html>
+
+<script>
+    // JavaScript to handle final state visibility
+    document.addEventListener('DOMContentLoaded', function () {
+        const itemStatus = document.getElementById('itemStatus').textContent.trim();
+        const editBtn = document.getElementById('editBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+
+        if (itemStatus === 'Final') {
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+        } else {
+            editBtn.style.display = 'inline-block';
+            deleteBtn.style.display = 'inline-block';
+        }
+    });
+</script>

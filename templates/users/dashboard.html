@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Qreclaim</title>
+    <!-- Shared theme variables -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+</head>
+
+<body>
+    <!-- Include Header -->
+    {% include 'partials/user-header.html' %}
+    {% include 'partials/user-msg-box.html' %}
+    {% include 'partials/user-confirm.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section with Carousel -->
+        <section class="hero-section">
+            <div class="hero-carousel" id="heroCarousel" aria-roledescription="carousel"
+                aria-label="Featured information" aria-live="polite">
+                <div class="carousel-container">
+                    <!-- Slide 1 -->
+                    <div class="carousel-slide active">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h1>Welcome back, {{ session.name or 'Student' }}! 👋</h1>
+                                <p>Your smart lost-and-found companion is here to help you recover your items quickly
+                                    and securely.</p>
+                                <a href="{{ url_for('user.browse_found_items') }}" class="cta-button">Browse Found
+                                    Items</a>
+                            </div>
+                            <div class="slide-image">
+                                <img src="{{ url_for('static', filename='images/user1.jpg') }}"
+                                    alt="Welcome to Qreclaim">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="carousel-slide">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h1>Register your QR code for secure item claiming! 📱</h1>
+                                <p>Generate your unique QR code to enable quick and secure verification when claiming
+                                    your found items.</p>
+                                <a href="{{ url_for('user.my_qr_code') }}" class="cta-button">Register QR Code</a>
+                            </div>
+                            <div class="slide-image">
+                                <img src="{{ url_for('static', filename='images/user2.jpg') }}"
+                                    alt="QR Code Registration">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="carousel-slide">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h1>Scan QR code at kiosk and claim from locker! 🔐</h1>
+                                <p>Visit our kiosk, scan your QR code for verification, and retrieve your items from the
+                                    secure locker system.</p>
+                                <a href="{{ url_for('user.claim_history') }}" class="cta-button">View Claims</a>
+                            </div>
+                            <div class="slide-image">
+                                <img src="{{ url_for('static', filename='images/user3.jpg') }}" alt="Kiosk QR Scanning">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Carousel Navigation (moved outside container) -->
+                <div class="carousel-nav">
+                    <button class="carousel-btn prev" id="prevBtn" aria-label="Previous slide"
+                        aria-controls="heroCarousel">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn next" id="nextBtn" aria-label="Next slide" aria-controls="heroCarousel">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Carousel Indicators -->
+                <div class="carousel-indicators" role="tablist" aria-label="Select slide">
+                    <span class="indicator active" data-slide="0" role="button" tabindex="0" aria-label="Go to slide 1"
+                        aria-current="true"></span>
+                    <span class="indicator" data-slide="1" role="button" tabindex="0" aria-label="Go to slide 2"></span>
+                    <span class="indicator" data-slide="2" role="button" tabindex="0" aria-label="Go to slide 3"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Stats -->
+        <section class="dashboard-stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ lost_items_count or 0 }}</h3>
+                            <p>Lost Items Reported</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ found_items_count or 0 }}</h3>
+                            <p>Items Found</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hand-holding"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ claims_count or 0 }}</h3>
+                            <p>Successful Claims</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ pending_claims or 0 }}</h3>
+                            <p>Pending Claims</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <div class="container">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="{{ url_for('user.report_lost_item') }}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>Report Lost Item</h3>
+                            <p>Lost something? Report it here and let our AI help you find it.</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('user.browse_found_items') }}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>Browse Found Items</h3>
+                            <p>Check if your lost item has been found by someone.</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('user.claim_history') }}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>My Claims</h3>
+                            <p>View your claim history and track current claims.</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('user.my_qr_code') }}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>My QR Code</h3>
+                            <p>Generate your QR code for quick item verification.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tips and Help Section -->
+        <section class="tips-section">
+            <div class="container">
+                <h2>Helpful Tips</h2>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h3>💡 Photo Tips</h3>
+                            <p>Upload clear, well-lit photos of your lost item to improve AI matching accuracy. Multiple
+                                angles work best!</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h3>🔒 Security First</h3>
+                            <p>For faster claim verification, enable RFID verification in your profile settings. It's
+                                secure and convenient!</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h3>⏰ Collection Time</h3>
+                            <p>Check your locker collection time here. Items are held for 30 days before being
+                                transferred to long-term storage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+            <div class="container">
+                <h2>Recent Activity</h2>
+                <div class="activity-list">
+                    {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas {{ activity.icon }}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>{{ activity.title }}</h4>
+                            <p>{{ activity.description }}</p>
+                            <span class="activity-time">{{ activity.time }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="no-activity">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No Recent Activity</h3>
+                        <p>Your recent activities will appear here once you start using the system.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include Footer -->
+    {% include 'partials/user-footer.html' %}
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/tabs.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user-header.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user-dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard-animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification-badge.js') }}"></script>
+</body>
+
+</html>

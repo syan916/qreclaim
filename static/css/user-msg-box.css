@@ -1,0 +1,47 @@
+/* User Message Box Styles - match user theme */
+.user-msg-box {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10000;
+  min-width: 300px;
+  max-width: 520px;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.user-msg-box.show { opacity: 1; transform: translateX(0); }
+.user-msg-box.success { background-color: rgb(240 253 244); }
+.user-msg-box.error { background-color: rgb(254 242 242); }
+.user-msg-box.warning { background-color: #fff7ed; }
+.user-msg-box.info { background-color: #eff6ff; }
+.user-msg-box-icon { font-size: 1.2rem; }
+.user-msg-box.success .user-msg-box-icon { color: rgb(74 222 128); }
+.user-msg-box.error .user-msg-box-icon { color: #F87171; }
+.user-msg-box.warning .user-msg-box-icon { color: #F59E0B; }
+.user-msg-box.info .user-msg-box-icon { color: #3B82F6; }
+.user-msg-box-content { flex: 1; }
+.user-msg-box-title { font-weight: 700; margin-bottom: 2px; }
+.user-msg-box.success .user-msg-box-title { color: rgb(22 101 52); }
+.user-msg-box.error .user-msg-box-title { color: #991B1B; }
+.user-msg-box.warning .user-msg-box-title { color: #92400E; }
+.user-msg-box.info .user-msg-box-title { color: #1D4ED8; }
+.user-msg-box-text { }
+.user-msg-box.success .user-msg-box-text { color: rgb(21 128 61); }
+.user-msg-box.error .user-msg-box-text { color: #B91C1C; }
+.user-msg-box.warning .user-msg-box-text { color: #B45309; }
+.user-msg-box.info .user-msg-box-text { color: #1E40AF; }
+.user-msg-box-close { background: none; border: none; font-size: 1rem; cursor: pointer; color: #666; }
+.user-msg-box-close:hover { color: #333; }
+@media (max-width: 480px) { .user-msg-box { top: 10px; right: 10px; left: 10px; transform: translateY(-100%); } .user-msg-box.show { transform: translateY(0); } }
+.user-msg-box.fade-out { opacity: 0; transform: translateX(100%); }
+@media (max-width: 480px) { .user-msg-box.fade-out { transform: translateY(-100%); } }

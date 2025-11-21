@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <!-- iOS-specific PWA capability (kept for backwards compatibility) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Standard PWA capability meta for Chrome/Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Analytics Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/report-analytics.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js for responsive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF for PDF export: corrected SRI to prevent resource blocking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Analytics Reports</h1>
+                <p>Monitor system performance and usage trends</p>
+                <!-- Header-level actions -->
+                <div class="export-group header-export-group" aria-label="Export all charts">
+                    <button class="btn-export" data-export="pdf-all" id="exportAllPdfBtn">
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                        Export All (PDF)
+                    </button>
+                    <!-- Global Auto-refresh mode selector: Off | SSE | Polling -->
+                    <label class="filter-group" for="refreshModeSelect" style="margin-left: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>Auto-refresh:</span>
+                        <select id="refreshModeSelect" aria-label="Select auto-refresh mode for analytics charts">
+                            <!-- Off: Single load, no SSE, no polling -->
+                            <option value="off" selected>Off (Single load)</option>
+                            <!-- SSE: Streams only for available charts, no polling -->
+                            <option value="sse">SSE (Streams)</option>
+                            <!-- Polling: Timed refresh for all charts -->
+                            <option value="polling">Polling (Timed)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <!-- Live region for export status announcements -->
+            <div id="export-status" class="sr-only" aria-live="polite"></div>
+
+            <div class="analytics-grid">
+                <!-- Prompt 1: Item Handling Summary (Stacked Bar) -->
+                <section class="analytics-section" aria-labelledby="item-handling-title">
+                    <div class="section-header">
+                        <h2 id="item-handling-title">Item Handling Summary</h2>
+                        <div class="section-actions">
+                            <span class="muted">Last 12 months</span>
+                            <div class="export-group" aria-label="Export Item Handling">
+                                <!-- Add data-chart for backward compatibility with older tests/selectors -->
+                                <button class="btn-export" data-export="png" data-chart-id="itemHandlingChart" data-chart="itemHandlingChart" data-filename="item-handling"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="itemHandlingChart" data-chart="itemHandlingChart" data-filename="item-handling"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="itemHandlingChart" data-chart="itemHandlingChart" data-filename="item-handling"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            Shows monthly counts of items found, claimed, and unclaimed. Use it to spot seasonal spikes and ensure claims keep pace with found items.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="itemHandlingChart" aria-label="Monthly trend of found, claimed, and unclaimed items" role="img"></canvas>
+                    </div>
+                    <div class="analytics-summary">
+                        <div class="summary-card" id="itemHandlingSummary">
+                            <!-- Filled by JS: total found/claimed in current month -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Prompt 2A: Locker Usage Trend (Line) -->
+                <section class="analytics-section" aria-labelledby="locker-trend-title">
+                    <div class="section-header">
+                        <h2 id="locker-trend-title">Locker Usage Trend</h2>
+                        <div class="section-actions">
+                            <label class="filter-group">
+                                <span>Granularity:</span>
+                                <select id="lockerGranularity">
+                                    <option value="day" selected>Daily</option>
+                                    <option value="week">Weekly</option>
+                                </select>
+                            </label>
+                            <div class="export-group" aria-label="Export Locker Trend">
+                                <button class="btn-export" data-export="png" data-chart-id="lockerUsageTrend" data-chart="lockerUsageTrend" data-filename="locker-trend"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="lockerUsageTrend" data-chart="lockerUsageTrend" data-filename="locker-trend"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="lockerUsageTrend" data-chart="lockerUsageTrend" data-filename="locker-trend"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            Shows locker occupancy over time (daily or weekly). Peaks highlight high demand; use them to plan capacity, maintenance, and staffing.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="lockerUsageTrend" aria-label="Locker occupancy trend" role="img"></canvas>
+                    </div>
+                </section>
+
+                <!-- Prompt 2B: Locker Occupancy Ratio (Donut) -->
+                <section class="analytics-section" aria-labelledby="locker-occupancy-title">
+                    <div class="section-header">
+                        <h2 id="locker-occupancy-title">Locker Occupancy Ratio</h2>
+                        <div class="section-actions">
+                            <div class="export-group" aria-label="Export Locker Occupancy">
+                                <button class="btn-export" data-export="png" data-chart-id="lockerOccupancyDonut" data-chart="lockerOccupancyDonut" data-filename="locker-occupancy"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="lockerOccupancyDonut" data-chart="lockerOccupancyDonut" data-filename="locker-occupancy"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="lockerOccupancyDonut" data-chart="lockerOccupancyDonut" data-filename="locker-occupancy"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            Shows the current split of occupied vs available lockers. If occupancy stays high, consider rebalancing or adding capacity.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="lockerOccupancyDonut" aria-label="Current locker occupancy ratio" role="img"></canvas>
+                    </div>
+                </section>
+
+                <!-- Prompt 3: QR Registration & Approval Trend (Dual Line) -->
+                <section class="analytics-section" aria-labelledby="qr-trend-title">
+                    <div class="section-header">
+                        <h2 id="qr-trend-title">QR Registration & Approval Trend</h2>
+                        <div class="section-actions">
+                            <span class="muted">Auto-refresh</span>
+                            <div class="export-group" aria-label="Export QR Trend">
+                                <button class="btn-export" data-export="png" data-chart-id="qrTrendChart" data-chart="qrTrendChart" data-filename="qr-trend"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="qrTrendChart" data-chart="qrTrendChart" data-filename="qr-trend"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="qrTrendChart" data-chart="qrTrendChart" data-filename="qr-trend"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            Compares QR requests submitted vs approved. A growing gap signals review backlog and the need to adjust workflows.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="qrTrendChart" aria-label="QR requests vs approvals over time" role="img"></canvas>
+                    </div>
+                    <div class="analytics-summary">
+                        <div class="summary-card" id="qrApprovalRate">
+                            <!-- Filled by JS: approval rate legend -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Prompt 4: Verification Method Usage Report (Pie) -->
+                <section class="analytics-section" aria-labelledby="verification-method-title">
+                    <div class="section-header">
+                        <h2 id="verification-method-title">Verification Method Usage</h2>
+                        <div class="section-actions">
+                            <div class="export-group" aria-label="Export Verification Methods">
+                                <button class="btn-export" data-export="png" data-chart-id="verificationMethodChart" data-chart="verificationMethodChart" data-filename="verification-methods"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="verificationMethodChart" data-chart="verificationMethodChart" data-filename="verification-methods"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="verificationMethodChart" data-chart="verificationMethodChart" data-filename="verification-methods"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            The pie chart displays the distribution of verification methods used by claimants (e.g., Face, QR Code, Manual).
+                            Administrators can use this to determine training focus and assess the effectiveness of each verification method.
+                            A dominant method may signal usability advantages or policy preferences.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="verificationMethodChart" aria-label="Verification methods proportion" role="img"></canvas>
+                    </div>
+                    <div class="analytics-summary">
+                        <div class="summary-card" id="topVerificationMethod">
+                            <!-- Filled by JS: most used verification method -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Prompt 5: Top Lost Item Categories (Bar) -->
+                <section class="analytics-section" aria-labelledby="top-categories-title">
+                    <div class="section-header">
+                        <h2 id="top-categories-title">Top Found Item Categories</h2>
+                        <div class="section-actions">
+                            <label class="filter-group" for="categoryRange">
+                                <span>Date Range:</span>
+                                <select id="categoryRange">
+                                    <option value="last7">Last 7 days</option>
+                                    <option value="last30" selected>Last 30 days</option>
+                                    <option value="semester">This semester</option>
+                                </select>
+                            </label>
+                            <div class="export-group" aria-label="Export Top Categories">
+                                <button class="btn-export" data-export="png" data-chart-id="topCategoriesChart" data-chart="topCategoriesChart" data-filename="top-categories"><i class="fas fa-file-image" aria-hidden="true"></i> Export PNG</button>
+                                <button class="btn-export" data-export="pdf" data-chart-id="topCategoriesChart" data-chart="topCategoriesChart" data-filename="top-categories"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</button>
+                                <button class="btn-export" data-export="csv" data-chart-id="topCategoriesChart" data-chart="topCategoriesChart" data-filename="top-categories"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-description">
+                        <h4>What this shows</h4>
+                        <p>
+                            Ranks the most frequently found item categories for the selected period. Focus operations on top categories to improve storage and recovery.
+                        </p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="topCategoriesChart" aria-label="Top categories of found items" role="img"></canvas>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export overlay container for providing loading feedback during PDF generation -->
+    <div id="exportOverlay" role="dialog" aria-live="assertive" aria-label="Generating PDF" aria-modal="true">
+        <div class="overlay-card">
+            <div class="spinner" aria-hidden="true"></div>
+            <div class="text">Generating PDF, please wait…</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/report-analytics.js') }}"></script>
+</body>
+</html>

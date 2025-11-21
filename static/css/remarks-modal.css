@@ -1,0 +1,25 @@
+/* Student Remarks Modal styles
+   - Keeps the UI consistent and readable on mobile-first layouts
+   - Lightweight and non-invasive; relies on Bootstrap for most styling */
+
+/* Counter styling: subtle emphasis */
+#studentRemarksCounter {
+  font-weight: 500;
+}
+
+/* Textarea: comfortable height for short remarks, responsive by default */
+textarea#studentRemarksInput {
+  min-height: 110px;
+}
+
+/* Error message spacing */
+#studentRemarksError {
+  margin-top: 6px;
+}
+
+/* Small accessibility improvements for icons in modal headers */
+.modal-title .fa-comment-dots {
+  color: #0d6efd; /* Bootstrap primary color for visual cue */
+}
+
+/* No fixed widths; rely on Bootstrap modal responsiveness */

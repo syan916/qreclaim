@@ -1,0 +1,224 @@
+{
+  "venues": [
+    {
+      "id": "dkc_1",
+      "name": "DKC 1",
+      "category": "Lecture Halls"
+    },
+    {
+      "id": "dkc_2",
+      "name": "DKC 2",
+      "category": "Lecture Halls"
+    },
+    {
+      "id": "dkc_3",
+      "name": "DKC 3",
+      "category": "Lecture Halls"
+    },
+    {
+      "id": "f002",
+      "name": "F002",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "tutorial_room",
+      "name": "Tutorial Room",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "computer_lab_1",
+      "name": "Computer Lab 1",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "computer_lab_2",
+      "name": "Computer Lab 2",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "computer_lab_3",
+      "name": "Computer Lab 3",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "computer_lab_4",
+      "name": "Computer Lab 4",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "network_lab",
+      "name": "Network Lab",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "pc_maintenance_lab",
+      "name": "PC Maintenance Lab",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "multimedia_language_lab",
+      "name": "Multimedia Language Lab",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "teaching_lab",
+      "name": "Teaching Lab",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "research_lab",
+      "name": "Research Lab",
+      "category": "Tutorial Room / Laboratories"
+    },
+    {
+      "id": "internet_lab",
+      "name": "Internet Lab",
+      "category": "Cyber Centre"
+    },
+    {
+      "id": "garden_cafe",
+      "name": "Garden Café",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "kitchen_bakery",
+      "name": "Kitchen Bakery",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "mock_hotel_receptionist",
+      "name": "Mock Hotel Receptionist",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "laundry_room",
+      "name": "Laundry Room",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "molecular_biology_lab",
+      "name": "Molecular Biology Lab",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "aquatic_science_lab",
+      "name": "Aquatic Science Lab",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "aquaculture_workshop",
+      "name": "Aquaculture Workshop",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "live_feed_lab",
+      "name": "Live Feed Lab",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "mushroom_cultivation_house",
+      "name": "Mushroom Cultivation House",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "hatchery",
+      "name": "Hatchery",
+      "category": "DAQ Laboratories and DHM Workshops"
+    },
+    {
+      "id": "library",
+      "name": "Library",
+      "category": "Library and Information Centres"
+    },
+    {
+      "id": "discussion_room_1",
+      "name": "Discussion Room 1",
+      "category": "Library and Information Centres"
+    },
+    {
+      "id": "discussion_room_2",
+      "name": "Discussion Room 2",
+      "category": "Library and Information Centres"
+    },
+    {
+      "id": "food_stall",
+      "name": "Food Stall",
+      "category": "Student Social Spaces"
+    },
+    {
+      "id": "student_study_centre",
+      "name": "Student Study Centre",
+      "category": "Student Social Spaces"
+    },
+    {
+      "id": "shop",
+      "name": "Shop",
+      "category": "Student Social Spaces"
+    },
+    {
+      "id": "business_entrepreneurship_unit",
+      "name": "Business and Entrepreneurship Multipurpose Unit",
+      "category": "Student Social Spaces"
+    },
+    {
+      "id": "indoor_court",
+      "name": "Indoor Court",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "gymnasium",
+      "name": "Gymnasium",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "squash_court",
+      "name": "Squash Court",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "function_hall",
+      "name": "Function Hall",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "music_room",
+      "name": "Music Room",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "table_tennis_room",
+      "name": "Table Tennis Room",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "taekwondo_club",
+      "name": "Taekwondo Club",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "atrium",
+      "name": "Atrium",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "meeting_room",
+      "name": "Meeting Room",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "counseling_room",
+      "name": "Counseling Room",
+      "category": "Other Facilities (Indoor)"
+    },
+    {
+      "id": "basketball_court",
+      "name": "Basketball court",
+      "category": "Other Facilities (Outdoor)"
+    },
+    {
+      "id": "olympic_swimming_pool",
+      "name": "Olympic-sized swimming pool",
+      "category": "Other Facilities (Outdoor)"
+    }
+  ]
+}

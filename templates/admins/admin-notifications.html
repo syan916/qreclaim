@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Admin Notifications</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Admin Notifications</h1>
+            <p>View and manage system notifications</p>
+        </div>
+        
+        <div class="notifications-container">
+            <div class="notification-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="unread">Unread</button>
+                <button class="filter-btn" data-filter="system">System</button>
+                <button class="filter-btn" data-filter="reports">Reports</button>
+            </div>
+            
+            <div class="notification-list">
+                <div class="notification-item unread system">
+                    <div class="notification-icon system">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <h3 class="notification-title">System Update</h3>
+                            <span class="notification-time">2 hours ago</span>
+                        </div>
+                        <p class="notification-message">The system has been updated to version 2.0. Check out the new features!</p>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="mark-read-btn"><i class="fas fa-check"></i></button>
+                    </div>
+                </div>
+                
+                <div class="notification-item unread reports">
+                    <div class="notification-icon reports">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <h3 class="notification-title">New Lost Report</h3>
+                            <span class="notification-time">3 hours ago</span>
+                        </div>
+                        <p class="notification-message">A new lost item report has been submitted by Lee Song Yan.</p>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="mark-read-btn"><i class="fas fa-check"></i></button>
+                        <a href="#" class="view-btn">View</a>
+                    </div>
+                </div>
+                
+                <div class="notification-item reports">
+                    <div class="notification-icon reports">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <h3 class="notification-title">New Found Item</h3>
+                            <span class="notification-time">1 day ago</span>
+                        </div>
+                        <p class="notification-message">A new found item has been posted by Mr. Tan Wei Shang.</p>
+                    </div>
+                    <div class="notification-actions">
+                        <a href="#" class="view-btn">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script>
+        // Notification filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const notificationItems = document.querySelectorAll('.notification-item');
+            
+            // Add click event to filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Get filter value
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Show/hide notification items based on filter
+                    notificationItems.forEach(item => {
+                        if (filter === 'all') {
+                            item.style.display = 'flex';
+                        } else if (filter === 'unread' && item.classList.contains('unread')) {
+                            item.style.display = 'flex';
+                        } else if (item.classList.contains(filter)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Add click event to mark-read buttons
+            const markReadButtons = document.querySelectorAll('.mark-read-btn');
+            markReadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const notificationItem = this.closest('.notification-item');
+                    notificationItem.classList.remove('unread');
+                    this.remove(); // Remove the mark-read button after clicking
+                });
+            });
+        });
+    </script>
+</body>
+</html>

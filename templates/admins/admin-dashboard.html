@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay"></div>
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ session.name }}! Here's an overview of the system.</p>
+        </div>
+        
+        <div class="dashboard-stats">
+            <div class="stat-card pending">
+                <div class="stat-card-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ qr_requests_count }}</div>
+                <div class="stat-label">QR Register Requests</div>
+                <div class="stat-meta">Pending Requests</div>
+            </div>
+            
+            <div class="stat-card warning">
+                <div class="stat-card-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ lost_items_count }}</div>
+                <div class="stat-label">Lost Item Reports</div>
+                <div class="stat-meta">Pending Reports</div>
+            </div>
+            
+            <div class="stat-card info">
+                <div class="stat-card-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ found_items_count }}</div>
+                <div class="stat-label">Found Items</div>
+                <div class="stat-meta">Total Items</div>
+            </div>
+            
+            <div class="stat-card success">
+                <div class="stat-card-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ claimed_items_count }}</div>
+                <div class="stat-label">Claimed Items</div>
+                <div class="stat-meta">Successfully Claimed</div>
+            </div>
+        </div>
+        
+        <div class="recent-activity">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h2>Recent Activity</h2>
+            </div>
+            <ul class="activity-list">
+                {% for activity in recent_activities %}
+                <li class="activity-item">
+                    <div class="activity-icon {{ activity.type }}">
+                        {% if activity.type == 'found' %}
+                            <i class="fas fa-box-open"></i>
+                        {% elif activity.type == 'lost' %}
+                            <i class="fas fa-search"></i>
+                        {% elif activity.type == 'qr' %}
+                            <i class="fas fa-qrcode"></i>
+                        {% else %}
+                            <i class="fas fa-bell"></i>
+                        {% endif %}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">{{ activity.title }}</div>
+                        <div class="activity-meta">
+                            <i class="fas fa-info-circle"></i>
+                            <span>{{ activity.description }}</span>
+                        </div>
+                    </div>
+                    <div class="activity-time">
+                        <i class="far fa-clock"></i>
+                        {{ activity.time }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="quick-actions">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="action-buttons">
+                <a href="{{ url_for('admin.post_found_item') }}" class="action-button" onclick="handleQuickAction('post-found')">
+                    <div class="action-icon"><i class="fas fa-plus-circle"></i></div>
+                    <div class="action-label">Post Found Item</div>
+                    <div class="action-description">Add a new found item to the system</div>
+                </a>
+                
+                <a href="{{ url_for('admin.manage_lost_item_report') }}" class="action-button" onclick="handleQuickAction('manage-lost')">
+                    <div class="action-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="action-label">Manage Lost Reports</div>
+                    <div class="action-description">Review and process lost item reports</div>
+                </a>
+                
+                <a href="{{ url_for('admin.qr_register_request') }}" class="action-button" onclick="handleQuickAction('qr-requests')">
+                    <div class="action-icon"><i class="fas fa-qrcode"></i></div>
+                    <div class="action-label">QR Requests</div>
+                    <div class="action-description">Handle pending QR code registration requests</div>
+                </a>
+                
+                <a href="{{ url_for('admin.report_analytics') }}" class="action-button" onclick="handleQuickAction('analytics')">
+                    <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="action-label">View Analytics</div>
+                    <div class="action-description">See system statistics and performance metrics</div>
+                </a>
+                
+                <button class="action-button" onclick="updateOverdueItems()" id="updateOverdueBtn">
+                    <div class="action-icon"><i class="fas fa-clock"></i></div>
+                    <div class="action-label">Update Overdue Items</div>
+                    <div class="action-description">Mark items older than 31 days as overdue</div>
+                </button>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin-dashboard.js') }}"></script>
+</body>
+</html>

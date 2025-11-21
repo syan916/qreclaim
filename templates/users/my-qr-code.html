@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My QR Code - QReclaim</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap (aligns with dashboard/browse-found-items) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/browse-found-items.css') }}">
+
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/my-qr-code.css') }}">
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        // QR Code functionality from browse-claim-flow.js
+        let qrCountdownTimer = null;
+        let currentQRData = null;
+
+        async function fetchActiveQR() {
+            const loadingEl = document.getElementById('loadingState');
+            const emptyEl = document.getElementById('emptyState');
+            const activeEl = document.getElementById('activeQRContainer');
+            
+            loadingEl.style.display = 'block';
+            emptyEl.style.display = 'none';
+            activeEl.style.display = 'none';
+
+            try {
+                const response = await fetch('/user/api/claims/active-qr');
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to fetch QR code');
+                }
+
+                if (!data.qr_code) {
+                    // No active QR code
+                    loadingEl.style.display = 'none';
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+
+                // Display active QR code
+                currentQRData = data.qr_code;
+                displayActiveQR(data.qr_code);
+                
+                loadingEl.style.display = 'none';
+                activeEl.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error fetching QR code:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                showToast(error.message || 'Failed to load QR code', 'error');
+            }
+        }
+
+        function displayActiveQR(qrData) {
+            // Update QR image
+            const qrImage = document.getElementById('activeQRImage');
+            if (qrImage && qrData.qr_image_url) {
+                qrImage.src = qrData.qr_image_url;
+                qrImage.alt = `QR Code for ${qrData.item_name || 'item claim'}`;
+                
+                // Add error handling for image load
+                qrImage.onerror = function() {
+                    this.src = '{{ url_for("static", filename="images/qr-placeholder.png") }}';
+                    this.alt = 'QR Code failed to load';
+                    showToast('QR code image failed to load', 'error');
+                };
+            }
+
+            // Update metadata
+            document.getElementById('activeQRItemName').textContent = qrData.item_name || 'Unknown Item';
+            document.getElementById('activeQRGenerated').textContent = formatDateTime(qrData.created_at);
+            document.getElementById('activeQRExpires').textContent = formatDateTime(qrData.expires_at);
+
+            // Start countdown
+            startQRCountdown(qrData.expires_at_ms || qrData.expires_at);
+            
+            // Update download button
+            const downloadBtn = document.getElementById('downloadActiveQRBtn');
+            if (downloadBtn && qrData.qr_image_url) {
+                downloadBtn.href = qrData.qr_image_url;
+                downloadBtn.download = `qreclaim-qr-${qrData.token || 'claim'}.png`;
+            }
+        }
+
+        function startQRCountdown(expiresAt) {
+            // Clear existing timer
+            if (qrCountdownTimer) {
+                clearInterval(qrCountdownTimer);
+            }
+
+            const countdownEl = document.getElementById('qrCountdown');
+            if (!countdownEl) return;
+
+            function updateCountdown() {
+                const now = Date.now();
+                let expiresMs = 0;
+                
+                if (typeof expiresAt === 'number') {
+                    expiresMs = expiresAt;
+                } else if (typeof expiresAt === 'string') {
+                    expiresMs = new Date(expiresAt).getTime();
+                }
+
+                const remainingMs = Math.max(0, expiresMs - now);
+                const totalSeconds = Math.floor(remainingMs / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                countdownEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                // Update color based on time remaining
+                if (totalSeconds <= 60) {
+                    countdownEl.style.color = '#dc3545'; // Red when less than 1 minute
+                } else if (totalSeconds <= 180) {
+                    countdownEl.style.color = '#ffc107'; // Yellow when less than 3 minutes
+                } else {
+                    countdownEl.style.color = '#28a745'; // Green when more than 3 minutes
+                }
+
+                // Auto-refresh when expired
+                if (remainingMs <= 0) {
+                    clearInterval(qrCountdownTimer);
+                    showToast('QR code has expired', 'info');
+                    setTimeout(() => fetchActiveQR(), 1000);
+                }
+            }
+
+            // Update immediately and then every second
+            updateCountdown();
+            qrCountdownTimer = setInterval(updateCountdown, 1000);
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch {
+                return dateStr;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            try {
+                if (type === 'success') userMsgBox.showSuccess(message);
+                else if (type === 'error') userMsgBox.showError(message);
+                else if (type === 'warning') userMsgBox.showWarning(message);
+                else userMsgBox.showInfo(message);
+            } catch (_) {}
+        }
+
+        function refreshQRCode() {
+            fetchActiveQR();
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchActiveQR();
+            
+            // Bind refresh button
+            const refreshBtn = document.getElementById('refreshActiveQRBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshQRCode);
+            }
+
+            // Auto-refresh every 30 seconds
+            setInterval(fetchActiveQR, 30000);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (qrCountdownTimer) {
+                clearInterval(qrCountdownTimer);
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    {% include 'partials/user-header.html' %}
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header py-4" data-aos="fade-down">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title mb-2"><i class="fas fa-qrcode me-2"></i> My QR Code</h1>
+                        <p class="page-subtitle mb-0">View and manage your active QR codes for item claims</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">My QR Code</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- QR Code Display Section -->
+        <section class="py-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="container">
+                <div class="qr-container">
+                    <!-- Loading State -->
+                    <div id="loadingState" class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <h3>Loading Active QR Code...</h3>
+                        <p>Please wait while we fetch your active QR code.</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <h3>No Active QR Code</h3>
+                        <p>You don't have any active QR codes at the moment. QR codes are generated when your claims are approved.</p>
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Start Claiming Items
+                        </a>
+                    </div>
+
+                    <!-- Active QR Code Display -->
+                    <div id="activeQRContainer" class="active-qr-display" style="display: none;">
+                        <div class="qr-card">
+                            <div class="qr-header">
+                                <div class="qr-status active">
+                                    <i class="fas fa-check-circle"></i>
+                                    Active
+                                </div>
+                                <h3 class="qr-title">Your Active QR Code</h3>
+                            </div>
+                            
+                            <div class="qr-body">
+                                <div class="qr-image-container">
+                                    <img id="activeQRImage" src="" alt="Active QR Code" class="qr-image">
+                                    <div class="qr-overlay">
+                                        <div class="qr-countdown">
+                                            <div class="countdown-label">Expires in:</div>
+                                            <div class="countdown-timer" id="qrCountdown">05:00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="qr-metadata">
+                                    <div class="metadata-row">
+                                        <span class="metadata-label">Item:</span>
+                                        <span class="metadata-value" id="activeQRItemName">-</span>
+                                    </div>
+                                    <div class="metadata-row">
+                                        <span class="metadata-label">Generated:</span>
+                                        <span class="metadata-value" id="activeQRGenerated">-</span>
+                                    </div>
+                                    <div class="metadata-row">
+                                        <span class="metadata-label">Expires:</span>
+                                        <span class="metadata-value" id="activeQRExpires">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="qr-footer">
+                                <button id="downloadActiveQRBtn" class="btn btn-primary">
+                                    <i class="fas fa-download"></i>
+                                    Download QR Code
+                                </button>
+                                <button id="refreshActiveQRBtn" class="btn btn-secondary">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/user-msg-box.html' %}
+    {% include 'partials/user-confirm.html' %}
+
+    <!-- Footer -->
+    {% include 'partials/user-footer.html' %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/user-header.js') }}"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, easing: 'ease-in-out', once: true, offset: 100 });
+    </script>
+</body>
+</html>

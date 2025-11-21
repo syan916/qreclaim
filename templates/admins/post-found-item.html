@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Post Found Item</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/post-found-item.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/validation.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Post Found Items</h1>
+                <p>Post all found items in the system</p>
+            </div>
+
+
+            <div class="content-container">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2>Found Item Details</h2>
+                        <p>Please fill in all the required information about the found item</p>
+                    </div>
+
+                    <form id="postFoundItemForm" class="post-found-item-form" method="POST"
+                        enctype="multipart/form-data">
+                        <!-- 1. Image Upload - First Field -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-camera"></i>
+                                    Upload Images <span class="required">*</span>
+                                </label>
+                                <div class="file-upload-area">
+                                    <div class="upload-icon">📷</div>
+                                    <div class="upload-text">Click to upload or drag and drop</div>
+                                    <div class="upload-hint">JPG, PNG, JPEG only (Max 10MB per file)</div>
+                                    <input type="file" id="imageInput" class="file-input" multiple
+                                        accept=".jpg,.jpeg,.png">
+                                </div>
+                                <div id="validation-messages" class="validation-messages"></div>
+                                <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                                </div>
+                                <!-- Image Modal for full view -->
+                                <div id="imageModal" class="image-modal" style="display: none;">
+                                    <div class="modal-content">
+                                        <span class="modal-close">&times;</span>
+                                        <img id="modalImage" class="modal-image" src="" alt="Full size image">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Item Name and Category -->
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="item_name">
+                                        <i class="fas fa-tag"></i>
+                                        Item Name <span class="required">*</span>
+                                    </label>
+                                    <input type="text" id="item_name" name="item_name" class="form-input"
+                                        placeholder="Enter item name..." required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="category">
+                                        <i class="fas fa-list"></i>
+                                        Category <span class="required">*</span>
+                                    </label>
+                                    <select id="category" name="category" class="form-input form-select" required>
+                                        <option value="">Select a category</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Clothing">Clothing</option>
+                                        <option value="Accessories">Accessories</option>
+                                        <option value="Books">Books</option>
+                                        <option value="Sports">Sports</option>
+                                        <option value="Personal Items">Personal Items</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. AI Tags Generation -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-tags"></i>
+                                    Tags <span class="required">*</span>
+                                </label>
+                                <div class="tags-container">
+                                    <div id="tagsDisplay" class="tags-display"></div>
+                                    <div class="tag-input-container">
+                                        <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag...">
+                                        <button type="button" id="addTagBtn" class="tag-add-btn">
+                                            <i class="fas fa-plus"></i>
+                                            Add Tag
+                                        </button>
+                                        <button type="button" id="deleteTagBtn" class="tag-delete-btn"
+                                            onclick="confirmDeleteAllTags()">
+                                            <i class="fas fa-trash"></i>
+                                            Delete Tags
+                                        </button>
+                                    </div>
+                                    <div id="tagsLoading" class="tags-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i> Generating AI tags...
+                                    </div>
+                                    <div id="tagsError" class="tags-error" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Description with AI Generation -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label for="description">
+                                    <i class="fas fa-align-left"></i>
+                                    Description
+                                </label>
+                                <div class="description-container">
+                                    <textarea id="description" name="description" class="form-input form-textarea"
+                                        placeholder="Provide a detailed description of the found item..."></textarea>
+                                    <div class="description-actions">
+                                        <button type="button" id="aiDescriptionBtn" class="btn btn-ai-description"
+                                            disabled>
+                                            <i class="fas fa-robot"></i>
+                                            AI Generate Description
+                                        </button>
+                                        <div id="aiDescriptionLoading" class="ai-description-loading"
+                                            style="display: none;">
+                                            <i class="fas fa-spinner fa-spin"></i> Generating description...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Location and Time -->
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="place_found">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Place Found
+                                    </label>
+                                    <div class="venue-selector">
+                                        <select id="venue_select" class="form-input venue-dropdown">
+                                            <option value="">Select a venue...</option>
+                                        </select>
+                                        <input type="text" id="place_found" name="place_found"
+                                            class="form-input venue-custom" placeholder="Enter custom location..."
+                                            style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="date_time_found">
+                                        <i class="fas fa-clock"></i>
+                                        Date & Time Found <span class="required">*</span>
+                                    </label>
+                                    <input type="datetime-local" id="date_time_found" name="date_time_found"
+                                        class="form-input" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Item Value and Locker Assignment -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label for="is_valuable">
+                                    <i class="fas fa-gem"></i>
+                                    Is Valuable Item?
+                                </label>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="is_valuable" name="is_valuable">
+                                    <label for="is_valuable" class="checkbox-label">
+                                        Check if item has significant monetary or personal value
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row full-width">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="is_assigned_to_locker" name="is_assigned_to_locker">
+                                <label for="is_assigned_to_locker">
+                                    <i class="fas fa-lock"></i>
+                                    Assign to Locker?
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="locker-selection" class="form-row full-width" style="display: none;">
+                            <div class="form-group">
+                                <label for="locker_id">
+                                    <i class="fas fa-key"></i>
+                                    Select Locker <span class="required">*</span>
+                                </label>
+                                <select id="locker_id" name="locker_id" class="form-input form-select">
+                                    <option value="">Loading available lockers...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 7. Admin Remarks -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label for="remarks">
+                                    <i class="fas fa-sticky-note"></i>
+                                    Admin Remarks
+                                </label>
+                                <textarea id="remarks" name="remarks" class="form-input form-textarea"
+                                    placeholder="Special notes about the item (e.g., serial numbers, unique identifiers, condition details...)"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary cancel-btn" onclick="confirmCancelAction()">
+                                <i class="fas fa-arrow-left"></i>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary submit-btn"
+                                onclick="confirmSubmitAction(event)">
+                                <i class="fas fa-check"></i>
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Processing Overlay -->
+    <div id="aiProcessingOverlay" class="ai-processing-overlay">
+        <div class="ai-processing-content">
+            <h3>AI is processing your request...</h3>
+            <div class="wrapper">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="shadow"></div>
+                <div class="shadow"></div>
+                <div class="shadow"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/image-validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/post-found-item.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,1329 @@
+/* User Header Styles - Modern and Professional */
+:root {
+    /* Primary Color Palette centralized in static/css/theme.css */
+    /* Using aliases: var(--primary-brown), var(--secondary-brown), var(--accent-gold), var(--light-peach) */
+    
+    /* Header Specific Colors */
+    --header-bg: var(--primary-brown);
+    --header-text: #FFFFFF;
+    --header-text-light: rgba(255, 255, 255, 0.8);
+    --header-hover: var(--secondary-brown);
+    --header-active: var(--accent-gold);
+    
+    /* Neutral Colors */
+    --white: #FFFFFF;
+    --light-gray: #F8F9FA;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-light: 0 2px 10px rgba(111, 78, 55, 0.2);
+    --shadow-medium: 0 4px 20px rgba(111, 78, 55, 0.3);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+    --header-height: 70px;
+    --z-header: 1000;
+    --z-dropdown: 1010;
+    --z-mobile: 1020;
+    
+    /* Status Colors */
+    --danger: #DC3545;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Header Container */
+.user-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-light);
+    z-index: var(--z-header);
+    transition: var(--transition);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    position: relative;
+    gap: 1rem;
+}
+
+/* Logo Section - Enhanced for all screen sizes with responsive sizing */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 700;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    min-width: fit-content;
+}
+
+.header-logo:hover {
+    color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+.header-logo .logo-icon {
+    /* Responsive sizing with clamp() for smooth scaling */
+    width: clamp(40px, 6vw, 100px);
+    height: clamp(40px, 6vw, 100px);
+    flex-shrink: 0;
+    border-radius: var(--border-radius);
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    /* Font size scales with logo size */
+    font-size: clamp(1.8rem, 2.5vw, 3rem);
+    transition: all 0.2s ease;
+    /* Maintain aspect ratio */
+    aspect-ratio: 1;
+}
+
+.header-logo h1 {
+    /* Font size scales with viewport but maintains readability */
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.2s ease;
+}
+
+/* Logo responsive adjustments */
+@media (max-width: 1200px) {
+    .header-logo .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.3rem;
+    }
+    
+    .header-logo h1 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .header-logo {
+        gap: 0.5rem;
+    }
+    
+    .header-logo .logo-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1.15rem;
+    }
+    
+    .header-logo h1 {
+        font-size: 1.65rem;
+        font-weight: 600;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-logo {
+        gap: 0.4rem;
+    }
+    
+    .header-logo .logo-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+    }
+    
+    .header-logo h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo {
+        gap: 0.3rem;
+    }
+    
+    .header-logo .logo-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 1.05rem;
+    }
+    
+    .header-logo h1 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+}
+
+@media (max-width: 360px) {
+    .header-logo h1 {
+        font-size: 1.25rem;
+    }
+    
+    .header-logo .logo-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra small screens - prevent logo overflow */
+@media (max-width: 320px) {
+    .header-logo {
+        gap: 0.2rem;
+    }
+    
+    .header-logo .logo-icon {
+        width: 22px;
+        height: 22px;
+        font-size: 0.8rem;
+    }
+    
+    .header-logo h1 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+    }
+    
+    .header-content {
+        padding: 0 0.5rem;
+    }
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--header-text);
+    font-weight: 700;
+    font-size: 1.5rem;
+    transition: var(--transition);
+}
+
+.logo-link:hover {
+    color: var(--header-active);
+    text-decoration: none;
+    transform: scale(1.05);
+}
+
+.user-header .logo-img {
+    /* Responsive sizing with clamp() for smooth scaling - adjusted for mobile */
+    width: clamp(50px, 8vw, 120px);
+    height: clamp(50px, 8vw, 120px);
+    object-fit: contain;
+    border: none;
+    transition: all 0.3s ease;
+    /* Maintain aspect ratio */
+    aspect-ratio: 1;
+}
+
+.logo-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* Desktop Navigation */
+.desktop-nav {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    color: var(--header-text);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+
+.nav-link:hover,
+.nav-item.active .nav-link {
+    background-color: var(--header-hover);
+    color: var(--white);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.nav-item.active .nav-link {
+    background-color: var(--header-active);
+    color: var(--primary-brown);
+    font-weight: 600;
+}
+/* Remove old nav-link styles that conflict */
+.nav-link:focus {
+    color: var(--header-text);
+    background-color: var(--header-hover);
+    text-decoration: none;
+}
+
+/* Enhanced hover state for better user experience */
+.nav-link-hover,
+.nav-link.nav-link-hover {
+    background-color: var(--header-hover);
+    color: var(--white);
+    text-decoration: none;
+    transform: translateY(-1px);
+    transition: var(--transition);
+}
+
+/* Enhanced active state with consistent styling */
+.nav-item.active .nav-link,
+.nav-item.dropdown.active .nav-link {
+    background-color: var(--header-active);
+    color: var(--primary-brown);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure consistent hover states for active items */
+.nav-item.active .nav-link:hover,
+.nav-item.dropdown.active .nav-link:hover {
+    background-color: var(--header-active);
+    color: var(--primary-brown);
+    transform: translateY(-1px);
+}
+
+/* Dropdown highlight pending state for smooth transitions */
+.dropdown-highlight-pending {
+    background-color: var(--header-active) !important;
+    color: var(--primary-brown) !important;
+    font-weight: 600 !important;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
+
+/* Hide Bootstrap's default caret to prevent duplicate arrows when using our custom icon */
+.user-header .dropdown-toggle::after {
+    display: none !important;
+    content: none !important;
+}
+
+.dropdown-arrow {
+    margin-left: 0.25rem;
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.dropdown.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-medium);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    z-index: var(--z-dropdown);
+    padding: 0.5rem 0;
+    list-style: none;
+}
+
+.dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Fix dropdown visibility when Bootstrap CSS is loaded */
+/* Bootstrap sets .dropdown-menu { display: none; } and shows it with .show. We use .active, so override to display when active */
+.user-header .dropdown.active .dropdown-menu {
+    display: block !important;
+}
+
+.dropdown-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--primary-brown);
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.dropdown-link:hover,
+.dropdown-link:focus {
+    background-color: var(--light-gray);
+    color: var(--secondary-brown);
+    text-decoration: none;
+}
+
+/* Header Actions - Enhanced responsive behavior */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.notification-btn { position: relative; cursor: pointer; }
+.notification-panel { position: absolute; right: 0; top: calc(100% + 8px); width: 360px; max-width: 90vw; background: var(--white); color: #333; border-radius: 10px; box-shadow: var(--shadow-medium); border: 1px solid rgba(0,0,0,0.08); padding: 0; display: block; z-index: var(--z-dropdown); }
+.notification-panel[aria-hidden="true"] { display: none; }
+.notification-panel .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); font-weight: 600; }
+.notification-panel .panel-header .mark-all { background: transparent; border: none; color: var(--header-active); cursor: pointer; }
+.notification-panel .panel-body { max-height: 420px; overflow-y: auto; }
+.notification-list { list-style: none; margin: 0; padding: 0; }
+.notification-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.06); cursor: pointer; }
+.notification-item.unread { background: var(--light-gray); }
+.notification-item .item-title { font-weight: 600; margin-bottom: 4px; }
+.notification-item .item-message { font-size: 0.9rem; color: #555; }
+.notification-item .item-time { font-size: 0.8rem; color: #777; white-space: nowrap; }
+.panel-loading { padding: 16px; }
+.panel-empty { padding: 16px; text-align: center; color: #777; }
+
+/* Ensure header actions are properly hidden on mobile */
+@media (max-width: 992px) {
+    .header-actions {
+        display: none !important;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    /* Show mobile toggle */
+    .mobile-toggle {
+        display: flex !important;
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (min-width: 993px) {
+    .header-actions {
+        display: flex !important;
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    /* Hide mobile toggle on desktop */
+    .mobile-toggle {
+        display: none !important;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--light-peach);
+    color: var(--primary-brown);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    background: var(--accent-gold);
+    color: var(--primary-brown);
+    transform: scale(1.05);
+}
+
+/* Notifications */
+.notification-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--light-peach);
+    color: var(--primary-brown);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.notification-btn:hover {
+    background: var(--accent-gold);
+    color: var(--primary-brown);
+    text-decoration: none;
+    transform: scale(1.05);
+}
+
+/* Default inline badge for non-button contexts */
+.notification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--danger);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1;
+}
+
+/* Absolute badge only when inside the header notification button */
+.notification-btn .notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+}
+
+.notification-badge.notification-pulse {
+    animation: notificationPulse 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes notificationPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+        background: #ff4757;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* User Profile */
+.user-profile {
+    position: relative;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    color: var(--header-text);
+}
+
+.profile-btn:hover {
+    background: var(--header-hover);
+    color: var(--white);
+}
+
+.profile-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-gold);
+    object-fit: cover;
+}
+
+.profile-name {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 180px;
+    background: var(--white); /* match QR dropdown background */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-medium);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    z-index: var(--z-dropdown);
+    padding: 0.5rem 0;
+}
+
+.user-profile.active .profile-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Ensure profile dropdown is visible when active even with Bootstrap CSS */
+.user-header .user-profile.active .profile-dropdown-menu {
+    display: block !important;
+}
+
+.profile-dropdown-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.profile-dropdown-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.profile-dropdown-item:hover {
+    background-color: var(--light-gray);
+    color: var(--secondary-brown);
+    text-decoration: none;
+}
+
+/* Mobile Navigation */
+.mobile-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+}
+
+.mobile-toggle span {
+    display: block;
+    width: 28px;
+    height: 2.5px;
+    background: var(--header-text);
+    margin: 3.5px 0;
+    transition: var(--transition);
+    border-radius: 1px;
+}
+
+.mobile-nav {
+    position: fixed;
+    top: var(--header-height);
+    left: -100%;
+    width: 280px;
+    height: calc(100vh - var(--header-height));
+    background: linear-gradient(135deg, var(--white) 0%, #f9f7f4 100%);
+    border-right: 2px solid var(--accent-gold);
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition);
+    z-index: var(--z-mobile);
+    overflow-y: auto;
+}
+
+.mobile-nav.active {
+    left: 0;
+}
+
+.mobile-nav-content {
+    padding: 0.5rem 0;
+}
+
+.mobile-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mobile-item {
+    border-bottom: 1px solid rgba(111, 78, 55, 0.1);
+}
+
+.mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    color: var(--primary-brown);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.mobile-link i {
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-gold);
+    transition: all 0.3s ease;
+}
+
+.mobile-link:hover {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: var(--primary-brown);
+    text-decoration: none;
+    padding-left: 1.75rem;
+}
+
+.mobile-link:hover i {
+    color: var(--primary-brown);
+    transform: scale(1.15);
+}
+
+.mobile-item.active .mobile-link {
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--highlight-peach) 100%);
+    color: var(--primary-brown);
+    font-weight: 700;
+    border-left: 4px solid var(--primary-brown);
+    padding-left: calc(1.5rem - 4px);
+}
+
+.mobile-item.active .mobile-link i {
+    color: var(--primary-brown);
+}
+
+/* Enhanced mobile hover and active states */
+.mobile-link.mobile-link-hover {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: var(--primary-brown);
+    text-decoration: none;
+    padding-left: 1.75rem;
+    transition: all 0.3s ease;
+}
+
+.mobile-item.active .mobile-link:hover {
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--highlight-peach) 100%);
+    color: var(--primary-brown);
+}
+
+/* Mobile dropdown highlight pending state */
+.mobile-dropdown.dropdown-highlight-pending .mobile-link {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+    color: var(--primary-brown) !important;
+    font-weight: 700 !important;
+}
+
+/* Mobile Dropdown */
+.mobile-dropdown-menu {
+    display: none;
+    background: linear-gradient(135deg, #f5f0eb 0%, #f9f7f4 100%);
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    border-left: 3px solid var(--accent-gold);
+}
+
+.mobile-dropdown.active .mobile-dropdown-menu {
+    display: block;
+}
+
+.mobile-dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 2rem;
+    color: var(--secondary-brown);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.mobile-dropdown-link:before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--accent-gold);
+    border-radius: 50%;
+    position: absolute;
+    left: 1.25rem;
+}
+
+.mobile-dropdown-link:hover {
+    background: linear-gradient(135deg, #ffe0b2 0%, #fed7a2 100%);
+    color: var(--primary-brown);
+    text-decoration: none;
+    padding-left: 2.25rem;
+    font-weight: 600;
+}
+
+/* Mobile Profile */
+.mobile-profile {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-top: 2px solid var(--accent-gold);
+    background: linear-gradient(135deg, #fff9f5 0%, #fef4e8 100%);
+}
+
+.mobile-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(236, 177, 118, 0.3);
+}
+
+.mobile-profile-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-gold);
+    box-shadow: 0 2px 8px rgba(111, 78, 55, 0.15);
+}
+
+.mobile-profile-name {
+    font-weight: 700;
+    color: var(--primary-brown);
+    font-size: 1rem;
+}
+
+.mobile-profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--primary-brown);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+}
+
+.mobile-profile-link i {
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-gold);
+    transition: all 0.3s ease;
+}
+
+.mobile-profile-link:hover {
+    background: linear-gradient(135deg, #ffe0b2 0%, #fed7a2 100%);
+    color: var(--primary-brown);
+    text-decoration: none;
+    padding-left: 1.25rem;
+}
+
+.mobile-profile-link:hover i {
+    transform: scale(1.15);
+    color: var(--primary-brown);
+}
+/* Profile Dropdown Styles */
+.profile-dropdown {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+}
+
+.profile-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--header-text);
+}
+
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: calc(var(--z-mobile) - 1);
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+/* Precise breakpoint for desktop to mobile transition */
+@media (max-width: 992px) {
+    .desktop-nav {
+        display: none;
+    }
+    
+    .mobile-toggle {
+        display: flex;
+        z-index: 1001;
+        position: absolute;
+        left: 12px;
+        top: 12px;
+    }
+    
+    .header-actions {
+        gap: 0.5rem;
+    }
+    
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    /* Stack header content for mobile nav */
+    .user-header .header-content {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+    
+    /* Ensure profile button is fully clickable */
+    .user-profile {
+        position: relative;
+        z-index: 1000;
+    }
+    
+    .profile-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: var(--border-radius);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .profile-btn:hover,
+    .profile-btn:focus {
+        background-color: var(--header-hover);
+    }
+    
+    /* Logo optimization for mobile */
+    .logo-text {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+    
+    .user-header .logo-img {
+        /* Responsive sizing for mobile - override previous rules */
+        width: clamp(50px, 8vw, 120px) !important;
+        height: clamp(50px, 8vw, 120px) !important;
+        object-fit: contain;
+        aspect-ratio: 1;
+        transition: all 0.3s ease;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 1rem;
+        min-height: var(--header-height);
+        justify-content: center;
+        padding-left: 56px; /* reserve space for top-left hamburger */
+    }
+    
+    .desktop-nav {
+        display: none;
+    }
+    
+    .header-actions {
+        gap: 0.25rem;
+    }
+    
+    .mobile-toggle {
+        display: flex;
+        /* move hamburger to the upper-left corner on mobile and keep it compact */
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        transform: none;
+        width: 44px;
+        height: 44px;
+        margin-left: 0 !important;
+        background: var(--light-peach);
+        border-radius: 50%;
+        box-shadow: var(--shadow-medium);
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-toggle i {
+        font-size: 1.4rem;
+        color: var(--primary-brown);
+    }
+    
+    /* show logo in compact layout and prevent squeezing */
+    .header-logo {
+        display: flex !important;
+    }
+    
+    /* Hide redundant elements in mobile since they're in the mobile menu */
+    .notification-btn {
+        display: none;
+    }
+    
+    .theme-toggle {
+        display: none;
+    }
+    
+    .user-profile .profile-name {
+        display: none;
+    }
+    
+    .profile-btn {
+        padding: 0.4rem;
+        min-width: 40px;
+        min-height: 40px;
+        touch-action: manipulation;
+    }
+    
+    .profile-img {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    
+    .notification-btn {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .theme-toggle {
+        width: 35px;
+        height: 35px;
+    }
+    
+    /* Ensure header doesn't get squeezed */
+    .header-logo {
+        flex-shrink: 0;
+        min-width: 70px;
+    }
+    
+    .logo-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .user-header .logo-img {
+        /* Small mobile devices - use responsive sizing */
+        width: clamp(50px, 8vw, 120px) !important;
+        height: clamp(50px, 8vw, 120px) !important;
+        object-fit: contain;
+        aspect-ratio: 1;
+    }
+    
+    /* Improve dropdown positioning on mobile */
+    .profile-dropdown-menu {
+        right: 0;
+        left: auto;
+        min-width: 200px;
+        max-width: calc(100vw - 2rem);
+    }
+    
+    /* Mobile navigation header */
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--header-bg);
+    }
+    
+    .mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .mobile-logo-img {
+        width: 120px; /* increased for better visibility */
+        height: 40px;
+    }
+    
+    .mobile-logo-text {
+        color: var(--header-text);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .mobile-close {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--header-text);
+        cursor: pointer;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+    
+    .mobile-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .mobile-nav {
+        width: 100%;
+        left: -100%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --header-height: 68px;
+    }
+    
+    .header-content {
+        padding: 0 0.5rem;
+    }
+    
+    .header-logo {
+        font-size: 1rem;
+    }
+    
+    .user-header .logo-img {
+        /* Very small mobile devices - use responsive sizing */
+        width: clamp(50px, 10vw, 80px) !important;
+        height: clamp(50px, 10vw, 80px) !important;
+        object-fit: contain;
+        aspect-ratio: 1;
+    }
+    
+    .theme-toggle,
+    .notification-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .profile-img {
+        width: 26px;
+        height: 26px;
+    }
+    
+    .mobile-nav {
+        top: 60px;
+        height: calc(100vh - 60px);
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-white: #1a1a1a;
+        --bg-light: #2d2d2d;
+        --text-dark: #ffffff;
+        --text-light: #b0b0b0;
+        --border-color: #404040;
+        --shadow-light: 0 2px 10px rgba(0,0,0,0.3);
+        --shadow-medium: 0 4px 20px rgba(0,0,0,0.4);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus Styles */
+.nav-link:focus,
+.dropdown-item:focus,
+.mobile-link:focus,
+.theme-toggle:focus,
+.notification-btn:focus,
+.profile-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #000000;
+        --shadow-light: 0 2px 10px rgba(0,0,0,0.8);
+        --shadow-medium: 0 4px 20px rgba(0,0,0,0.9);
+    }
+}
+
+/* Notification badge inside nav link */
+.nav-link .notification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    margin-left: 8px;
+    background: var(--primary-orange);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* Footer Dual Logo Styles */
+.footer-logos {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.logo-container .logo-img {
+    width: clamp(150px, 6vw, 70px);
+    height: clamp(150px, 6vw, 70px);
+    object-fit: contain;
+    border: none;
+    aspect-ratio: 1;
+    transition: all 0.3s ease;
+}
+
+.logo-container .logo-text {
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    font-weight: 700;
+    color: var(--white);
+    white-space: nowrap;
+}
+
+.logo-separator {
+    width: 2px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments for dual logos */
+@media (max-width: 768px) {
+    .footer-logos {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .logo-separator {
+        width: 40px;
+        height: 2px;
+    }
+    
+    .logo-container .logo-img {
+        width: clamp(145px, 8vw, 60px);
+        height: clamp(145px, 8vw, 60px);
+    }
+    
+    .logo-container .logo-text {
+        font-size: clamp(1.1rem, 3vw, 1.5rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-logos {
+        gap: 12px;
+    }
+    
+    .logo-container {
+        gap: 8px;
+    }
+    
+    .logo-container .logo-img {
+        width: clamp(40px, 10vw, 50px);
+        height: clamp(40px, 10vw, 50px);
+    }
+    
+    .logo-container .logo-text {
+        font-size: clamp(1rem, 4vw, 1.3rem);
+    }
+}

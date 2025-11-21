@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item • QReclaim</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap (aligns with dashboard/browse-found-items) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-msg-box.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/browse-found-items.css') }}">
+
+    <!-- Page-specific styles (coffee palette compliant) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/report-lost-item.css') }}">
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let uploadedImage = null;
+            let currentTags = [];
+            let aiGeneratedTags = new Set();
+            const LEARNED_TAGS_KEY = 'qreclaim_learned_tags';
+            function getLearnedTagStats(){ try { return JSON.parse(localStorage.getItem(LEARNED_TAGS_KEY)||'{}'); } catch(_) { return {}; } }
+            function recordLearnedTag(tag){ const t=(tag||'').trim().toLowerCase(); if(!t) return; const stats=getLearnedTagStats(); stats[t]=(stats[t]||0)+1; localStorage.setItem(LEARNED_TAGS_KEY, JSON.stringify(stats)); }
+            function getTopLearnedTags(limit){ const stats=getLearnedTagStats(); const entries=Object.entries(stats); entries.sort((a,b)=>b[1]-a[1]); return entries.slice(0,(limit||50)).map(([k])=>k); }
+            let venues = [];
+
+            const statusEl = document.getElementById('status');
+            const imageInput = document.getElementById('image');
+            const uploadArea = document.querySelector('.file-upload-area');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const tagsDisplay = document.getElementById('tagsDisplay');
+            const tagInput = document.getElementById('tagInput');
+            const addTagBtn = document.getElementById('addTagBtn');
+            const deleteTagBtn = document.getElementById('deleteTagBtn');
+            const tagsLoading = document.getElementById('tagsLoading');
+            const tagsError = document.getElementById('tagsError');
+            const aiDescriptionBtn = document.getElementById('aiDescriptionBtn');
+            const descriptionTextarea = document.getElementById('description');
+            descriptionTextarea?.addEventListener('input', function(){ const btn = document.getElementById('optimizeDescriptionBtn'); if (btn) btn.disabled = this.value.trim().length === 0; });
+            const suggestionBox = document.getElementById('descSuggestionBox');
+            const suggestionText = document.getElementById('descSuggestionText');
+            const applySuggestionBtn = document.getElementById('applySuggestionBtn');
+            const dismissSuggestionBtn = document.getElementById('dismissSuggestionBtn');
+
+            const typoMap = { teh:'the', adress:'address', reciept:'receipt', recieve:'receive', lugggae:'luggage', colr:'color', materail:'material', brnad:'brand' };
+            function autoSuggest(text){
+                if(!text || text.length < 8) return null;
+                let improved = text.replace(/\b(teh|adress|reciept|recieve|lugggae|colr|materail|brnad)\b/gi, (m)=>typoMap[m.toLowerCase()]||m);
+                improved = improved.replace(/\s+/g,' ').replace(/\s([,.;])/g,'$1').trim();
+                improved = improved.split(/([.!?])\s+/).map((seg, i)=> i%2===0 ? (seg.charAt(0).toUpperCase()+seg.slice(1)) : seg).join(' ');
+                if (improved !== text) return improved;
+                return null;
+            }
+            const debounceSuggest = (fn,ms)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
+            const runSuggest = debounceSuggest(()=>{
+                const txt = descriptionTextarea.value;
+                const suggestion = autoSuggest(txt);
+                if(suggestion){ suggestionText.textContent = suggestion; suggestionBox.style.display = 'block'; }
+                else { suggestionBox.style.display = 'none'; }
+            }, 300);
+            descriptionTextarea?.addEventListener('input', runSuggest);
+            applySuggestionBtn?.addEventListener('click', function(){ lastOptimizedText = descriptionTextarea.value; descriptionTextarea.value = suggestionText.textContent || descriptionTextarea.value; suggestionBox.style.display = 'none'; const undoBtn = document.getElementById('undoOptimizationBtn'); if (undoBtn) undoBtn.style.display = 'inline-flex'; showNotification('Suggestion applied', 'success'); });
+            dismissSuggestionBtn?.addEventListener('click', function(){ suggestionBox.style.display = 'none'; });
+            const venueSelect = document.getElementById('venue_select');
+            const placeLostInput = document.getElementById('place_lost');
+            const dateLostInput = document.getElementById('date_lost');
+
+            function showNotification(message, type = 'info') {
+                try {
+                    if (type === 'success') userMsgBox.showSuccess(message);
+                    else if (type === 'error') userMsgBox.showError(message);
+                    else if (type === 'warning') userMsgBox.showWarning(message);
+                    else userMsgBox.showInfo(message);
+                } catch (_) {}
+            }
+
+            function showAIProcessingOverlay() {
+                const overlay = document.getElementById('aiProcessingOverlay');
+                if (overlay) overlay.style.display = 'flex';
+            }
+            function hideAIProcessingOverlay() {
+                const overlay = document.getElementById('aiProcessingOverlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+
+            function updateTagsHiddenField() {
+                const hidden = document.getElementById('tagsHidden');
+                if (hidden) hidden.value = currentTags.join(', ');
+            }
+
+            function updateTagsDisplay() {
+                if (!tagsDisplay) return;
+                if (currentTags.length === 0) { tagsDisplay.innerHTML = ''; updateTagsHiddenField(); return; }
+                tagsDisplay.innerHTML = currentTags.map(tag => {
+                    const isAI = aiGeneratedTags.has(tag);
+                    const cls = isAI ? 'tag tag-ai' : 'tag tag-manual';
+                    return `<span class="${cls}" title="${isAI ? 'AI Generated' : 'Manually Added'}">${tag}<button type="button" class="tag-remove" aria-label="Remove tag" onclick="removeTagFromDisplay('${tag}')">×</button></span>`;
+                }).join('');
+                updateTagsHiddenField();
+            }
+            window.removeTagFromDisplay = function(tag) {
+                const i = currentTags.indexOf(tag);
+                if (i > -1) { currentTags.splice(i, 1); aiGeneratedTags.delete(tag); updateTagsDisplay(); }
+            };
+
+            function addTag(text, isAI) {
+                const t = (text || '').trim();
+                const maxTags = 8;
+                const maxLen = 24;
+                if (!t) { showNotification('Tag cannot be empty', 'error'); return false; }
+                if (t.length > maxLen) { showNotification(`Tag too long (max ${maxLen})`, 'error'); return false; }
+                if (currentTags.includes(t)) { showNotification('Duplicate tag ignored', 'warning'); return false; }
+                if (currentTags.length >= maxTags) { showNotification(`Maximum ${maxTags} tags allowed`, 'error'); return false; }
+                currentTags.push(t);
+                if (isAI) aiGeneratedTags.add(t); else recordLearnedTag(t);
+                updateTagsDisplay();
+                return true;
+            }
+
+            if (addTagBtn) {
+                addTagBtn.addEventListener('click', function() {
+                    const val = tagInput.value.trim();
+                    if (!val) return;
+                    const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+                    parts.forEach(p => addTag(p, false));
+                    tagInput.value = '';
+                    showNotification('Tag(s) added', 'success');
+                });
+            }
+
+            // Optimize Description feature with undo
+            const optimizeBtn = document.getElementById('optimizeDescriptionBtn');
+            const undoBtn = document.getElementById('undoOptimizationBtn');
+            if (optimizeBtn) {
+                optimizeBtn.addEventListener('click', async function(){
+                    const original = descriptionTextarea.value.trim();
+                    if (!original) { showNotification('Please enter a description to optimize', 'error'); return; }
+                    lastOptimizedText = original;
+                    optimizeBtn.disabled = true; optimizeBtn.classList.add('loading');
+                    try {
+                        let improved = '';
+                        try {
+                            const res = await fetch('/user/api/optimize-description', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: original }) });
+                            if (res.ok) { const data = await res.json(); improved = data.optimized || ''; }
+                        } catch(_) {}
+                        if (!improved) {
+                            improved = original
+                                .replace(/\s+/g,' ')
+                                .replace(/\s([,.;])/g, '$1')
+                                .trim();
+                            // Basic sentence casing while preserving acronyms
+                            improved = improved.split('. ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('. ');
+                        }
+                        descriptionTextarea.value = improved;
+                        undoBtn.style.display = 'inline-flex';
+                        showNotification('Description optimized', 'success');
+                    } catch(e){
+                        showNotification('Failed to optimize description', 'error');
+                    } finally {
+                        optimizeBtn.disabled = false; optimizeBtn.classList.remove('loading');
+                    }
+                });
+            }
+            if (undoBtn) {
+                undoBtn.addEventListener('click', function(){
+                    if (lastOptimizedText !== null) {
+                        descriptionTextarea.value = lastOptimizedText;
+                        lastOptimizedText = null;
+                        undoBtn.style.display = 'none';
+                        showNotification('Reverted optimization', 'info');
+                    }
+                });
+            }
+            if (tagInput) {
+                tagInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); addTagBtn.click(); }
+                });
+            }
+            window.confirmDeleteAllTags = function() {
+                const modal = document.createElement('div');
+                modal.className = 'confirmation-modal';
+                modal.innerHTML = `
+                <div class="confirmation-modal-content">
+                  <div class="confirmation-header" style="background: linear-gradient(135deg, #ffc107, #ff8f00); color:#3B2C24; padding: 0.5rem 0.75rem; border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3 style="margin:0">Delete All Tags</h3>
+                  </div>
+                  <div class="confirmation-body" style="padding-top:0.5rem">
+                    <p>Are you sure you want to delete all tags?</p>
+                  </div>
+                  <div class="confirmation-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeConfirmationModal()"><i class="fas fa-times"></i> Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmDeleteTags()"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>`;
+                document.body.appendChild(modal); setTimeout(() => modal.classList.add('show'), 10);
+            };
+            window.closeConfirmationModal = function() {
+                const m = document.querySelector('.confirmation-modal'); if (!m) return; m.classList.remove('show'); setTimeout(() => m.remove(), 300);
+            };
+            window.confirmDeleteTags = function() { currentTags = []; aiGeneratedTags.clear(); updateTagsDisplay(); closeConfirmationModal(); showNotification('All tags deleted', 'success'); };
+
+            function updatePreview(file) {
+                if (!imagePreviewContainer) return;
+                if (!file) { imagePreviewContainer.style.display = 'none'; uploadArea.style.display = 'block'; imageInput.value = ''; return; }
+                imagePreviewContainer.style.display = 'flex'; imagePreviewContainer.innerHTML = '';
+                const r = new FileReader();
+                r.onload = function(e) {
+                    const item = document.createElement('div');
+                    item.className = 'image-preview-item';
+                    item.innerHTML = `<img src="${e.target.result}" alt="Preview" class="image-preview"><button type="button" class="remove-image-btn" aria-label="Remove image" onclick="removeUploadedImage()">×</button>`;
+                    imagePreviewContainer.appendChild(item);
+                    uploadArea.style.display = 'none';
+                };
+                r.readAsDataURL(file);
+            }
+            window.removeUploadedImage = function() {
+                const toRemove = new Set(aiGeneratedTags);
+                uploadedImage = null;
+                updatePreview(null);
+                currentTags = currentTags.filter(t => !toRemove.has(t));
+                aiGeneratedTags.clear();
+                updateTagsDisplay();
+                showNotification('Image and associated AI tags removed', 'info');
+            };
+
+            function handleFileSelection(file) {
+                if (window.imageValidator) {
+                    window.imageValidator.rules = { ...window.imageValidator.rules, allowedTypes: ['image/jpeg','image/jpg','image/png','image/gif','image/webp'], allowedExtensions: ['jpg','jpeg','png','gif','webp'], maxFileSize: 5 * 1024 * 1024 };
+                    window.imageValidator.clearValidationMessages('validation-messages');
+                    window.imageValidator.validateMultipleFiles([file]).then(results => {
+                        const res = results[0];
+                        if (!res.isValid) { window.imageValidator.showValidationError(res.message, 'validation-messages'); return; }
+                        uploadedImage = res.file; updatePreview(uploadedImage); if (aiDescriptionBtn) aiDescriptionBtn.disabled = !uploadedImage; document.getElementById('optimizeDescriptionBtn').disabled = false; autoGenerateTags(uploadedImage);
+                    });
+                } else {
+                    const maxSize = 5 * 1024 * 1024; const types = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
+                    if (!types.includes(file.type)) { showNotification('Invalid image type', 'error'); return; }
+                    if (file.size > maxSize) { showNotification('Image exceeds 5MB', 'error'); return; }
+                    uploadedImage = file; updatePreview(uploadedImage); if (aiDescriptionBtn) aiDescriptionBtn.disabled = !uploadedImage; document.getElementById('optimizeDescriptionBtn').disabled = false; autoGenerateTags(uploadedImage);
+                }
+            }
+
+            if (uploadArea && imageInput) {
+                // Rely on native input overlay to open picker; avoid double dialogs
+                imageInput.addEventListener('change', function(e) { const f = e.target.files[0]; if (f) { handleFileSelection(f); } else { showNotification('No file selected', 'warning'); } });
+            }
+
+            function autoGenerateTags(file) {
+                if (!file) return;
+                if (tagsLoading) tagsLoading.style.display = 'block'; if (tagsError) { tagsError.style.display = 'none'; tagsError.textContent = ''; }
+                showAIProcessingOverlay();
+                const fd = new FormData(); fd.append('image', file); try { fd.append('learned_tags', JSON.stringify(getTopLearnedTags(50))); } catch(_) {}
+                fetch("{{ url_for('user.user_generate_tags_api') }}", { method: 'POST', body: fd })
+                    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+                    .then(({ ok, data }) => {
+                        if (tagsLoading) tagsLoading.style.display = 'none'; hideAIProcessingOverlay();
+                        if (!ok) { const msg = data.error || 'Failed to generate tags'; if (tagsError) { tagsError.textContent = msg; tagsError.style.display = 'block'; } showNotification(msg, 'error'); return; }
+                        const tags = data.tags || [];
+                        tags.forEach(t => { if (!currentTags.includes(t)) addTag(t, true); });
+                        showNotification(`Generated ${tags.length} AI tags`, 'success');
+                    })
+                    .catch(err => { if (tagsLoading) tagsLoading.style.display = 'none'; hideAIProcessingOverlay(); if (tagsError) { tagsError.textContent = 'Error generating tags'; tagsError.style.display = 'block'; } showNotification('Error generating AI tags', 'error'); });
+            }
+
+            if (aiDescriptionBtn) {
+                aiDescriptionBtn.addEventListener('click', async function() {
+                    if (!uploadedImage) { showNotification('Please upload an image first', 'error'); return; }
+                    const loading = document.getElementById('aiDescriptionLoading');
+                    const originalContent = aiDescriptionBtn.innerHTML;
+                    aiDescriptionBtn.disabled = true;
+                    aiDescriptionBtn.classList.add('loading');
+                    aiDescriptionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                    if (loading) loading.style.display = 'flex';
+                    showAIProcessingOverlay();
+                    try {
+                        const fd = new FormData(); fd.append('image', uploadedImage);
+                        let res = await fetch("{{ url_for('user.user_generate_description_api') }}", { method: 'POST', body: fd });
+                        let data;
+                        try { data = await res.json(); } catch(_) { data = {}; }
+                        if (!res.ok) {
+                            const msg = (data && (data.error || data.message)) || 'Failed to generate description';
+                            if (res.status === 500 && msg.toLowerCase().includes('backend.services.ai_image_tagging')) {
+                                const fallback = await fetch('/admin/api/generate-description', { method: 'POST', body: fd });
+                                const fbData = await fallback.json();
+                                if (!fallback.ok || !fbData.description) throw new Error(fbData.error || 'Failed to generate description');
+                                descriptionTextarea.value = fbData.description || '';
+                                showNotification('Description generated via fallback', 'success');
+                            } else {
+                                throw new Error(msg);
+                            }
+                        } else {
+                            descriptionTextarea.value = (data && data.description) || '';
+                            showNotification('Description generated', 'success');
+                        }
+                    } catch (e) {
+                        showNotification(e.message || 'Error generating description', 'error');
+                    } finally {
+                        aiDescriptionBtn.disabled = !uploadedImage;
+                        aiDescriptionBtn.classList.remove('loading');
+                        aiDescriptionBtn.innerHTML = originalContent;
+                        if (loading) loading.style.display = 'none';
+                        hideAIProcessingOverlay();
+                    }
+                });
+            }
+
+            const manualGenerateBtn = document.getElementById('manualGenerateTags');
+            if (manualGenerateBtn) {
+                manualGenerateBtn.addEventListener('click', function() {
+                    if (!uploadedImage) { showNotification('Please upload an image first', 'error'); return; }
+                    autoGenerateTags(uploadedImage);
+                });
+            }
+
+            async function loadVenues() {
+                try {
+                    const res = await fetch("{{ url_for('static', filename='venue.json') }}");
+                    if (!res.ok) throw new Error('Failed to load venues');
+                    const data = await res.json(); venues = data.venues || []; populateVenueDropdown();
+                } catch (e) { showNotification('Failed to load venue options', 'error'); }
+            }
+            function populateVenueDropdown() {
+                if (!venueSelect) return; venueSelect.innerHTML = '<option value="">Select a venue...</option>';
+                const grouped = venues.reduce((acc,v)=>{ (acc[v.category] = acc[v.category] || []).push(v); return acc; },{});
+                Object.keys(grouped).sort().forEach(cat => { const og = document.createElement('optgroup'); og.label = cat; grouped[cat].forEach(v => { const o = document.createElement('option'); o.value = v.name; o.textContent = v.name; og.appendChild(o); }); venueSelect.appendChild(og); });
+                const other = document.createElement('option'); other.value = 'other'; other.textContent = 'Other (Custom Location)'; venueSelect.appendChild(other);
+                venueSelect.addEventListener('change', handleVenueSelection);
+            }
+            function handleVenueSelection() {
+                if (!venueSelect || !placeLostInput) return;
+                if (venueSelect.value === 'other') { placeLostInput.style.display = 'block'; placeLostInput.required = true; placeLostInput.value = ''; placeLostInput.focus(); }
+                else { placeLostInput.style.display = 'none'; placeLostInput.required = false; placeLostInput.value = venueSelect.value; }
+            }
+            loadVenues();
+
+            if (dateLostInput) {
+                dateLostInput.addEventListener('change', function() {
+                    const sel = new Date(this.value); const now = new Date(); if (sel > now) { showNotification('Date cannot be in the future', 'error'); this.value = ''; }
+                });
+            }
+
+            window.submitReport = async function(event) {
+                event.preventDefault();
+                const name = document.getElementById('lost_item_name').value.trim();
+                const category = document.getElementById('category').value;
+                const desc = descriptionTextarea.value.trim();
+                const venueVal = venueSelect ? venueSelect.value : '';
+                const placeVal = placeLostInput ? placeLostInput.value.trim() : '';
+                const dateVal = dateLostInput ? dateLostInput.value : '';
+                if (!name) { showNotification('Please enter the item name.', 'error'); return; }
+                if (!category) { showNotification('Please select a category.', 'error'); return; }
+                if (!desc) { showNotification('Please enter a description.', 'error'); return; }
+                const hasVenue = venueVal || placeVal; if (!hasVenue) { showNotification('Please select or enter where you lost it.', 'error'); return; }
+                if (!dateVal) { showNotification('Please select the date lost.', 'error'); return; }
+                if (!uploadedImage) { showNotification('Please upload an image.', 'error'); return; }
+                if (currentTags.length === 0) { showNotification('Please add at least one tag.', 'error'); return; }
+
+                updateTagsHiddenField();
+                if (venueVal && venueVal !== 'other') placeLostInput.value = venueVal;
+
+                const modal = document.createElement('div');
+                modal.className = 'confirmation-modal';
+                const tagsHtml = currentTags.map(t=>`<span class=\"tag\">${t}</span>`).join(' ');
+                modal.innerHTML = `
+                  <div class=\"confirmation-modal-content\">
+                    <div class=\"confirmation-header\"><i class=\"fas fa-info-circle\"></i><h3>Confirm Report Details</h3></div>
+                    <div class=\"confirmation-body\" style=\"text-align:left\">
+                      <p><strong>Item Name:</strong> ${name}</p>
+                      <p><strong>Category:</strong> ${category}</p>
+                      <p><strong>Where Lost:</strong> ${placeLostInput.value}</p>
+                      <p><strong>Date Lost:</strong> ${dateVal}</p>
+                      <p><strong>Tags:</strong> ${tagsHtml || 'None'}</p>
+                    </div>
+                    <div class=\"confirmation-actions\">
+                      <button type=\"button\" class=\"btn btn-secondary\" onclick=\"closeConfirmationModal()\"><i class=\"fas fa-times\"></i> Cancel</button>
+                      <button type=\"button\" class=\"btn btn-primary\" id=\"confirmSubmitBtn\"><i class=\"fas fa-check\"></i> Submit</button>
+                    </div>
+                  </div>`;
+                document.body.appendChild(modal);
+                setTimeout(()=>modal.classList.add('show'),10);
+                document.getElementById('confirmSubmitBtn').addEventListener('click', async function(){
+                    closeConfirmationModal();
+                    const overlay = document.getElementById('aiProcessingOverlay');
+                    const titleEl = overlay?.querySelector('h3');
+                    if (titleEl) titleEl.textContent = 'Processing your report...';
+                    if (overlay) overlay.style.display = 'flex';
+                    const form = document.getElementById('lostReportForm');
+                    const fd = new FormData(form);
+                    try {
+                        const res = await fetch("{{ url_for('user.create_lost_item_api') }}", { method: 'POST', body: fd });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to submit report');
+                        statusEl.textContent = 'Report submitted successfully.'; statusEl.className = 'status success';
+                        setTimeout(() => { window.location.href = "{{ url_for('user.lost_item_history') }}"; }, 800);
+                    } catch (e) {
+                        statusEl.textContent = e.message; statusEl.className = 'status error';
+                    } finally {
+                        if (overlay) overlay.style.display = 'none';
+                        if (titleEl) titleEl.textContent = 'AI is processing your request...';
+                    }
+                });
+            };
+        });
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    {% include 'partials/user-header.html' %}
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header py-4" data-aos="fade-down">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Report Lost Item</h1>
+                        <p class="page-subtitle mb-0">Provide details to help us match your lost item quickly</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Report Lost Item</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form Section -->
+        <section class="py-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="container">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2>Item Details</h2>
+                        <p>Please fill in the details below. You can use AI to assist with tags and description.</p>
+                    </div>
+                    <form id="lostReportForm" onsubmit="submitReport(event)">
+                        <div class="form-row form-grid">
+                            <div class="form-group">
+                                <label for="lost_item_name"><i class="fas fa-font"></i> Item Name <span class="required">*</span></label>
+                                <input type="text" id="lost_item_name" name="lost_item_name" class="form-input" placeholder="e.g., Black leather wallet" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="category"><i class="fas fa-tag"></i> Category <span class="required">*</span></label>
+                                <select id="category" name="category" class="form-input form-select" required>
+                                    <option value="">Select a category</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Accessories">Accessories</option>
+                                    <option value="Books">Books</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Personal Items">Personal Items</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-grid">
+                            <div class="form-group">
+                                <label for="venue_select"><i class="fas fa-map-marker-alt"></i> Where did you lose it? <span class="required">*</span></label>
+                                <div class="venue-selector">
+                                    <select id="venue_select" class="form-input venue-dropdown" aria-label="Select venue">
+                                        <option value="">Select a venue...</option>
+                                    </select>
+                                    <input type="text" id="place_lost" name="place_lost" class="form-input venue-custom" placeholder="Enter custom location..." style="display: none;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="date_lost"><i class="fas fa-calendar-alt"></i> Date Lost <span class="required">*</span></label>
+                                <input type="date" id="date_lost" name="date_lost" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                                <div class="description-container">
+                                    <textarea id="description" name="description" class="form-input form-textarea" placeholder="Describe notable features, brand, colors, materials, etc."></textarea>
+                                    <div class="description-actions">
+                                        <button type="button" id="aiDescriptionBtn" class="btn btn-ai-description" disabled><i class="fas fa-robot"></i> AI Generate Description</button>
+                                        <button type="button" id="optimizeDescriptionBtn" class="btn btn-optimize-description" disabled><i class="fas fa-wand-magic-sparkles"></i> Optimize Description</button>
+                                        <button type="button" id="undoOptimizationBtn" class="btn btn-secondary" style="display:none"><i class="fas fa-undo"></i> Undo Optimization</button>
+                                        <div id="aiDescriptionLoading" class="ai-description-loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Generating description...</div>
+                                    </div>
+                                    <div id="descSuggestionBox" class="desc-suggestion" style="display:none; margin-top:0.25rem;">
+                                        <div class="suggestion-content" style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; background:#fff3e0; border:1px solid rgba(111,78,55,.25); border-radius:6px; padding:0.5rem 0.75rem;">
+                                            <div id="descSuggestionText" style="color:#3B2C24; font-size:0.9rem;"></div>
+                                            <div style="display:flex; gap:0.5rem;">
+                                                <button type="button" id="applySuggestionBtn" class="btn btn-secondary"><i class="fas fa-check"></i> Apply</button>
+                                                <button type="button" id="dismissSuggestionBtn" class="btn btn-secondary"><i class="fas fa-times"></i> Dismiss</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="hint">Tip: Use the AI buttons to auto-generate tags and a description from an image.</div>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-grid">
+                            <div class="form-group">
+                                <label for="image"><i class="fas fa-image"></i> Item Image <span class="required">*</span></label>
+                                <div class="file-upload-area" aria-label="Upload image">
+                                    <i class="fas fa-cloud-upload-alt upload-icon" aria-hidden="true"></i>
+                                    <div class="upload-text">Click to upload image</div>
+                                    <div class="upload-hint">Supported formats: JPG, PNG, GIF, WEBP. Max 5MB.</div>
+                                    <input type="file" id="image" name="image" accept=".jpg,.jpeg,.png,.gif,.webp" class="file-input" required>
+                                </div>
+                                <div id="validation-messages" class="validation-messages"></div>
+                                <div id="imagePreviewContainer" class="image-preview-container" style="display: none;"></div>
+                                <div id="imageModal" class="image-modal" style="display: none;">
+                                    <div class="modal-content">
+                                        <span class="modal-close" aria-label="Close">&times;</span>
+                                        <img id="modalImage" class="modal-image" src="" alt="Full size image">
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button type="button" class="btn btn-secondary" aria-label="Generate tags from image" id="manualGenerateTags"><i class="fas fa-wand-magic-sparkles"></i> Generate Tags</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-tags"></i> Tags</label>
+                                <div class="tags-container">
+                                    <div id="tagsDisplay" class="tags-display" aria-live="polite"></div>
+                                    <div class="tag-input-container">
+                                        <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag...">
+                                        <button type="button" id="addTagBtn" class="tag-add-btn"><i class="fas fa-plus"></i> Add Tag</button>
+                                        <button type="button" id="deleteTagBtn" class="tag-delete-btn" onclick="confirmDeleteAllTags()"><i class="fas fa-trash"></i> Delete Tags</button>
+                                    </div>
+                                    <div id="tagsLoading" class="tags-loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Generating AI tags...</div>
+                                    <div id="tagsError" class="tags-error" style="display: none;"></div>
+                                    <input type="hidden" id="tagsHidden" name="tags" value="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-grid">
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="is_valuable" name="is_valuable" value="true">
+                                    <label class="checkbox-label" for="is_valuable">Mark as valuable</label>
+                                </div>
+                                <div class="hint">Valuable items may be prioritized in matching.</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="remarks"><i class="fas fa-comment"></i> Remarks (optional)</label>
+                                <textarea id="remarks" name="remarks" class="form-input form-textarea" placeholder="Any additional notes"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <span id="status" class="status" aria-live="polite"></span>
+                            <button type="submit" class="btn btn-primary" aria-label="Submit lost item report"><i class="fas fa-paper-plane"></i> Submit Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+    {% include 'partials/user-msg-box.html' %}
+
+    <!-- Footer -->
+    {% include 'partials/user-footer.html' %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/image-validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/image-modal-shared.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tabs.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user-header.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard-animations.js') }}"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, easing: 'ease-in-out', once: true, offset: 100 });
+    </script>
+    <div id="aiProcessingOverlay" class="ai-processing-overlay">
+        <div class="ai-processing-content">
+            <h3>AI is processing your request...</h3>
+            <div class="wrapper">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="shadow"></div>
+                <div class="shadow"></div>
+                <div class="shadow"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

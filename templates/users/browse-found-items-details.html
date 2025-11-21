@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Found Item Details - QReclaim</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <!-- Shared theme variables -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/browse-found-items-details.css') }}">
+    <!-- Shared image styles for consistent visuals and responsive behavior -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-shared.css') }}">
+    <!-- Remarks modal styles for consistent UI -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/remarks-modal.css') }}">
+    <!-- Shared scanner frame styles for consistent QR/face overlays (mobile-first, responsive) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scanner-frame.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+</head>
+<body>
+    <!-- Include Header -->
+    {% include 'partials/user-header.html' %}
+    {% include 'partials/user-msg-box.html' %}
+    {% include 'partials/user-confirm.html' %}
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <!-- Spacing controlled in browse-found-items-details.css; remove Bootstrap utility overrides -->
+        <section class="page-header details-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title mb-2">
+                            <i class="fas fa-info-circle me-2 header-icon" aria-hidden="true"></i>
+                            Found Item Details
+                        </h1>
+                        <p class="page-subtitle mb-0">Review item information and claim if it belongs to you</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                    <a href="{{ url_for('user.dashboard') }}">
+                                        <i class="fas fa-home"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="{{ url_for('user.browse_found_items') }}">
+                                        Browse Items
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">Details</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Details Content -->
+        <section class="details-section py-4">
+            <div class="container">
+                <!-- Root with item id for JS -->
+                <div id="itemDetailsRoot" data-item-id="{{ found_item_id }}" class="details-root" aria-live="polite" aria-busy="true">
+                    <!-- Loading State -->
+                    <div class="loading-state" id="detailsLoading" role="status" aria-label="Loading item details">
+                        <div class="spinner"><i class="fas fa-spinner fa-spin"></i></div>
+                        <p class="mt-2 mb-0">Loading item details...</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="error-state alert alert-danger d-none" id="detailsError" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                        <span id="detailsErrorText">Failed to load item details. Please try again later.</span>
+                    </div>
+
+                    <!-- Details Card -->
+                    <div class="details-card card shadow-sm d-none" id="detailsCard">
+                        <div class="row g-0">
+                            <div class="col-md-5">
+                                <div class="item-image-container clickable-image" role="button" tabindex="0" aria-label="View image">
+                                    <img id="itemImage" class="item-image rounded clickable-image" src="" alt="Item image" onerror="this.src='{{ url_for('static', filename='images/placeholder-item.png') }}';" />
+                                    <div class="image-overlay" aria-hidden="true">
+                                        <i class="fas fa-search-plus" aria-hidden="true"></i>
+                                        <span>View</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h2 id="itemName" class="item-name mb-0">Item Name</h2>
+                                        <span id="itemStatus" class="badge status-badge">Status</span>
+                                    </div>
+                                    <p id="itemTitle" class="item-title text-muted mb-3"></p>
+
+                                    <ul class="meta-list list-unstyled mb-3" id="itemMeta">
+                                        <li><i class="fas fa-tag me-2" aria-hidden="true"></i><span id="itemCategory">Category</span></li>
+                                        <li><i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i><span id="itemLocation">Location</span></li>
+                                        <li><i class="fas fa-calendar-alt me-2" aria-hidden="true"></i><span id="itemDate">Date Found</span></li>
+                                    </ul>
+
+                                    <div class="description-block mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h3 class="h6 mb-0">Description</h3>
+                                            <span class="tooltip-icon ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Details help others confirm it’s the right item.">
+                                                <i class="fas fa-circle-info text-muted" aria-hidden="true"></i>
+                                            </span>
+                                        </div>
+                                        <p id="itemDescription" class="mb-1"></p>
+                                    </div>
+
+                                    <div class="tags-block mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h3 class="h6 mb-0">Tags</h3>
+                                            <span class="tooltip-icon ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Tags summarize key features to improve matching.">
+                                                <i class="fas fa-circle-info text-muted" aria-hidden="true"></i>
+                                            </span>
+                                        </div>
+                                        <div id="itemTags" class="tags"></div>
+                                    </div>
+
+                                    <!-- User-specific status row (non-blocking) -->
+                                    <div id="userStatusRow" class="mt-2 d-none" aria-live="polite">
+                                        <span id="userStatusBadge" class="badge bg-info">Status</span>
+                                        <span id="userStatusText" class="text-muted ms-2"></span>
+                                    </div>
+
+                                    <!-- Additional Information: Valuable, Locker, Admin -->
+                                    <div class="info-block mb-3">
+                                        <h3 class="h6">Additional Information</h3>
+                                        <ul class="meta-list list-unstyled mb-0">
+                                            <li><i class="fas fa-gem me-2" aria-hidden="true"></i><span id="itemValuableStatus">Valuable status</span></li>
+                                            <li><i class="fas fa-lock me-2" aria-hidden="true"></i><span id="itemLockerAssigned">Locker assignment</span></li>
+                                            <li><i class="fas fa-key me-2" aria-hidden="true"></i><span id="itemLockerId">Locker ID</span></li>
+                                            <li><i class="fas fa-user-shield me-2" aria-hidden="true"></i><span id="itemPostedBy">Posted by</span></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="actions d-flex gap-2">
+                                        <button class="btn btn-primary" id="btnClaim" aria-label="Start claim verification" aria-controls="claimConfirmModal" aria-expanded="false"><i class="fas fa-hand-back-point-up me-2" aria-hidden="true"></i>Claim</button>
+                                        <button class="btn btn-outline-secondary" id="btnBack" aria-label="Back to list"><i class="fas fa-arrow-left me-2" aria-hidden="true"></i>Back</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include User Footer -->
+    {% include 'partials/user-footer.html' %}
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" role="dialog" aria-modal="true" aria-hidden="true" onclick="closeImageModal(event)">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close image" title="Close" onclick="closeImageModal()">&times;</button>
+            <img id="modalImage" class="modal-image" src="" alt="Enlarged view">
+        </div>
+    </div>
+
+    <!-- Claim Confirmation Modal -->
+    <div class="modal fade" id="claimConfirmModal" tabindex="-1" aria-labelledby="claimConfirmLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="claimConfirmLabel"><i class="fas fa-shield-halved me-2" aria-hidden="true"></i>Confirm Claim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to claim this item? This will start a secure verification process.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmClaimYesBtn">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Remarks Modal (shown first for valuable items) -->
+    <!-- Collect short context to help admins review valuable-item claims -->
+    <div class="modal fade" id="studentRemarksModal" tabindex="-1" aria-labelledby="studentRemarksLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentRemarksLabel"><i class="fas fa-comment-dots me-2" aria-hidden="true"></i>Provide Claim Remarks</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">This item is marked as valuable. Please add a brief remark to assist with verification. Examples:</p>
+                    <ul class="mb-3">
+                        <li>Unique identifiers (e.g., sticker, engraving, case color)</li>
+                        <li>Where/when you last had it</li>
+                        <li>Any distinguishing details only an owner would know</li>
+                    </ul>
+                    <div class="mb-2 d-flex justify-content-between align-items-center">
+                        <label for="studentRemarksInput" class="form-label mb-0">Your remarks</label>
+                        <small id="studentRemarksCounter" class="text-muted">0/300</small>
+                    </div>
+                    <textarea id="studentRemarksInput" class="form-control" rows="4" maxlength="300" placeholder="Type your remarks here (max 300 characters)" aria-label="Enter claim remarks to assist verification"></textarea>
+                    <div id="studentRemarksError" class="text-danger d-none" role="alert" aria-live="assertive"></div>
+                    <div class="form-text mt-2">Remarks are shared with the admin to help confirm ownership. Do not include sensitive information.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="studentRemarksContinueBtn">Save & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Face Capture Modal -->
+    <div class="modal fade" id="faceCaptureModal" tabindex="-1" aria-labelledby="faceCaptureLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faceCaptureLabel"><i class="fas fa-face-smile me-2" aria-hidden="true"></i>Face Recognition</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <p class="mb-2" id="faceCaptureInstructions">Align your face within the frame under good lighting. Hold still — the system will capture automatically when your face is well-positioned.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <!-- Camera preview with high-contrast face scanner overlay for clear alignment guidance -->
+                            <div class="ratio ratio-4x3 bg-light rounded position-relative">
+                                <video id="faceVideo" autoplay playsinline class="rounded" style="width:100%;height:100%;object-fit:cover" aria-label="Camera preview" aria-describedby="faceCaptureInstructions"></video>
+                                <!-- Overlay frame to guide user positioning; non-interactive for accessibility -->
+                                <div class="face-scanner-overlay" aria-hidden="true">
+                                    <div class="face-scanner-frame" role="presentation">
+                                        <span class="frame-corner top-left"></span>
+                                        <span class="frame-corner top-right"></span>
+                                        <span class="frame-corner bottom-left"></span>
+                                        <span class="frame-corner bottom-right"></span>
+                                    </div>
+                                </div>
+                                <div id="cameraLoading" class="position-absolute top-50 start-50 translate-middle d-none">
+                                    <div class="spinner-border text-primary" role="status" aria-label="Loading camera"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <canvas id="faceCanvas" class="w-100 border rounded" style="min-height:160px" role="img" aria-label="Auto-captured face preview"></canvas>
+                            <div class="mt-2 d-flex align-items-center gap-2">
+                                <span class="text-muted" id="autoCaptureStatus"><i class="fas fa-circle-info me-2"></i>Waiting for optimal face position…</span>
+                            </div>
+                            <div class="mt-3">
+                                <div id="faceSaveLoading" class="d-none" role="status" aria-live="polite"><i class="fas fa-spinner fa-spin me-2" aria-hidden="true"></i>Saving face data...</div>
+                                <div id="faceCaptureError" class="text-danger d-none" role="alert" aria-live="assertive"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Method Selection Modal -->
+    <div class="modal fade" id="verificationMethodModal" tabindex="-1" aria-labelledby="verificationMethodLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verificationMethodLabel"><i class="fas fa-user-check me-2" aria-hidden="true"></i>Select Verification Method</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">For secure dual verification at the kiosk, your QR code will be scanned and paired with one of the following methods. Choose your preferred option:</p>
+                    <fieldset>
+                        <legend class="visually-hidden">Choose a verification method to pair with QR code scanning</legend>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="verificationMethod" id="methodQrFace" value="qr_face" checked>
+                            <label class="form-check-label" for="methodQrFace">
+                                QR code scanning + Face recognition (recommended)
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="verificationMethod" id="methodQrRfid" value="qr_rfid">
+                            <label class="form-check-label" for="methodQrRfid">
+                                QR code scanning + RFID student card
+                            </label>
+                        </div>
+                    </fieldset>
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                        QR code scanning is required for future self-claim at the kiosk. The code expires in 5 minutes to protect your data.
+                    </div>
+                    <div id="methodSelectLoading" class="d-none"><i class="fas fa-spinner fa-spin me-2"></i>Applying selection...</div>
+                    <div id="methodSelectError" class="text-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Back</button>
+                    <button type="button" class="btn btn-primary" id="confirmMethodBtn" aria-label="Confirm method and continue">Confirm & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Confirmation Modal -->
+    <div class="modal fade" id="finalConfirmModal" tabindex="-1" aria-labelledby="finalConfirmLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="finalConfirmLabel"><i class="fas fa-check-circle me-2" aria-hidden="true"></i>Final Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">You are about to finalize your claim. We will generate your secure QR code next.</p>
+                    <ul class="mb-2">
+                        <li>Ensure your verification method selection is correct.</li>
+                        <li>The QR code will expire in 5 minutes for security.</li>
+                        <li>Do not share your QR code publicly.</li>
+                    </ul>
+                    <div id="finalizeError" class="text-danger d-none" role="alert" aria-live="assertive"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="finalizeConfirmBtn" aria-label="Finalize claim and generate QR">Finalize & Generate QR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Generated Modal -->
+    <div class="modal fade" id="qrGeneratedModal" tabindex="-1" aria-labelledby="qrGeneratedLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrGeneratedLabel"><i class="fas fa-qrcode me-2" aria-hidden="true"></i>Your Secure QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="qrGenerateLoading" class="mb-2 d-none"><i class="fas fa-spinner fa-spin me-2"></i>Generating QR code...</div>
+                    <div id="qrGenerateError" class="text-danger d-none"></div>
+                    <div class="text-center">
+                        <img id="qrImage" src="" alt="QR code" class="img-fluid rounded border" style="max-width:260px" />
+                        <p class="mt-3 mb-1">This QR code is valid for <strong>5 minutes</strong>.</p>
+                        <p class="text-muted mb-0">Expires in <span id="qrCountdown" aria-live="polite">05:00</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <a id="downloadQrBtn" class="btn btn-primary" download="qreclaim-qr.png" aria-label="Download QR code image" title="Download QR code"><i class="fas fa-download me-2" aria-hidden="true"></i>Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Custom Scripts -->
+    <script src="{{ url_for('static', filename='js/user-header.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/image-modal-shared.js') }}"></script>
+    <!-- Adaptive Brightness Controller (must load before face-capture/details scripts) -->
+    <script src="{{ url_for('static', filename='js/kiosk/adaptiveBrightness.js') }}"></script>
+    <!-- Face capture helper (auto-capture with blink detection) -->
+    <script src="{{ url_for('static', filename='js/face-capture.js') }}"></script>
+    <!-- Reuse core item action functions from browse page for consistency -->
+    <script src="{{ url_for('static', filename='js/browse-found-items.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/browse-found-items-details.js') }}"></script>
+</body>
+</html>

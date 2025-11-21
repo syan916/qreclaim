@@ -1,0 +1,242 @@
+/* Image Validation Styles */
+.validation-messages {
+    margin: 10px 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.validation-error {
+    display: flex;
+    align-items: center;
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px 0;
+    color: #c33;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.validation-error i.fa-exclamation-triangle {
+    margin-right: 8px;
+    color: #e74c3c;
+}
+
+.validation-error span {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.validation-error .close-error {
+    background: none;
+    border: none;
+    color: #c33;
+    cursor: pointer;
+    padding: 0;
+    font-size: 16px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.validation-error .close-error:hover {
+    opacity: 1;
+}
+
+.validation-success {
+    display: flex;
+    align-items: center;
+    background-color: #efe;
+    border: 1px solid #cfc;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px 0;
+    color: #3c3;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.validation-success i.fa-check-circle {
+    margin-right: 8px;
+    color: #27ae60;
+}
+
+/* Image upload area validation states */
+.image-upload-area.validating {
+    border-color: #f39c12;
+    background-color: #fef9e7;
+}
+
+.image-upload-area.valid {
+    border-color: #27ae60;
+    background-color: #eafaf1;
+}
+
+.image-upload-area.invalid {
+    border-color: #e74c3c;
+    background-color: #fdeaea;
+}
+
+/* File input validation feedback */
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input-wrapper.invalid input[type="file"] {
+    border-color: #e74c3c;
+}
+
+.file-input-wrapper.valid input[type="file"] {
+    border-color: #27ae60;
+}
+
+/* Validation loading spinner */
+.validation-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+/* Image preview validation overlay */
+.image-preview-item {
+    position: relative;
+}
+
+.image-preview-item.validating::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(243, 156, 18, 0.3);
+    border-radius: 4px;
+}
+
+.image-preview-item.invalid::after {
+    content: '✗';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.image-preview-item.valid::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #27ae60;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Validation rules display */
+.validation-rules {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.validation-rules h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 14px;
+}
+
+.validation-rules ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.validation-rules li {
+    margin: 3px 0;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .validation-error,
+    .validation-success {
+        font-size: 13px;
+        padding: 8px;
+    }
+    
+    .validation-rules {
+        font-size: 12px;
+        padding: 10px;
+    }
+    
+    .image-preview-item.invalid::after,
+    .image-preview-item.valid::after {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .validation-error {
+        background-color: #2c1810;
+        border-color: #5c2e1a;
+        color: #ff6b6b;
+    }
+    
+    .validation-success {
+        background-color: #0f2419;
+        border-color: #1e4d32;
+        color: #51cf66;
+    }
+    
+    .validation-rules {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #a0aec0;
+    }
+    
+    .validation-rules h4 {
+        color: #e2e8f0;
+    }
+}

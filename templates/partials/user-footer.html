@@ -1,0 +1,117 @@
+<!-- Load global theme first for shared CSS variables -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<!-- Link footer stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user-footer.css') }}">
+<!-- User Footer -->
+<footer class="user-footer" id="siteFooter">
+    <div class="footer-container">
+        <!-- Footer Top Section -->
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="footer-logos">
+                    <div class="logo-container qreclaim-logo">
+                        <img src="{{ url_for('static', filename='images/QreclaimLogo(RAW).png') }}" alt="Qreclaim Logo"
+                            class="logo-img">
+
+                    </div>
+                    <div class="logo-separator"></div>
+                    <div class="logo-container tarumt-logo">
+                        <img src="{{ url_for('static', filename='images/tarumtlogo.png') }}" alt="TARUMT Logo"
+                            class="logo-img">
+
+                    </div>
+                </div>
+                <p class="footer-tagline">Smart Lost-and-Found System with AI-Powered</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('user.report_lost_item') }}">Report Lost Item</a></li>
+                        <li><a href="{{ url_for('user.browse_found_items') }}">Browse Found Items</a></li>
+                        <li><a href="{{ url_for('user.my_qr_code') }}">QR Code</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#feedback">Feedback</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#cookies">Cookie Policy</a></li>
+                        <li><a href="#disclaimer">Disclaimer</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Contact Info</h4>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>TAR UMT Johor Branch<br>Jln Kolej TAR, 85000 Segamat, Johor Darul Ta'zim</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+60 3-4145 0123</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>support@qreclaim.tarumt.edu.my</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom Section -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-content">
+                <div class="footer-copyright">
+                    <p>&copy; 2025 TAR UMT Johor | Powered by Qreclaim</p>
+                </div>
+                <div class="footer-meta">
+                    <span class="footer-version">v2.6.0</span>
+                    <span class="footer-separator">|</span>
+                    <span class="footer-status">
+                        <i class="fas fa-circle status-online"></i>
+                        System Online
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+</footer>
+
+<!-- Global Back-to-Top script: loaded here to ensure availability across pages that include the footer -->
+<script src="{{ url_for('static', filename='js/back-to-top.js') }}"></script>

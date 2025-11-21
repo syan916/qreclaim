@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Manage Lockers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage-locker.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-msg-box.css') }}">
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Manage Lockers</h1>
+                <p>Monitor locker status, open doors with timed control, and view real-time updates</p>
+            </div>
+
+            <!-- Controls / Legend section (optional) -->
+            <section class="manage-lockers-controls">
+                <div class="legend">
+                    <span class="legend-item status-available">Available</span>
+                    <span class="legend-item status-occupied">Occupied</span>
+                    <span class="legend-item status-open">Open</span>
+                    <span class="legend-item status-closed">Closed</span>
+                </div>
+            </section>
+
+            <!-- Locker grid -->
+            <section class="locker-grid" id="lockerGrid" aria-live="polite">
+                <!-- Cards rendered by manage-locker.js based on locker-card.html pattern -->
+            </section>
+
+            <!-- Pagination controls -->
+            <nav class="locker-pagination" id="lockerPagination" aria-label="Locker pagination" hidden>
+                <button type="button" class="pager-btn" id="lockerPrev" aria-label="Previous page">Prev</button>
+                <span class="pager-status" id="lockerPagerStatus" aria-live="polite">Page 1</span>
+                <button type="button" class="pager-btn" id="lockerNext" aria-label="Next page">Next</button>
+            </nav>
+    </div>
+  </div>
+
+    <!-- Secure Verification Modal (visible, PIN-style) -->
+    <div class="secv-overlay" id="secvOverlay" aria-hidden="true">
+        <div class="secv-modal" role="dialog" aria-modal="true" aria-labelledby="secvTitle">
+            <div class="secv-header">
+                <div class="secv-title" id="secvTitle">Locker Verification</div>
+                <button type="button" class="secv-close" id="secvClose" aria-label="Close overlay">✕</button>
+            </div>
+            <div class="secv-controls">
+                <div class="secv-code" aria-live="polite">
+                    <div><strong>Code:</strong> <span class="secv-target" id="secvTarget">—</span></div>
+                    <div class="pin-display" id="secvPinDisplay" aria-label="PIN entry display">
+                        <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                    </div>
+                    <div class="secv-feedback" id="secvFeedback" aria-live="polite"></div>
+                </div>
+                <!-- Rotational number selector (clickable), replaces keypad -->
+                <div class="secv-switch-container">
+                    <div class="de">
+                        <div class="den">
+                            <hr class="line">
+                            <hr class="line">
+                            <hr class="line">
+                            <div class="switch">
+                                <label for="secv_off"><span>OFF</span></label>
+                                <label for="secv_1"><span>1</span></label>
+                                <label for="secv_2"><span>2</span></label>
+                                <label for="secv_3"><span>3</span></label>
+                                <label for="secv_4"><span>4</span></label>
+                                <label for="secv_5"><span>5</span></label>
+                                <input type="radio" checked="" name="secvSelect" id="secv_off" value="off">
+                                <input type="radio" name="secvSelect" id="secv_1" value="1">
+                                <input type="radio" name="secvSelect" id="secv_2" value="2">
+                                <input type="radio" name="secvSelect" id="secv_3" value="3">
+                                <input type="radio" name="secvSelect" id="secv_4" value="4">
+                                <input type="radio" name="secvSelect" id="secv_5" value="5">
+                                <div class="light"><span></span></div>
+                                <div class="dot"><span></span></div>
+                                <div class="dene">
+                                    <div class="denem">
+                                        <div class="deneme"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery for countdown and pagination animations -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/manage-locker.js') }}"></script>
+</body>
+</html>

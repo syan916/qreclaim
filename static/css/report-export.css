@@ -1,0 +1,31 @@
+:root{--accent:#3b82f6;--accent2:#6366f1;--danger:#ef4444;--success:#10b981;--bg:#f5f7fb;--text:#111827}
+.content-container{padding:16px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.report-card{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:flex-start;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.report-card .card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+.report-card .card-title{font-weight:600;color:var(--text)}
+.report-card .card-sub{font-size:12px;color:#6b7280}
+.report-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(17,24,39,.08)}
+.report-card.active{outline:2px solid var(--accent)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.filters input{padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px}
+.filters .btn{padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:#fff;color:var(--text);border:1px solid #e5e7eb}
+.btn-export{background:var(--success);color:#fff}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px}
+.table{width:100%;border-collapse:collapse}
+.table th{background:#f1f5f9;text-align:left;padding:10px;border-bottom:1px solid #e5e7eb}
+.table td{padding:10px;border-bottom:1px solid #f3f4f6}
+.table tr:nth-child(even){background:#fafbff}
+.loading{display:none;position:relative}
+.loading.show{display:block}
+.loading .spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media (max-width:1024px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.cards{grid-template-columns:1fr}.filters{flex-direction:column;align-items:flex-start}}
+@media print{.report-card,.filters,.pagination{display:none}body{background:#fff} .table th{background:#fff;border-bottom:1px solid #000} .table td{border-bottom:1px solid #ccc}}

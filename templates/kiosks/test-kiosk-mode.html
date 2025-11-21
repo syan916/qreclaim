@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner Error Testing - Qreclaim Kiosk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kiosk-mode.css') }}">
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .btn {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #545b62; }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Scanner Error Testing Interface</h1>
+        <p>This page tests various QR scanner error scenarios and fallback mechanisms.</p>
+        
+        <!-- Test Results -->
+        <div id="testResults" class="test-results" style="display: none;"></div>
+        
+        <!-- Test Controls -->
+        <div class="test-controls">
+            <h3>Camera Error Tests</h3>
+            
+            <!-- Browser Compatibility Tests -->
+            <div class="test-section">
+                <h4>Browser Compatibility Tests</h4>
+                <button onclick="testBrowserSupport()" class="btn">Test Browser Support</button>
+                <button onclick="testGetUserMedia()" class="btn">Test getUserMedia</button>
+                <button onclick="testSecureContext()" class="btn">Test Secure Context</button>
+            </div>
+            
+            <!-- Camera Error Tests -->
+            <div class="test-section">
+                <h4>Camera Error Simulation</h4>
+                <button onclick="testCameraError('not-supported')" class="btn">Camera Not Supported</button>
+                <button onclick="testCameraError('not-allowed')" class="btn">Camera Denied</button>
+                <button onclick="testCameraError('not-found')" class="btn">No Camera Found</button>
+                <button onclick="testCameraError('in-use')" class="btn">Camera In Use</button>
+                <button onclick="testCameraError('security')" class="btn">Security Error</button>
+            </div>
+            
+            <!-- Fallback Tests -->
+            <div class="test-section">
+                <h4>Fallback Mechanism Tests</h4>
+                <button onclick="testFallbackOptions()" class="btn">Show Fallback Options</button>
+                <button onclick="testPermissionInstructions()" class="btn">Show Permission Instructions</button>
+                <button onclick="testManualEntry()" class="btn">Show Manual Entry</button>
+            </div>
+            
+            <!-- Error Handling Tests -->
+            <div class="test-section">
+                <h4>Error Handling Tests</h4>
+                <button onclick="testErrorRecovery()" class="btn">Test Error Recovery</button>
+                <button onclick="testErrorMessages()" class="btn">Test Error Messages</button>
+                <button onclick="testLogging()" class="btn">Test Error Logging</button>
+            </div>
+            
+            <!-- Integration Tests -->
+            <div class="test-section">
+                <h4>Integration Tests</h4>
+                <button onclick="testFullErrorFlow()" class="btn btn-primary">Full Error Flow</button>
+                <button onclick="testRecoveryFlow()" class="btn btn-secondary">Recovery Flow</button>
+                <button onclick="clearResults()" class="btn">Clear Results</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test results logging
+        function logResult(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            results.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'blue';
+            results.innerHTML += `[${timestamp}] <span style="color: ${color}">${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Browser compatibility tests
+        function testBrowserSupport() {
+            logResult('Testing browser support...', 'info');
+            
+            const tests = {
+                'getUserMedia': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+                'mediaDevices': !!navigator.mediaDevices,
+                'secureContext': window.isSecureContext,
+                'https': location.protocol === 'https:',
+                'localhost': location.hostname === 'localhost' || location.hostname === '127.0.0.1',
+                'webrtc': !!window.RTCPeerConnection || !!window.webkitRTCPeerConnection,
+                'userAgent': navigator.userAgent
+            };
+            
+            logResult('Browser Support Results:', 'info');
+            Object.entries(tests).forEach(([key, value]) => {
+                logResult(`  ${key}: ${value}`, value ? 'success' : 'error');
+            });
+            
+            // Test Html5Qrcode availability
+            if (typeof Html5Qrcode !== 'undefined') {
+                logResult('Html5Qrcode library is available', 'success');
+            } else {
+                logResult('Html5Qrcode library is NOT available', 'error');
+            }
+        }
+
+        function testGetUserMedia() {
+            logResult('Testing getUserMedia access...', 'info');
+            
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                logResult('getUserMedia is not supported', 'error');
+                return;
+            }
+            
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    logResult('Camera access granted', 'success');
+                    // Stop the stream immediately
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(error => {
+                    logResult(`Camera access denied: ${error.name} - ${error.message}`, 'error');
+                    logResult(`Error type: ${error.constructor.name}`, 'error');
+                });
+        }
+
+        function testSecureContext() {
+            logResult('Testing secure context...', 'info');
+            logResult(`isSecureContext: ${window.isSecureContext}`, 'info');
+            logResult(`Protocol: ${location.protocol}`, 'info');
+            logResult(`Hostname: ${location.hostname}`, 'info');
+            
+            if (!window.isSecureContext) {
+                logResult('WARNING: Not in secure context. Camera access may be blocked.', 'error');
+            } else {
+                logResult('Secure context verified', 'success');
+            }
+        }
+
+        // Camera error simulation
+        function testCameraError(errorType) {
+            logResult(`Simulating camera error: ${errorType}`, 'info');
+            
+            let errorMessage = '';
+            let errorName = '';
+            
+            switch (errorType) {
+                case 'not-supported':
+                    errorMessage = 'Camera streaming not supported by the browser';
+                    errorName = 'NotSupportedError';
+                    break;
+                case 'not-allowed':
+                    errorMessage = 'Camera access denied. Please allow camera access in your browser settings.';
+                    errorName = 'NotAllowedError';
+                    break;
+                case 'not-found':
+                    errorMessage = 'No camera found. Please ensure a camera is connected to your device.';
+                    errorName = 'NotFoundError';
+                    break;
+                case 'in-use':
+                    errorMessage = 'Camera is already in use by another application. Please close other camera apps and try again.';
+                    errorName = 'NotReadableError';
+                    break;
+                case 'security':
+                    errorMessage = 'Camera access blocked by security settings. Please use HTTPS or localhost.';
+                    errorName = 'SecurityError';
+                    break;
+            }
+            
+            // Create a mock error object
+            const mockError = new Error(errorMessage);
+            mockError.name = errorName;
+            
+            // Test the error handling
+            if (window.kioskApp && window.kioskApp.qrScanner) {
+                if (window.kioskApp._handleQrError) {
+                    window.kioskApp._handleQrError(errorMessage);
+                    logResult(`Error handling triggered for: ${errorType}`, 'success');
+                } else {
+                    logResult('kioskApp._handleQrError not available', 'error');
+                }
+            } else {
+                logResult('kioskApp not available, testing error object creation', 'info');
+                logResult(`Error created: ${mockError.name} - ${mockError.message}`, 'info');
+            }
+        }
+
+        // Fallback mechanism tests
+        function testFallbackOptions() {
+            logResult('Testing fallback options display...', 'info');
+            
+            if (window.kioskApp && window.kioskApp.showFallbackOptions) {
+                window.kioskApp.showFallbackOptions();
+                logResult('Fallback options displayed', 'success');
+            } else {
+                logResult('Fallback options method not available', 'error');
+            }
+        }
+
+        function testPermissionInstructions() {
+            logResult('Testing permission instructions display...', 'info');
+            
+            if (window.kioskApp && window.kioskApp.showPermissionInstructions) {
+                window.kioskApp.showPermissionInstructions();
+                logResult('Permission instructions displayed', 'success');
+            } else {
+                logResult('Permission instructions method not available', 'error');
+            }
+        }
+
+        function testManualEntry() {
+            logResult('Testing manual entry form...', 'info');
+            
+            if (window.kioskApp && window.kioskApp.showManualEntry) {
+                window.kioskApp.showManualEntry();
+                logResult('Manual entry form displayed', 'success');
+            } else {
+                logResult('Manual entry method not available', 'error');
+            }
+        }
+
+        // Error handling tests
+        function testErrorRecovery() {
+            logResult('Testing error recovery mechanisms...', 'info');
+            
+            // Test IndexSizeError recovery
+            if (window.kioskApp && window.kioskApp._handleQrError) {
+                logResult('Testing IndexSizeError recovery...', 'info');
+                window.kioskApp._handleQrError('IndexSizeError: Failed to execute getImageData');
+                logResult('IndexSizeError recovery test completed', 'success');
+            } else {
+                logResult('Error recovery methods not available', 'error');
+            }
+        }
+
+        function testErrorMessages() {
+            logResult('Testing error message clarity...', 'info');
+            
+            const testMessages = [
+                'Camera streaming not supported by the browser',
+                'NotAllowedError: Permission denied',
+                'NotFoundError: No camera found',
+                'NotReadableError: Camera in use',
+                'SecurityError: HTTPS required'
+            ];
+            
+            testMessages.forEach(msg => {
+                if (window.kioskApp && window.kioskApp._handleQrError) {
+                    logResult(`Testing message: "${msg}"`, 'info');
+                    // Don't actually call the method to avoid UI changes, just validate
+                    logResult(`Message would be handled by _handleQrError`, 'success');
+                }
+            });
+        }
+
+        function testLogging() {
+            logResult('Testing error logging...', 'info');
+            
+            // Test console error logging
+            const originalConsoleError = console.error;
+            let loggedErrors = [];
+            
+            console.error = function(...args) {
+                loggedErrors.push(args.join(' '));
+                originalConsoleError.apply(console, args);
+            };
+            
+            // Simulate an error
+            console.error('Test QR scanner error:', new Error('Camera access failed'));
+            
+            logResult(`Logged ${loggedErrors.length} errors`, 'info');
+            logErrors.forEach(error => logResult(`Logged: ${error}`, 'success'));
+            
+            // Restore original console.error
+            console.error = originalConsoleError;
+        }
+
+        // Integration tests
+        function testFullErrorFlow() {
+            logResult('Testing full error flow...', 'info');
+            
+            // Simulate a complete error scenario
+            setTimeout(() => testBrowserSupport(), 500);
+            setTimeout(() => testCameraError('not-supported'), 2000);
+            setTimeout(() => testFallbackOptions(), 4000);
+            
+            logResult('Full error flow test initiated', 'success');
+        }
+
+        function testRecoveryFlow() {
+            logResult('Testing recovery flow...', 'info');
+            
+            // Test error followed by recovery
+            if (window.kioskApp) {
+                // Simulate error
+                testCameraError('not-allowed');
+                
+                // Then test recovery
+                setTimeout(() => {
+                    if (window.kioskApp.resetToScanning) {
+                        window.kioskApp.resetToScanning();
+                        logResult('Recovery flow completed', 'success');
+                    }
+                }, 3000);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('testResults').style.display = 'none';
+        }
+
+        // Initialize test environment
+        document.addEventListener('DOMContentLoaded', function() {
+            logResult('QR Scanner Error Testing Interface Loaded', 'success');
+            logResult('Ready to test camera error scenarios', 'info');
+            
+            // Auto-run basic compatibility test
+            setTimeout(testBrowserSupport, 1000);
+        });
+    </script>
+</body>
+</html>

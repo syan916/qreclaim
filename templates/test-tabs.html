@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab System Test - Qreclaim</title>
+    <!-- Shared theme variables -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color, #f5f5f5);
+            color: var(--text-color, #333);
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+        }
+        
+        .test-section h2 {
+            color: var(--primary-color, #3498db);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #e8f5e8;
+            color: #2d5a2d;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Tab System Test Page</h1>
+        
+        <div class="test-info">
+            <strong>Test Purpose:</strong> This page demonstrates the new TabSystem functionality for active tab CSS styling.
+            <br><strong>Features:</strong> Multiple tab layouts, accessibility support, keyboard navigation, and responsive design.
+        </div>
+
+        <!-- Test 1: Horizontal Tabs -->
+        <div class="test-section">
+            <h2>📋 Horizontal Tabs (Standard Layout)</h2>
+            <div class="tab-container" data-tab-id="horizontal-tabs">
+                <div class="tab-list" role="tablist" aria-label="Horizontal tab navigation">
+                    <button class="tab-indicator active" data-tab="0" role="tab" aria-selected="true" aria-controls="panel-1">
+                        <i class="fas fa-home"></i> Dashboard
+                    </button>
+                    <button class="tab-indicator" data-tab="1" role="tab" aria-selected="false" aria-controls="panel-2">
+                        <i class="fas fa-search"></i> Browse Items
+                    </button>
+                    <button class="tab-indicator" data-tab="2" role="tab" aria-selected="false" aria-controls="panel-3">
+                        <i class="fas fa-history"></i> Claim History
+                    </button>
+                    <button class="tab-indicator" data-tab="3" role="tab" aria-selected="false" aria-controls="panel-4">
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                </div>
+                
+                <div class="tab-content-container">
+                    <div class="tab-content active" id="panel-1" role="tabpanel" aria-hidden="false">
+                        <h3>Dashboard Overview</h3>
+                        <div class="status-indicator">✅ Active Tab Content</div>
+                        <p>This is the dashboard tab content. The active tab styling is applied using the <code>.active</code> class.</p>
+                        <p>Features demonstrated:</p>
+                        <ul>
+                            <li>Active tab indicator styling</li>
+                            <li>Smooth transitions</li>
+                            <li>Icon integration</li>
+                            <li>ARIA attributes for accessibility</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tab-content" id="panel-2" role="tabpanel" aria-hidden="true">
+                        <h3>Browse Found Items</h3>
+                        <div class="status-indicator">⏸️ Inactive Tab Content</div>
+                        <p>This content would show the found items grid with filtering and search capabilities.</p>
+                        <p>When this tab becomes active, it will receive the same styling as the dashboard tab.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="panel-3" role="tabpanel" aria-hidden="true">
+                        <h3>Claim History</h3>
+                        <div class="status-indicator">⏸️ Inactive Tab Content</div>
+                        <p>Your claim history and status tracking would appear here.</p>
+                        <p>The tab system ensures consistent active styling across all tab instances.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="panel-4" role="tabpanel" aria-hidden="true">
+                        <h3>QR Code Management</h3>
+                        <div class="status-indicator">⏸️ Inactive Tab Content</div>
+                        <p>QR code generation and management interface would be displayed here.</p>
+                        <p>Perfect for the lost-and-found verification system.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 2: Vertical Tabs -->
+        <div class="test-section">
+            <h2>📊 Vertical Tabs (Sidebar Layout)</h2>
+            <div class="tab-container vertical" data-tab-id="vertical-tabs">
+                <div class="tab-list" role="tablist" aria-label="Vertical tab navigation">
+                    <button class="tab-indicator active" data-tab="0" role="tab" aria-selected="true" aria-controls="v-panel-1">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </button>
+                    <button class="tab-indicator" data-tab="1" role="tab" aria-selected="false" aria-controls="v-panel-2">
+                        <i class="fas fa-users"></i> Users
+                    </button>
+                    <button class="tab-indicator" data-tab="2" role="tab" aria-selected="false" aria-controls="v-panel-3">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+                
+                <div class="tab-content-container">
+                    <div class="tab-content active" id="v-panel-1" role="tabpanel" aria-hidden="false">
+                        <h3>System Analytics</h3>
+                        <div class="status-indicator">📈 Active Analytics Tab</div>
+                        <p>Vertical tab layout works perfectly for admin dashboards and settings pages.</p>
+                        <p>The same active styling principles apply regardless of orientation.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="v-panel-2" role="tabpanel" aria-hidden="true">
+                        <h3>User Management</h3>
+                        <div class="status-indicator">👥 User Management Tab</div>
+                        <p>Manage user accounts, permissions, and activity logs.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="v-panel-3" role="tabpanel" aria-hidden="true">
+                        <h3>System Settings</h3>
+                        <div class="status-indicator">⚙️ Settings Tab</div>
+                        <p>Configure system preferences and integration settings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 3: Pills Style -->
+        <div class="test-section">
+            <h2>💊 Pills Style Tabs</h2>
+            <div class="tab-container pills" data-tab-id="pills-tabs">
+                <div class="tab-list" role="tablist" aria-label="Pills style tab navigation">
+                    <button class="tab-indicator active" data-tab="0" role="tab" aria-selected="true" aria-controls="p-panel-1">
+                        <i class="fas fa-exclamation-triangle"></i> Lost
+                    </button>
+                    <button class="tab-indicator" data-tab="1" role="tab" aria-selected="false" aria-controls="p-panel-2">
+                        <i class="fas fa-search"></i> Found
+                    </button>
+                    <button class="tab-indicator" data-tab="2" role="tab" aria-selected="false" aria-controls="p-panel-3">
+                        <i class="fas fa-check-circle"></i> Claimed
+                    </button>
+                </div>
+                
+                <div class="tab-content-container">
+                    <div class="tab-content active" id="p-panel-1" role="tabpanel" aria-hidden="false">
+                        <h3>Lost Items</h3>
+                        <div class="status-indicator">🚨 Lost Items Tab</div>
+                        <p>Pills style is perfect for status-based filtering like lost/found/claimed items.</p>
+                        <p>Great for the Qreclaim lost-and-found system!</p>
+                    </div>
+                    
+                    <div class="tab-content" id="p-panel-2" role="tabpanel" aria-hidden="true">
+                        <h3>Found Items</h3>
+                        <div class="status-indicator">🔍 Found Items Tab</div>
+                        <p>Browse items that have been found and reported to the system.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="p-panel-3" role="tabpanel" aria-hidden="true">
+                        <h3>Claimed Items</h3>
+                        <div class="status-indicator">✅ Claimed Items Tab</div>
+                        <p>View successfully claimed and returned items.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Instructions -->
+        <div class="test-section">
+            <h2>🎯 Testing Instructions</h2>
+            <div class="test-info">
+                <h3>Manual Testing Steps:</h3>
+                <ol>
+                    <li><strong>Click each tab</strong> - Verify active styling is applied</li>
+                    <li><strong>Keyboard navigation</strong> - Use Tab key to focus, Enter/Space to activate</li>
+                    <li><strong>ARIA attributes</strong> - Check aria-selected and aria-hidden updates</li>
+                    <li><strong>Responsive behavior</strong> - Resize browser window</li>
+                    <li><strong>Multiple tab groups</strong> - Verify they work independently</li>
+                </ol>
+                
+                <h3>Expected Results:</h3>
+                <ul>
+                    <li>✅ Active tabs have distinct visual styling (color, border, background)</li>
+                    <li>✅ Inactive tabs return to default styling</li>
+                    <li>✅ Content panels show/hide correctly</li>
+                    <li>✅ ARIA attributes update for screen readers</li>
+                    <li>✅ Smooth transitions between tab states</li>
+                    <li>✅ No JavaScript errors in console</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/tabs.js') }}"></script>
+    <script>
+        // Initialize all tab groups on this test page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize horizontal tabs
+            const horizontalTabs = {
+                tabContainer: document.querySelector('[data-tab-id="horizontal-tabs"] .tab-list'),
+                contentContainer: document.querySelector('[data-tab-id="horizontal-tabs"] .tab-content-container'),
+                config: {
+                    activeClass: 'active',
+                    allowMultiple: false,
+                    animate: true,
+                    keyboard: true,
+                    swipe: false
+                }
+            };
+            TabSystem.initializeTabs('horizontal-tabs', horizontalTabs);
+            
+            // Initialize vertical tabs
+            const verticalTabs = {
+                tabContainer: document.querySelector('[data-tab-id="vertical-tabs"] .tab-list'),
+                contentContainer: document.querySelector('[data-tab-id="vertical-tabs"] .tab-content-container'),
+                config: {
+                    activeClass: 'active',
+                    allowMultiple: false,
+                    animate: true,
+                    keyboard: true,
+                    swipe: false
+                }
+            };
+            TabSystem.initializeTabs('vertical-tabs', verticalTabs);
+            
+            // Initialize pills tabs
+            const pillsTabs = {
+                tabContainer: document.querySelector('[data-tab-id="pills-tabs"] .tab-list'),
+                contentContainer: document.querySelector('[data-tab-id="pills-tabs"] .tab-content-container'),
+                config: {
+                    activeClass: 'active',
+                    allowMultiple: false,
+                    animate: true,
+                    keyboard: true,
+                    swipe: false
+                }
+            };
+            TabSystem.initializeTabs('pills-tabs', pillsTabs);
+            
+            console.log('✅ All tab systems initialized successfully!');
+            console.log('🔍 TabSystem available:', typeof TabSystem !== 'undefined');
+            console.log('📊 Active instances:', TabState.instances.size);
+        });
+    </script>
+</body>
+</html>

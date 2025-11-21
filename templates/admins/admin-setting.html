@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>QReclaim - Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-setting.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% include 'partials/admin-header.html' %}
+    {% include 'partials/admin-msg-box.html' %}
+    {% include 'partials/admin-confirm.html' %}
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>System Settings</h1>
+            <p>Control background scheduler and view analytics</p>
+        </div>
+        
+        <div class="content-container">
+            <div class="card" style="margin-bottom:16px;">
+                <h3>Background Scheduler</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+                    <span id="schedStatus" class="status-pill">Stopped</span>
+                    <button id="schedStart" class="btn-primary"><i class="fas fa-play"></i> Start</button>
+                    <button id="schedStop" class="btn-secondary"><i class="fas fa-stop"></i> Stop</button>
+                    <button id="runOverdue" class="btn-secondary"><i class="fas fa-clock"></i> Run Overdue Now</button>
+                    <button id="runExpired" class="btn-secondary"><i class="fas fa-hourglass-end"></i> Run Expired Scan Now</button>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <label for="expiredMinutes">Expired Claims Interval (minutes)</label>
+                    <input type="number" id="expiredMinutes" min="1" max="1440" value="1" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;width:120px;">
+                    <button id="saveExpiredInterval" class="btn-primary">Save Interval</button>
+                </div>
+                <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+                    <h4 style="margin:0">Scheduled Jobs</h4>
+                    <button id="refreshJobs" class="btn-secondary">Refresh</button>
+                </div>
+                <table class="table" id="jobsTable" style="margin-top:8px;">
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Next Run</th><th>Trigger</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <!-- Analytics section removed as requested -->
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/admin-setting.js') }}"></script>
+        </div>
+    </div>
+</body>
+</html>
