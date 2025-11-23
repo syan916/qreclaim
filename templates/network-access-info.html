@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Access Info</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/network-access-info.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+</head>
+<body>
+  <div class="site">
+    <div class="sketch">
+      <div class="bee-sketch red"></div>
+      <div class="bee-sketch blue"></div>
+    </div>
+    <h1>{{ code }}:
+      <small>{{ message }}</small>
+    </h1>
+  </div>
+  <div style="max-width:840px;margin:0 auto;padding:1rem;">
+    <div class="card" style="padding:1rem;border:1px solid #e0e0e0;border-radius:12px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+      <p style="margin:0 0 0.75rem;color:#333;">Troubleshooting tips:</p>
+      <ul style="margin:0 0 1rem 1.25rem;color:#333;">
+        <li>Check internet connectivity and reload this page</li>
+        <li>Disable VPN/proxy temporarily; ensure DNS is reachable</li>
+        <li>If session expired, return to login and sign in again</li>
+        <li>Try a different browser or device if problem persists</li>
+      </ul>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-start;">
+        <a class="btn" style="background:#2ecc71;color:#fff;border-radius:8px;padding:0.5rem 0.9rem;text-decoration:none;" href="{{ url_for('index') }}">Go Home</a>
+        <a class="btn" style="background:#e0e0e0;color:#333;border-radius:8px;padding:0.5rem 0.9rem;text-decoration:none;" href="mailto:support@qreclaim.example?subject=Network%20Issue%20{{ code }}">Contact Support</a>
+        <button class="btn" style="background:#3498db;color:#fff;border-radius:8px;padding:0.5rem 0.9rem;" onclick="location.reload()">Retry</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

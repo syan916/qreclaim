@@ -40,6 +40,13 @@
   --shadow-hover: 0 8px 30px rgba(111, 78, 55, 0.2);
 }
 
+/* Shared layout rules to keep user pages centered */
+.main-content .container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Alias mapping for pages that use the "coffee" variable scheme */
 :root {
   --coffee-700: var(--primary-brown);

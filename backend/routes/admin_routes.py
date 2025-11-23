@@ -15,12 +15,71 @@ from firebase_admin import firestore  # For SERVER_TIMESTAMP
 from google.api_core.exceptions import FailedPrecondition  # Handle missing Firestore composite indexes gracefully
 from ..services.locker_service import get_available_lockers
 from ..services.found_item_service import get_dashboard_statistics, get_recent_activities, create_found_item
-from ..services.image_service import generate_tags, generate_description
+from ..services.image_service import generate_tags
 from ..services.status_service import update_overdue_items, validate_status_transition, is_status_final
 from ..services.admin_review_service import create_admin_review, get_admin_reviews, get_admin_review_by_id
 from ..services.claim_service import validate_admin_status_for_approval  # Validate admin before approving/rejecting
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+# =============================
+# Network Info Page & API
+# =============================
+@admin_bp.route('/network-info')
+def network_info_page():
+    if not is_admin():
+        return redirect(url_for('login'))
+    return render_template('admins/network-info.html')
+
+@admin_bp.route('/api/network-info', methods=['GET'])
+def api_network_info():
+    if not is_admin():
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    info = {
+        'success': True,
+        'server_time': datetime.datetime.utcnow().isoformat() + 'Z',
+        'db_status': 'unknown',
+        'counts': {'users': 0, 'found_items': 0, 'lost_items': 0, 'claims': 0}
+    }
+    try:
+        info['counts']['users'] = len(list(db.collection('users').select(['user_id']).stream()))
+        info['counts']['found_items'] = len(list(db.collection('found_items').select(['found_item_id']).stream()))
+        info['counts']['lost_items'] = len(list(db.collection('lost_items').select(['lost_item_id']).stream()))
+        info['counts']['claims'] = len(list(db.collection('claims').select(['claim_id']).stream()))
+        info['db_status'] = 'online'
+    except Exception as e:
+        info['db_status'] = 'error'
+        info['error'] = str(e)
+        info['success'] = False
+    return jsonify(info), 200 if info['success'] else 500
+
+@admin_bp.route('/session-expired')
+def session_expired_page():
+    return render_template('network-access-info.html', code=401, message='Session Expired'), 401
+
+# =============================
+# Global Error Handlers
+# =============================
+@admin_bp.app_errorhandler(404)
+def handle_404(error):
+    try:
+        return render_template('network-access-info.html', code=404, message='Page Not Found'), 404
+    except Exception:
+        return '404 - Page Not Found', 404
+
+@admin_bp.app_errorhandler(500)
+def handle_500(error):
+    try:
+        return render_template('network-access-info.html', code=500, message='Server Error'), 500
+    except Exception:
+        return '500 - Server Error', 500
+
+@admin_bp.app_errorhandler(401)
+def handle_401(error):
+    try:
+        return render_template('network-access-info.html', code=401, message='Session Expired'), 401
+    except Exception:
+        return '401 - Session Expired', 401
 
 @admin_bp.route('/admin-dashboard')
 def dashboard():
@@ -1549,12 +1608,52 @@ def register_student_rfid():
                 'user_id': data.get('user_id') or doc.id,
                 'name': data.get('name') or '',
                 'course': data.get('course') or data.get('department') or '',
-                'email': data.get('email') or ''
+                'email': data.get('email') or '',
+                'rfid_id': data.get('rfid_id'),
+                'contact_number': data.get('contact_number') or data.get('phone') or data.get('mobile')
             })
         students.sort(key=lambda u: (u.get('name') or '').lower())
         return render_template('admins/register-student-rfid.html', students=students)
     except Exception as e:
         return render_template('admins/register-student-rfid.html', students=[], error=str(e))
+
+@admin_bp.route('/api/register-rfid', methods=['POST'])
+def api_register_rfid():
+    if not is_admin():
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    try:
+        data = request.get_json() or {}
+        user_id = data.get('user_id') or data.get('userid')
+        rfid_id = data.get('rfid_id') or data.get('rfid_hex') or data.get('rfid_uid')
+        if not user_id or not rfid_id:
+            return jsonify({'success': False, 'error': 'Missing user_id or rfid_id'}), 400
+
+        force = bool(data.get('force'))
+        existing_doc = None
+        q = db.collection('users').where('rfid_id', '==', rfid_id).stream()
+        for doc in q:
+            if doc.id != user_id:
+                existing_doc = doc
+                break
+        if existing_doc and not force:
+            existing = existing_doc.to_dict() or {}
+            return jsonify({'success': False, 'error': f"RFID already assigned to {existing.get('user_id') or existing_doc.id}", 'assigned_to': existing.get('user_id') or existing_doc.id}), 409
+
+        if existing_doc and force:
+            try:
+                db.collection('users').document(existing_doc.id).update({'rfid_id': None})
+            except Exception:
+                pass
+
+        user_ref = db.collection('users').document(user_id)
+        snap = user_ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        update_data = {'rfid_id': rfid_id}
+        user_ref.update(update_data)
+        return jsonify({'success': True, 'user_id': user_id, 'rfid_id': rfid_id}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @admin_bp.route('/api/available-lockers')
 def get_available_lockers_api():
@@ -3141,7 +3240,11 @@ def generate_description_api():
             temp_path = temp_file.name
         
         try:
-            caption = generate_description(temp_path)
+            # Import the caption generation function
+            from ..ai_image_tagging import generate_caption_for_image
+            
+            # Generate description using AI
+            description = generate_caption_for_image(temp_path)
             
             # Clean up temporary file
             os.unlink(temp_path)

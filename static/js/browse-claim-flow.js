@@ -36,10 +36,17 @@
 
   // Utilities
   function showToast(msg, type='info'){
-    // Reuse browse-found-items.js notification if available
-    if (typeof window.showNotification === 'function'){
-      return window.showNotification(msg, type === 'error' ? 'error' : type);
-    }
+    try {
+      if (window.userMsgBox){
+        if (type === 'success') return window.userMsgBox.showSuccess(msg);
+        if (type === 'error') return window.userMsgBox.showError(msg);
+        if (type === 'warning') return window.userMsgBox.showWarning(msg);
+        return window.userMsgBox.showInfo(msg);
+      }
+      if (typeof window.showNotification === 'function'){
+        return window.showNotification(msg, type === 'error' ? 'error' : type);
+      }
+    } catch(_){ }
     alert(msg);
   }
 
@@ -96,6 +103,8 @@
       });
       claimConfirmModal.addEventListener('hidden.bs.modal', function() {
         this.setAttribute('aria-hidden', 'true');
+        // Reset staged data when cancelling at confirmation stage
+        resetTempClaimStage();
       });
     }
 
@@ -103,9 +112,17 @@
     if (faceCaptureModal) {
       faceCaptureModal.addEventListener('shown.bs.modal', function() {
         this.removeAttribute('aria-hidden');
+        // Ensure other modals are not visible simultaneously
+        hideModalIfOpen('verificationMethodModal');
+        hideModalIfOpen('finalConfirmModal');
       });
       faceCaptureModal.addEventListener('hidden.bs.modal', function() {
         this.setAttribute('aria-hidden', 'true');
+        fullCameraCleanup();
+        // Do NOT reset staged face when auto-capture succeeded
+        if (!state.captureCompleted) {
+          resetTempClaimStage();
+        }
       });
     }
 
@@ -202,23 +219,42 @@
     const faceModalEl = document.getElementById('faceCaptureModal');
     if (faceModalEl){
       faceModalEl.addEventListener('hidden.bs.modal', function(){
-        console.debug('[FaceFlow] faceCaptureModal hidden');
-        try { window.FaceCaptureHelper?.stop(); } catch {}
-        // Stop adaptive brightness controller and clear any CSS filters
-        try { state.brightnessCtrl?.stop(); } catch {}
-        state.brightnessCtrl = null;
-        if (state.cameraStream){
-          try { state.cameraStream.getTracks().forEach(t => t.stop()); } catch {}
-          state.cameraStream = null;
+        console.debug('[FaceFlow] faceCaptureModal hidden (global cleanup)');
+        fullCameraCleanup();
+        if (!state.captureCompleted) {
+          resetTempClaimStage();
         }
-        // Do not clear faceDataUrl if we have successfully captured
-        if (!state.captureCompleted){
-          state.faceDataUrl = null;
+      });
+    }
+
+    // Verification method modal exclusivity and reset
+    const methodModalEl = document.getElementById('verificationMethodModal');
+    if (methodModalEl){
+      methodModalEl.addEventListener('show.bs.modal', function(){
+        hideModalIfOpen('faceCaptureModal');
+        hideModalIfOpen('finalConfirmModal');
+      });
+      methodModalEl.addEventListener('hidden.bs.modal', function(){
+        // Reset only if user aborted before successful capture
+        fullCameraCleanup();
+        if (!state.captureCompleted) {
+          resetTempClaimStage();
         }
-        const canvas = document.getElementById('faceCanvas');
-        if (canvas){
-          const ctx = canvas.getContext('2d');
-          if (ctx) ctx.clearRect(0,0,canvas.width,canvas.height);
+      });
+    }
+
+    // Final confirmation modal exclusivity and reset
+    const finalModalEl = document.getElementById('finalConfirmModal');
+    if (finalModalEl){
+      finalModalEl.addEventListener('show.bs.modal', function(){
+        hideModalIfOpen('faceCaptureModal');
+        hideModalIfOpen('verificationMethodModal');
+      });
+      finalModalEl.addEventListener('hidden.bs.modal', function(){
+        // If user cancels here via X, clear staged data and camera
+        fullCameraCleanup();
+        if (!state.captureCompleted) {
+          resetTempClaimStage();
         }
       });
     }
@@ -260,38 +296,40 @@
   }
 
   async function openFaceCaptureModal(){
+    try { window.FaceCaptureHelper?.reset?.(); } catch {}
     state.faceDataUrl = null;
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('faceCaptureModal'));
     modal.show();
     const loading = document.getElementById('cameraLoading');
     loading?.classList.remove('d-none');
+    const secureOk = (window.isSecureContext === true) || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname || '') || (location.protocol === 'https:');
+    const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    if (!(secureOk && hasMedia)){
+      const errEl = document.getElementById('faceCaptureError');
+      errEl?.classList.remove('d-none');
+      if (errEl) errEl.textContent = 'Camera requires a secure context. Use the upload option below.';
+      showMobileUploadFallback();
+      loading?.classList.add('d-none');
+      return;
+    }
     try {
-      console.debug('[FaceFlow] requesting camera with constraints (user, 640x480@~30fps)');
-      // Prefer moderate resolution and stable frame rate for MediaPipe performance
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 640, max: 1280 },
-          height: { ideal: 480, max: 720 },
-          frameRate: { ideal: 30, min: 24 }
-        },
+        video: { facingMode: 'user', width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 }, frameRate: { ideal: 30, min: 24 } },
         audio: false
       });
       state.cameraStream = stream;
       const video = document.getElementById('faceVideo');
       if (video){
+        try { video.setAttribute('playsinline', ''); video.setAttribute('muted', 'true'); video.setAttribute('autoplay', ''); } catch {}
         video.srcObject = stream;
         await video.play();
-        console.debug('[FaceFlow] camera started. video size=', video.videoWidth, 'x', video.videoHeight);
-        // Adaptive brightness integration: monitor luminance and gently adjust preview
         try {
           if (window.AdaptiveBrightnessController){
             const previewCanvas = document.getElementById('faceCanvas');
-            // Stop any previous controller before starting a new one
             try { state.brightnessCtrl?.stop(); } catch {}
             state.brightnessCtrl = new AdaptiveBrightnessController({
               videoEl: video,
-              previewEl: previewCanvas, // apply CSS filters to the canvas the user sees
+              previewEl: previewCanvas,
               targetLuma: 0.58,
               lowThreshold: 0.35,
               highThreshold: 0.85,
@@ -300,13 +338,10 @@
               enableExposureTuning: true
             });
             state.brightnessCtrl.start();
-            console.debug('[FaceFlow] AdaptiveBrightnessController started');
           }
-        } catch (e) { console.warn('Adaptive brightness unavailable', e); }
-        // Start auto-capture helper
+        } catch (e) {}
         try {
           if (window.FaceCaptureHelper){
-            console.debug('[FaceFlow] initializing FaceCaptureHelper');
             await FaceCaptureHelper.init({
               videoEl: document.getElementById('faceVideo'),
               canvasEl: document.getElementById('faceCanvas'),
@@ -316,18 +351,64 @@
               onAutoCapture: (dataUrl) => autoProceedAfterCapture(dataUrl),
             });
             await FaceCaptureHelper.start();
-            console.debug('[FaceFlow] FaceCaptureHelper started');
           }
-        } catch(e){ console.warn('Auto-capture unavailable', e); }
+        } catch(e){}
       }
     } catch(e){
       const errEl = document.getElementById('faceCaptureError');
       errEl?.classList.remove('d-none');
-      if (errEl) errEl.textContent = 'Unable to access camera or auto-capture unavailable. Please allow camera permissions and try again.';
-      console.error('Camera init failed', e);
+      if (errEl) errEl.textContent = 'Unable to access camera. Use the upload option below.';
+      showMobileUploadFallback();
     } finally {
       loading?.classList.add('d-none');
     }
+  }
+
+  function showMobileUploadFallback(){
+    try {
+      const box = document.getElementById('mobileUploadFallback');
+      const input = document.getElementById('faceFileInput');
+      box?.classList.remove('d-none');
+      if (input && !input.__bound){
+        input.addEventListener('change', async function(){
+          const f = this.files && this.files[0];
+          if (!f) return;
+          const d = await fileToSquareDataUrl(f, 384);
+          if (!d) return;
+          state.faceDataUrl = d;
+          state.captureCompleted = true;
+          const faceModal = bootstrap.Modal.getInstance(document.getElementById('faceCaptureModal'));
+          faceModal?.hide();
+          setTimeout(() => { openVerificationMethodModal(); }, 250);
+        });
+        input.__bound = true;
+      }
+    } catch(e){}
+  }
+
+  function fileToSquareDataUrl(file, size){
+    return new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = size; c.height = size;
+          const ctx = c.getContext('2d');
+          const sw = Math.min(img.width, img.height);
+          const sx = Math.floor((img.width - sw) / 2);
+          const sy = Math.floor((img.height - sw) / 2);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, sx, sy, sw, sw, 0, 0, size, size);
+          try { resolve(c.toDataURL('image/png')); } catch { resolve(null); }
+        };
+        img.onerror = () => resolve(null);
+        img.src = r.result;
+      };
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(file);
+    });
   }
 
   async function autoProceedAfterCapture(dataUrl){
@@ -545,6 +626,7 @@
       if (downloadBtn) downloadBtn.href = qrUrl;
       const qrModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('qrGeneratedModal'));
       qrModal.show();
+      try { showToast('Claim registered successfully. Your QR code is ready.', 'success'); } catch(_){}
       // Start countdown
       if (state.countdownTimer) clearInterval(state.countdownTimer);
       startExpirationCountdown(data.expires_at_ms || data.expires_at);
@@ -653,6 +735,40 @@
       console.log('[Real-time Update] All item button states updated successfully');
     } catch (error) {
       console.error('[Real-time Update] Error updating button states:', error);
+    }
+  }
+  // Move helpers inside closure to access state
+  function hideModalIfOpen(id){
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const instance = bootstrap.Modal.getInstance(el);
+      const visible = el.classList.contains('show');
+      if (visible) instance?.hide();
+    } catch(_){}
+  }
+
+  function fullCameraCleanup(){
+    try { window.FaceCaptureHelper?.stop?.(); } catch {}
+    try { state.brightnessCtrl?.stop?.(); } catch {}
+    state.brightnessCtrl = null;
+    if (state.cameraStream){
+      try { state.cameraStream.getTracks().forEach(t => t.stop()); } catch {}
+      state.cameraStream = null;
+    }
+  }
+
+  function resetTempClaimStage(){
+    state.faceDataUrl = null;
+    state.captureCompleted = false;
+    state.pendingMethod = 'qr_face';
+    try { window.FaceCaptureHelper?.reset?.(); } catch {}
+    const canvas = document.getElementById('faceCanvas');
+    if (canvas){
+      try {
+        const ctx = canvas.getContext('2d');
+        ctx && ctx.clearRect(0,0,canvas.width,canvas.height);
+      } catch(_){}
     }
   }
 })();

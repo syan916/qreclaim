@@ -1,0 +1,25 @@
+# Core web framework
+Flask>=2.2
+Flask-Cors>=3.0
+python-dotenv>=1.0
+
+# Firebase Admin SDK (Firestore + Storage)
+firebase-admin>=6.4
+
+# Crypto for QR encryption (Fernet)
+cryptography>=41.0
+
+# Image/array processing
+Pillow>=10.0
+numpy>=1.24
+
+# QR code generation
+qrcode>=7.4
+
+# Optional: OpenCV for server-side face detection/embeddings
+# On Raspberry Pi, prefer installing via apt: `sudo apt install -y python3-opencv`
+# If using pip, headless build avoids GUI deps:
+opencv-python-headless>=4.8
+
+# Optional: DeepFace (heavy; not required, server falls back gracefully)
+# deepface>=0.0.79

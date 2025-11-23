@@ -69,6 +69,7 @@
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   overflow: hidden;
+  margin: 0 auto; /* center card inside container */
 }
 /* Removed legacy .image-pane styles; details page now uses standardized markup and styles from image-shared.css */
 .item-name {
@@ -234,6 +235,14 @@
 /* Responsive */
 @media (max-width: 768px) {
   /* Removed .image-pane responsive padding; standardized container styles are defined in image-shared.css */
+}
+
+/* Centering and mobile-safe padding */
+.details-section .container { max-width: 960px; margin: 0 auto; }
+@media (max-width: 576px) {
+  .details-header .container,
+  .details-section .container { padding-left: 12px; padding-right: 12px; }
+  body { overflow-x: hidden; }
 }
 
 /* Accessibility */

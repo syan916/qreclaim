@@ -160,6 +160,63 @@ class FirebaseService {
         }
     }
 
+    async getClaimByToken(token) {
+        let attempt = 0;
+        while (attempt < this.MAX_ATTEMPTS) {
+            try {
+                if (!this.initialized) {
+                    await this.init();
+                }
+                const online = await this.checkConnectivity();
+                if (!online) {
+                    return { success: false, error: 'Offline: Firestore disabled (no firebaseConfig). QR-only flow is available.' };
+                }
+                let snapshot = null;
+                const col = this.db.collection('claims');
+                snapshot = await col.where('token', '==', token).limit(1).get();
+                if (snapshot && snapshot.empty) {
+                    snapshot = await col.where('qr_token', '==', token).limit(1).get();
+                }
+                if (!snapshot || snapshot.empty) {
+                    return { success: false, error: 'Claim not found' };
+                }
+                const doc = snapshot.docs[0];
+                const data = doc.data() || {};
+                return {
+                    success: true,
+                    data: {
+                        claim_id: data.claim_id || doc.id,
+                        student_id: data.student_id,
+                        found_item_id: data.found_item_id,
+                        verification_method: data.verification_method,
+                        status: data.status,
+                        face_embedding: data.face_embedding,
+                        face_image_base64: data.face_image_base64,
+                        rfid_uid: data.rfid_uid,
+                        expires_at: data.expires_at,
+                        locker_id: data.locker_id
+                    }
+                };
+            } catch (error) {
+                console.error('Error fetching claim by token (attempt ' + (attempt + 1) + '):', error);
+                const msg = (error && error.message) ? error.message : String(error);
+                if (this.isTransientError(error) && attempt < this.MAX_ATTEMPTS - 1) {
+                    const delay = this.BASE_DELAY_MS * Math.pow(2, attempt);
+                    await this.sleep(delay);
+                    attempt++;
+                    continue;
+                }
+                if (/Missing or insufficient permissions|PERMISSION_DENIED/i.test(msg)) {
+                    return { success: false, error: 'Missing or insufficient permissions for claims collection. Update Firestore rules.' };
+                }
+                if (msg.includes('client is offline') || msg.includes('UNAVAILABLE')) {
+                    return { success: false, error: 'Offline: Firestore unavailable. Verify internet connectivity and Firebase project configuration.' };
+                }
+                return { success: false, error: msg };
+            }
+        }
+    }
+
     /**
      * Update claim status to claimed
      * @param {string} claimId - Claim ID

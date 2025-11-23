@@ -749,7 +749,34 @@
     try { state.flashAlpha = 0; } catch (_) {}
   }
 
-  window.FaceCaptureHelper = { init, start, stop };
+  function reset(){
+    try { cancelAnimationFrame(rafId); } catch (_) {}
+    running = false;
+    capturedOnce = false;
+    state.lastBlinkTime = 0;
+    state.blinkArmed = true;
+    state.flow.stableFrames = 0;
+    state.flow.blinkPhase = false;
+    state.flow.blinkCount = 0;
+    state.prevBox = null;
+    state.flashAlpha = 0;
+    state.validation.frameCount = 0;
+    state.validation.orientationOk = false;
+    state.validation.sizeOk = false;
+    state.validation.frameAlignedOk = true;
+    state.validation.brightOk = true;
+    state.validation.blurOk = true;
+    state.validation.lastBrightness = 0;
+    state.validation.lastSharpness = 0;
+    state.validation.readyFrames = 0;
+    state.earOpenAvg = 0;
+    state.earOpenSamples = 0;
+    state.lowEarMin = null;
+    try { if (state.statusEl) state.statusEl.textContent = ''; } catch (_) {}
+    try { window.__faceCaptureDiag.lastBlinkCount = 0; } catch (_) {}
+  }
+
+  window.FaceCaptureHelper = { init, start, stop, reset };
 })();
 
 // Image region analysis: brightness and sharpness heuristics

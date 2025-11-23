@@ -5,7 +5,7 @@ from ..auth import is_authenticated, is_student, student_required
 from ..database import db
 from ..services.user_service import get_user_profile
 from ..services.lost_item_service import create_lost_item
-from ..services.image_service import generate_tags, generate_description
+from ..services.image_service import generate_tags
 from ..services.found_item_service import get_found_item_details
 from ..services.claim_service import (
     start_claim,
@@ -20,6 +20,7 @@ from ..services.claim_service import (
     validate_admin_status_for_approval,
     list_user_claims,
     cancel_claim,
+    get_active_qr_for_user,
 )
 from ..services.claim_validation_service import ClaimValidationService
 
@@ -71,9 +72,29 @@ def list_notifications():
         from datetime import datetime, timedelta, timezone
         since = datetime.now(timezone.utc) - timedelta(days=days)
         ref = db.collection('notifications')
-        q = ref.where('user_id', '==', user_id).where('timestamp', '>=', since).order_by('timestamp', direction=firestore.Query.DESCENDING).limit(limit)
-        docs = list(q.stream())
+
         items = []
+        try:
+            q = (
+                ref.where('user_id', '==', user_id)
+                   .where('timestamp', '>=', since)
+                   .order_by('timestamp', direction=firestore.Query.DESCENDING)
+                   .limit(limit)
+            )
+            docs = list(q.stream())
+        except Exception:
+            docs = list(ref.where('user_id', '==', user_id).stream())
+            def _safe_ts(v):
+                try:
+                    if hasattr(v, 'timestamp'):
+                        return v.timestamp()
+                    return datetime.fromisoformat(v).timestamp()
+                except Exception:
+                    return 0
+            docs = [d for d in docs if _safe_ts((d.to_dict() or {}).get('timestamp')) >= since.timestamp()]
+            docs.sort(key=lambda d: _safe_ts((d.to_dict() or {}).get('timestamp')), reverse=True)
+            docs = docs[:limit]
+
         for d in docs:
             data = d.to_dict() or {}
             items.append({
@@ -419,7 +440,9 @@ def user_generate_description_api():
         temp_path = os.path.join(temp_dir, temp_name)
         file.save(temp_path)
 
-        caption = generate_description(temp_path)
+        # Use AI caption generation
+        from ..ai_image_tagging import generate_caption_for_image
+        caption = generate_caption_for_image(temp_path)
 
         # Clean up
         try:
@@ -919,6 +942,16 @@ def user_list_claims_api():
             cursor_id=cursor_id,
         )
         return jsonify(resp), status_code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@user_bp.route('/api/claims/active-qr', methods=['GET'])
+@student_required
+def user_active_qr_api():
+    try:
+        student_id = session.get('user_id')
+        ok, resp, status = get_active_qr_for_user(student_id)
+        return jsonify(resp), status
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

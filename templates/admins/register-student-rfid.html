@@ -25,24 +25,7 @@
             </div>
 
             <div class="content-container rfid-grid">
-                <section class="card rfid-card">
-                    <h3>Raspberry Pi Connection</h3>
-                    <div class="rfid-row">
-                        <div class="rfid-field">
-                            <label for="piHost">Pi Host</label>
-                            <input id="piHost" type="text" placeholder="http://localhost:5001">
-                        </div>
-                        <div class="rfid-field">
-                            <label for="wsPath">WebSocket Path</label>
-                            <input id="wsPath" type="text" placeholder="/rfid">
-                        </div>
-                    </div>
-                    <div class="rfid-actions">
-                        <button id="connectBtn" class="btn primary"><i class="fas fa-plug"></i> Connect</button>
-                        <button id="disconnectBtn" class="btn"><i class="fas fa-unplug"></i> Disconnect</button>
-                        <div id="connStatus" class="status badge">Disconnected</div>
-                    </div>
-                </section>
+                
 
                 <section class="card rfid-card">
                     <h3>Select Student</h3>
@@ -51,19 +34,9 @@
                         <select id="studentSelect">
                             <option value="">Select a student...</option>
                             {% for s in students %}
-                                <option value="{{ s.user_id }}" data-name="{{ s.name }}" data-course="{{ s.course }}" data-email="{{ s.email }}">{{ s.name }} ({{ s.user_id }})</option>
+                                <option value="{{ s.user_id }}" data-name="{{ s.name }}" data-course="{{ s.course }}" data-email="{{ s.email }}" data-rfid="{{ s.rfid_id }}" data-contact="{{ s.contact_number }}">{{ s.name }} ({{ s.user_id }})</option>
                             {% endfor %}
                         </select>
-                    </div>
-                    <div class="rfid-row">
-                        <div class="rfid-field">
-                            <label for="userId">User ID</label>
-                            <input id="userId" type="text" readonly>
-                        </div>
-                        <div class="rfid-field">
-                            <label for="name">Name</label>
-                            <input id="name" type="text" readonly>
-                        </div>
                     </div>
                     <div class="rfid-row">
                         <div class="rfid-field">
@@ -75,23 +48,29 @@
                             <input id="email" type="text" readonly>
                         </div>
                     </div>
+                    <div class="rfid-row">
+                        <div class="rfid-field">
+                            <label for="currentRfidId">Current RFID ID</label>
+                            <input id="currentRfidId" type="text" readonly>
+                        </div>
+                        <div class="rfid-field">
+                            <label for="contactNumber">Contact Number</label>
+                            <input id="contactNumber" type="text" readonly>
+                        </div>
+                    </div>
                 </section>
 
                 <section class="card rfid-card">
                     <h3>RFID Card</h3>
                     <div class="rfid-actions">
-                        <button id="scanBtn" class="btn"><i class="fas fa-rss"></i> Scan UID</button>
-                        <button id="readBtn" class="btn"><i class="fas fa-download"></i> Read Card</button>
                         <button id="writeBtn" class="btn success"><i class="fas fa-upload"></i> Write Card</button>
                     </div>
                     <div class="rfid-row">
                         <div class="rfid-field">
-                            <label for="cardUid">Card UID</label>
-                            <input id="cardUid" type="text" readonly>
-                        </div>
-                        <div class="rfid-field">
-                            <label for="cardPayload">Card Data</label>
-                            <textarea id="cardPayload" rows="4" readonly></textarea>
+                            <label for="rfidDataList">RFID Data (Hex)</label>
+                            <select id="rfidDataList">
+                                <option value="">Select RFID data...</option>
+                            </select>
                         </div>
                     </div>
                     <div id="rfidAlert" class="alert" hidden></div>
@@ -107,7 +86,7 @@
         <script>
             window.studentsData = {{ students|tojson }};
         </script>
-        <script src="{{ url_for('static', filename='js/admin-rfid.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/admin-rfid-lite.js') }}"></script>
         <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
     </div>
 </body>

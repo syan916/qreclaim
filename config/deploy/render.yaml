@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: qreclaim-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    preDeployCommand: 'if [ -n "$FIREBASE_ADMIN_KEY_JSON" ]; then printf %s "$FIREBASE_ADMIN_KEY_JSON" > firebaseAdminKey.json; python -c "import json; json.load(open(\"firebaseAdminKey.json\")); print(\"Firebase Admin JSON OK\")"; else echo "FIREBASE_ADMIN_KEY_JSON not set; skipping credentials file creation"; fi'
+    startCommand: gunicorn -w 2 -k gthread -b 0.0.0.0:$PORT app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /opt/render/project/src/firebaseAdminKey.json
+      - fromGroup: qreclaim-env
+
+envVarGroups:
+  - name: qreclaim-env
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: FIREBASE_ADMIN_KEY_JSON
+        sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: QRECLAIM_FERNET_KEYS
+        sync: false
+      - key: QRECLAIM_FERNET_ACTIVE
+        value: v1
+      - key: FIREBASE_WEB_CONFIG_JSON
+        sync: false
+      - key: QRECLAIM_NSFW_BLOCK_BORDERLINE
+        value: "true"
+      - key: QRECLAIM_NSFW_MODEL_PATH
+        sync: false
+      - key: USE_FIRESTORE_EMULATOR
+        value: "false"
+      - key: FIRESTORE_EMULATOR_HOST
+        value: localhost
+      - key: FIRESTORE_EMULATOR_PORT
+        value: 8080
