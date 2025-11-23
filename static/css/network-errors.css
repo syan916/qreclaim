@@ -1,0 +1,13 @@
+/* Overlay styling used by admin and user pages for network errors */
+.network-error-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
+.network-error-overlay.show { display: flex; }
+.network-error-overlay .overlay-card { width: 100%; max-width: 560px; background: #fff; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+.network-error-overlay .overlay-header { display: flex; align-items: center; gap: 0.6rem; background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border-radius: 12px 12px 0 0; padding: 0.9rem 1rem; font-weight: 600; }
+.network-error-overlay .overlay-body { padding: 1rem; color: #333; }
+.network-error-overlay .overlay-body .overlay-tips { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+.network-error-overlay .overlay-actions { display: flex; gap: 0.6rem; justify-content: flex-end; padding: 0.75rem 1rem 1rem; }
+.network-error-overlay .btn { border: none; border-radius: 8px; padding: 0.6rem 1rem; cursor: pointer; }
+.network-error-overlay .btn.retry { background: #2ecc71; color: #fff; }
+.network-error-overlay .btn.support { background: #e0e0e0; color: #333; text-decoration: none; }
+
+@media (max-width: 600px) { .network-error-overlay .overlay-card { max-width: 94vw; } }

@@ -177,6 +177,13 @@
 
   document.addEventListener('DOMContentLoaded', function(){
     const root = document.getElementById('claimsGrid')
-    if(root){ ReactDOM.createRoot(root).render(React.createElement(App)) }
+    const loading = document.getElementById('loadingState')
+    const empty = document.getElementById('emptyState')
+    if (loading) loading.style.display = 'none'
+    if (empty) empty.style.display = 'none'
+    if (root){
+      root.style.display = 'grid'
+      ReactDOM.createRoot(root).render(React.createElement(App))
+    }
   })
 })();

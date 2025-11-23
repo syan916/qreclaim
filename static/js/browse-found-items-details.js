@@ -46,6 +46,7 @@
     // Claim button: delegate to core functions when available for consistency
     const btnClaim = document.getElementById('btnClaim');
     btnClaim?.addEventListener('click', async () => {
+      if (btnClaim.disabled || btnClaim.classList.contains('btn-disabled')) return;
       if (!state.itemId) return;
       const isValuable = !!(state.item && state.item.is_valuable);
       try {
@@ -138,6 +139,7 @@
     });
 
     // Confirm claim: open face capture
+    if (!window.__browseClaimFlowInstalled) {
     document.getElementById('confirmClaimYesBtn')?.addEventListener('click', async () => {
       try {
         const isValuable = !!(state.item && state.item.is_valuable);
@@ -163,25 +165,30 @@
         await openFaceCaptureModal();
       } catch(e){ console.error(e); }
     });
+    }
 
     // Manual capture removed; auto-capture handled by FaceCaptureHelper
 
     // Method selection confirm
-    document.getElementById('confirmMethodBtn')?.addEventListener('click', async () => {
-      await confirmVerificationMethod();
-    });
+    if (!window.__browseClaimFlowInstalled) {
+      document.getElementById('confirmMethodBtn')?.addEventListener('click', async () => {
+        await confirmVerificationMethod();
+      });
+    }
 
     // Final confirmation button
-    document.getElementById('finalizeConfirmBtn')?.addEventListener('click', async () => {
-      console.log('[DEBUG] finalizeConfirmBtn - approvalRequestMode:', state.approvalRequestMode);
-      if (state.approvalRequestMode){
-        console.log('[DEBUG] Calling finalizeApprovalRequestFlow');
-        await finalizeApprovalRequestFlow();
-      } else {
-        console.log('[DEBUG] Calling finalizeClaimAndProceed');
-        await finalizeClaimAndProceed();
-      }
-    });
+    if (!window.__browseClaimFlowInstalled) {
+      document.getElementById('finalizeConfirmBtn')?.addEventListener('click', async () => {
+        console.log('[DEBUG] finalizeConfirmBtn - approvalRequestMode:', state.approvalRequestMode);
+        if (state.approvalRequestMode){
+          console.log('[DEBUG] Calling finalizeApprovalRequestFlow');
+          await finalizeApprovalRequestFlow();
+        } else {
+          console.log('[DEBUG] Calling finalizeClaimAndProceed');
+          await finalizeClaimAndProceed();
+        }
+      });
+    }
 
     if (!state.itemId) {
       showError('Missing item id.');
@@ -216,38 +223,41 @@
     // Remarks modal interactions
     const remarksInput = document.getElementById('studentRemarksInput');
     remarksInput?.addEventListener('input', updateRemarksCounter);
-    // Save & Continue: validate and move to confirmation
-    document.getElementById('studentRemarksContinueBtn')?.addEventListener('click', async () => {
-      const input = document.getElementById('studentRemarksInput');
-      const err = document.getElementById('studentRemarksError');
-      const text = (input?.value || '').trim();
-      const max = 300;
-      const isValuable = !!(state.item && state.item.is_valuable);
-      err?.classList.add('d-none');
-      if (isValuable && text.length === 0){
-        if (err){ err.textContent = 'Please provide a brief remark for valuable items.'; err.classList.remove('d-none'); }
-        return;
-      }
-      if (text.length > max){
-        if (err){ err.textContent = `Remarks must be ${max} characters or fewer.`; err.classList.remove('d-none'); }
-        return;
-      }
-      state.studentRemarks = text;
-      // For valuable items: enter approvalRequestMode and proceed to verification flow
-      if (isValuable){
-        state.approvalRequestMode = true;
-        console.log('[DEBUG] Set approvalRequestMode to true for valuable item');
-      }
-      console.log('[DEBUG] approvalRequestMode:', state.approvalRequestMode, 'isValuable:', isValuable);
-      // Proceed to claim confirmation (both valuable and non-valuable)
-      const rModal = bootstrap.Modal.getInstance(document.getElementById('studentRemarksModal'));
-      rModal?.hide();
-      const cModalEl = document.getElementById('claimConfirmModal');
-      if (cModalEl){
-        const cModal = bootstrap.Modal.getOrCreateInstance(cModalEl);
-        cModal.show();
-      }
-    });
+    // Fallback handler: only bind when unified browse claim flow is not installed
+    const remarksBtn = document.getElementById('submitStudentRemarksBtn');
+    if (remarksBtn && !window.__browseClaimFlowInstalled){
+      remarksBtn.addEventListener('click', async () => {
+        const input = document.getElementById('studentRemarksInput');
+        const err = document.getElementById('studentRemarksError');
+        const text = (input?.value || '').trim();
+        const max = 300;
+        const isValuable = !!(state.item && state.item.is_valuable);
+        err?.classList.add('d-none');
+        if (isValuable && text.length === 0){
+          if (err){ err.textContent = 'Please provide a brief remark for valuable items.'; err.classList.remove('d-none'); }
+          return;
+        }
+        if (text.length > max){
+          if (err){ err.textContent = `Remarks must be ${max} characters or fewer.`; err.classList.remove('d-none'); }
+          return;
+        }
+        state.studentRemarks = text;
+        // For valuable items: enter approvalRequestMode and proceed to verification flow
+        if (isValuable){
+          state.approvalRequestMode = true;
+          console.log('[DEBUG] Set approvalRequestMode to true for valuable item');
+        }
+        console.log('[DEBUG] approvalRequestMode:', state.approvalRequestMode, 'isValuable:', isValuable);
+        // Proceed to claim confirmation (both valuable and non-valuable)
+        const rModal = bootstrap.Modal.getInstance(document.getElementById('studentRemarksModal'));
+        rModal?.hide();
+        const cModalEl = document.getElementById('claimConfirmModal');
+        if (cModalEl){
+          const cModal = bootstrap.Modal.getOrCreateInstance(cModalEl);
+          cModal.show();
+        }
+      });
+    }
   });
 
   // Optimistic button rendering: instant updates based only on userClaimState
@@ -264,6 +274,7 @@
       if (btn.disabled) { btn.classList.add('btn-disabled'); btn.setAttribute('aria-disabled','true'); }
       else { btn.classList.remove('btn-disabled'); btn.removeAttribute('aria-disabled'); }
     };
+    if (s === 'blocked') { set('Has Active Claims', false); return; }
     if (s === 'none') {
       if (isValuable) set('Request Approval', true); else set('Claim', true); return;
     }
@@ -329,19 +340,28 @@
     const modalEl = document.getElementById('faceCaptureModal');
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
-    // Initialize camera
+    state.captureCompleted = false;
+    state.faceDataUrl = null;
+    try { window.FaceCaptureHelper?.reset?.(); } catch (_){ }
     const loading = document.getElementById('cameraLoading');
     loading?.classList.remove('d-none');
+    const secureOk = (window.isSecureContext === true) || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname || '') || (location.protocol === 'https:');
+    const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    if (!(secureOk && hasMedia)){
+      const errEl = document.getElementById('faceCaptureError');
+      errEl?.classList.remove('d-none');
+      if (errEl) errEl.textContent = 'Camera requires a secure context. Use the upload option below.';
+      showMobileUploadFallbackDetails();
+      loading?.classList.add('d-none');
+      return;
+    }
     try {
-      console.debug('[FaceFlow] requesting camera (facingMode=user)');
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       state.cameraStream = stream;
       const video = document.getElementById('faceVideo');
       if (video){
         video.srcObject = stream;
         await video.play();
-        console.debug('[FaceFlow] camera started. video size=', video.videoWidth, 'x', video.videoHeight);
-        // Adaptive brightness: monitor luminance and gently adjust preview canvas
         try {
           if (window.AdaptiveBrightnessController){
             const previewCanvas = document.getElementById('faceCanvas');
@@ -357,12 +377,9 @@
               enableExposureTuning: true
             });
             state.brightnessCtrl.start();
-            console.debug('[FaceFlow] AdaptiveBrightnessController started (details)');
           }
-        } catch (e) { console.warn('Adaptive brightness unavailable (details)', e); }
-        // Start auto-capture if helper is available
+        } catch (e) {}
         if (window.FaceCaptureHelper){
-          console.debug('[FaceFlow] initializing FaceCaptureHelper');
           await FaceCaptureHelper.init({
             videoEl: document.getElementById('faceVideo'),
             canvasEl: document.getElementById('faceCanvas'),
@@ -371,14 +388,13 @@
             onAutoCapture: (dataUrl) => autoProceedAfterCapture(dataUrl),
           });
           await FaceCaptureHelper.start();
-          console.debug('[FaceFlow] FaceCaptureHelper started');
         }
       }
     } catch(e){
-      console.error('Camera init error:', e);
-      document.getElementById('faceCaptureError')?.classList.remove('d-none');
       const errEl = document.getElementById('faceCaptureError');
-      if (errEl) errEl.textContent = 'Unable to access camera or auto-capture unavailable. Please allow camera permissions and try again.';
+      errEl?.classList.remove('d-none');
+      if (errEl) errEl.textContent = 'Unable to access camera. Use the upload option below.';
+      showMobileUploadFallbackDetails();
     } finally {
       loading?.classList.add('d-none');
     }
@@ -388,6 +404,7 @@
       modalEl.addEventListener('hidden.bs.modal', function(){
         console.debug('[FaceFlow] faceCaptureModal hidden');
         try { window.FaceCaptureHelper?.stop(); } catch {}
+        try { window.FaceCaptureHelper?.reset?.(); } catch {}
         try { state.brightnessCtrl?.stop(); } catch {}
         state.brightnessCtrl = null;
         if (state.cameraStream){
@@ -409,6 +426,53 @@
       });
       modalEl.__faceModalCleanupBound = true;
     }
+  }
+
+  function showMobileUploadFallbackDetails(){
+    try {
+      const box = document.getElementById('mobileUploadFallback');
+      const input = document.getElementById('faceFileInput');
+      box?.classList.remove('d-none');
+      if (input && !input.__bound){
+        input.addEventListener('change', async function(){
+          const f = this.files && this.files[0];
+          if (!f) return;
+          const d = await fileToSquareDataUrlDetails(f, 384);
+          if (!d) return;
+          state.faceDataUrl = d;
+          state.captureCompleted = true;
+          const faceModal = bootstrap.Modal.getInstance(document.getElementById('faceCaptureModal'));
+          faceModal?.hide();
+          setTimeout(() => { openVerificationMethodModal(); }, 250);
+        });
+        input.__bound = true;
+      }
+    } catch(e){}
+  }
+
+  function fileToSquareDataUrlDetails(file, size){
+    return new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = size; c.height = size;
+          const ctx = c.getContext('2d');
+          const sw = Math.min(img.width, img.height);
+          const sx = Math.floor((img.width - sw) / 2);
+          const sy = Math.floor((img.height - sw) / 2);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, sx, sy, sw, sw, 0, 0, size, size);
+          try { resolve(c.toDataURL('image/png')); } catch { resolve(null); }
+        };
+        img.onerror = () => resolve(null);
+        img.src = r.result;
+      };
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(file);
+    });
   }
 
   async function autoProceedAfterCapture(dataUrl){
@@ -533,12 +597,13 @@
         const dataStart = await resStart.json().catch(() => ({}));
         console.log('[DEBUG] Start claim response:', dataStart);
         if (!resStart.ok || !dataStart?.success){
-          // Duplicate/present states are surfaced nicely
           if (resStart.status === 409){
             const code = String(dataStart?.code || '').toUpperCase();
             let msg = 'You already have a pending claim or an active QR for this item.';
             if (code === 'DUPLICATE_PENDING_CLAIM') msg = 'You already have a pending claim for this item.';
             else if (code === 'ACTIVE_QR_EXISTS') msg = 'An active QR is already registered for this item for your account.';
+            else if (code === 'MAX_CONCURRENT_CLAIMS_EXCEEDED') msg = 'You already have a pending claim. Please complete or cancel it first.';
+            else if (code === 'MAX_CONCURRENT_APPROVED_CLAIMS_EXCEEDED') msg = 'You already have an approved claim. Please complete it first.';
             if (errEl){ errEl.classList.remove('d-none'); errEl.textContent = msg; } else { alert(msg); }
             return;
           }
@@ -601,7 +666,7 @@
       const row = document.getElementById('userStatusRow');
       const badge = document.getElementById('userStatusBadge');
       const textEl = document.getElementById('userStatusText');
-      if (btn){ btn.disabled = true; btn.setAttribute('aria-disabled','true'); btn.textContent = 'Awaiting Approval'; }
+      if (btn){ btn.disabled = true; btn.setAttribute('aria-disabled','true'); btn.textContent = 'Pending Approval'; }
       row?.classList.remove('d-none');
       if (badge){ badge.textContent = 'Pending Approval'; badge.classList.remove('bg-info','bg-success'); badge.classList.add('bg-warning'); }
       if (textEl){ textEl.textContent = 'Approval requested. You will be notified once an admin approves your claim.'; }
@@ -673,19 +738,21 @@
           console.log('DEBUG: Claim start response data:', dataStart);
           if (!resStart.ok || !dataStart?.success){
             // Friendly handling for duplicate attempts
-            if (resStart.status === 409){
-              const code = String(dataStart?.code || '').toUpperCase();
-              let msg = 'You already have a pending claim or an active QR for this item.';
-              if (code === 'DUPLICATE_PENDING_CLAIM') msg = 'You already have a pending claim for this item.';
-              else if (code === 'ACTIVE_QR_EXISTS') msg = 'An active QR is already registered for this item for your account.';
-              if (errEl){
+          if (resStart.status === 409){
+            const code = String(dataStart?.code || '').toUpperCase();
+            let msg = 'You already have a pending claim or an active QR for this item.';
+            if (code === 'DUPLICATE_PENDING_CLAIM') msg = 'You already have a pending claim for this item.';
+            else if (code === 'ACTIVE_QR_EXISTS') msg = 'An active QR is already registered for this item for your account.';
+            else if (code === 'MAX_CONCURRENT_CLAIMS_EXCEEDED') msg = 'You already have a pending claim. Please complete or cancel it first.';
+            else if (code === 'MAX_CONCURRENT_APPROVED_CLAIMS_EXCEEDED') msg = 'You already have an approved claim. Please complete it first.';
+            if (errEl){
                 errEl.classList.remove('d-none');
                 errEl.textContent = msg + ' Please check your claim status or wait until the QR expires.';
               } else {
                 alert(msg);
               }
-              return; // stop flow gracefully
-            }
+            return;
+          }
             throw new Error(dataStart?.error || `Failed to start claim (${resStart.status})`);
           }
           state.claimId = dataStart.claim_id;
@@ -931,30 +998,43 @@
           window.userClaimState.status = (r === 'approved_can_claim') ? 'approved' : (r === 'active_qr' ? 'active' : 'pending');
           window.userClaimState.claimItemId = String(state.itemId);
           updateButtonsUI();
+        } else if (r === 'has_other_active_claims') {
+          window.userClaimState.hasActive = true;
+          window.userClaimState.status = 'blocked';
+          window.userClaimState.claimItemId = null;
+          updateButtonsUI();
         }
       }
       
       // Show/hide status row and update content based on reason
+      // Apply button text and disabled state consistently with browse page
+    const btn2 = document.getElementById('btnClaim');
+    if (btn2){
+      const isValuableBtn = !!(state.item && state.item.is_valuable);
+      btn2.textContent = nextText || (isValuableBtn ? 'Request Approval' : 'Claim');
+      btn2.disabled = !!nextDisabled;
+      btn2.classList.toggle('btn-disabled', !!nextDisabled);
+      if (nextDisabled) btn2.setAttribute('aria-disabled','true'); else btn2.removeAttribute('aria-disabled');
+    }
+
       if (shouldShowStatusRow(validationData.reason)) {
         row?.classList.remove('d-none');
         updateStatusBadge(badge, validationData.reason);
         if (text) { text.textContent = nextTitle || ''; }
         
         // Add tooltip for disabled buttons
-        const btn = document.getElementById('btnClaim');
-        if (btn && btn.disabled && (nextTitle || validationData.message)) {
-          btn.setAttribute('title', nextTitle || validationData.message);
-          btn.setAttribute('data-bs-toggle', 'tooltip');
-          btn.setAttribute('data-bs-placement', 'top');
-          
-          // Initialize tooltip if Bootstrap is available
+        const btn3 = document.getElementById('btnClaim');
+        if (btn3 && btn3.disabled && (nextTitle || validationData.message)) {
+          btn3.setAttribute('title', nextTitle || validationData.message);
+          btn3.setAttribute('data-bs-toggle', 'tooltip');
+          btn3.setAttribute('data-bs-placement', 'top');
           if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-            new bootstrap.Tooltip(btn);
+            new bootstrap.Tooltip(btn3);
           }
-        } else {
-          btn.removeAttribute('title');
-          btn.removeAttribute('data-bs-toggle');
-          btn.removeAttribute('data-bs-placement');
+        } else if (btn3) {
+          btn3.removeAttribute('title');
+          btn3.removeAttribute('data-bs-toggle');
+          btn3.removeAttribute('data-bs-placement');
         }
       } else {
         row?.classList.add('d-none');
@@ -987,7 +1067,7 @@
       case 'can_request_approval':
         return { text: 'Request Approval', disabled: false, title: '' };
       case 'pending_approval':
-        return { text: 'Pending', disabled: true, title: 'Waiting for admin approval' };
+        return { text: 'Pending Approval', disabled: true, title: 'Waiting for admin approval' };
       case 'active_qr':
         return { text: 'Claim now', disabled: true, title: validation?.message || 'A QR code is already active for this item' };
       case 'has_other_active_claims':
@@ -1022,7 +1102,7 @@
   
   // Helper function to determine if status row should be shown
   function shouldShowStatusRow(reason) {
-    return ['pending_approval', 'approved_can_claim', 'item_approved', 'rejected', 'active_qr', 'item_not_available'].includes(reason);
+    return ['pending_approval', 'approved_can_claim', 'item_approved', 'rejected', 'active_qr', 'item_not_available', 'has_other_active_claims'].includes(reason);
   }
   
   // Helper function to update status badge styling
@@ -1034,7 +1114,7 @@
     
     switch(reason) {
       case 'pending_approval':
-        badge.textContent = 'Requested Approval';
+        badge.textContent = 'Pending Approval';
         badge.classList.add('bg-warning');
         break;
       case 'item_approved':
@@ -1052,6 +1132,10 @@
       case 'active_qr':
         badge.textContent = 'QR Active';
         badge.classList.add('bg-success');
+        break;
+      case 'has_other_active_claims':
+        badge.textContent = 'Has Active Claims';
+        badge.classList.add('bg-warning');
         break;
       case 'item_not_available':
         badge.textContent = 'Not Available';
@@ -1148,6 +1232,11 @@
     if (postedByEl){
       const email = item.uploaded_by_email ? ` (${item.uploaded_by_email})` : '';
       postedByEl.textContent = item.uploaded_by ? `${item.uploaded_by}${email}` : 'Unknown Admin';
+    }
+
+    const claimBtn = document.getElementById('btnClaim');
+    if (claimBtn){
+      claimBtn.textContent = item.is_valuable ? 'Request Approval' : 'Claim';
     }
   }
 

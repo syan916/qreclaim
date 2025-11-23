@@ -40,8 +40,14 @@
             activeEl.style.display = 'none';
 
             try {
-                const response = await fetch('/user/api/claims/active-qr');
-                const data = await response.json();
+                const response = await fetch('/user/api/claims/active-qr', { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+                let data = null;
+                const ct = response.headers.get('content-type') || '';
+                if (/application\/json/i.test(ct)) {
+                    data = await response.json();
+                } else {
+                    throw new Error('Unexpected response type');
+                }
                 
                 if (!response.ok || !data.success) {
                     throw new Error(data.error || 'Failed to fetch QR code');

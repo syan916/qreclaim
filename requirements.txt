@@ -1,12 +1,25 @@
-Flask==2.3.3
-Flask-Cors==4.0.0
-firebase-admin==6.3.0
-google-cloud-firestore==2.16.0
-google-cloud-storage==2.14.0
-cryptography==42.0.0
-Pillow==10.3.0
-numpy==1.26.0
-qrcode==7.4.2
-APScheduler==3.11.0
-gunicorn==21.2.0
-python-dotenv==1.0.0
+# Core web framework
+Flask>=2.2
+Flask-Cors>=3.0
+python-dotenv>=1.0
+
+# Firebase Admin SDK (Firestore + Storage)
+firebase-admin>=6.4
+
+# Crypto for QR encryption (Fernet)
+cryptography>=41.0
+
+# Image/array processing
+Pillow>=10.0
+numpy>=1.24
+
+# QR code generation
+qrcode>=7.4
+
+# Optional: OpenCV for server-side face detection/embeddings
+# On Raspberry Pi, prefer installing via apt: `sudo apt install -y python3-opencv`
+# If using pip, headless build avoids GUI deps:
+opencv-python-headless>=4.8
+
+# Optional: DeepFace (heavy; not required, server falls back gracefully)
+# deepface>=0.0.79

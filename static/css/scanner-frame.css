@@ -125,3 +125,12 @@
   :root { --scanner-corner-size: 12px; --scanner-border-width: 2px; }
   .scanner-frame, .face-scanner-frame, .qr-scanner-frame { inset: 10% 8%; border-radius: 8px; }
 }
+/* Centered loading overlay used in face capture modal */
+#cameraLoading.camera-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

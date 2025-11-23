@@ -622,7 +622,7 @@ function initializeItemsGrid() {
 }
 
 // Handle item claiming
-function handleClaimItem(button) {
+async function handleClaimItem(button) {
     const itemCard = button.closest('.item-card');
     const itemTitle = itemCard.querySelector('.item-title')?.textContent || 'Item';
     

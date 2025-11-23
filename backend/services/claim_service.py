@@ -24,6 +24,7 @@ from .crypto_service import (
     InvalidToken,
 )
 from .claim_validation_service import ClaimValidationService
+from .SMTP_server import send_email
 import numpy as np
 
 # Optional OpenCV integration for robust face detection and feature extraction
@@ -800,6 +801,13 @@ def finalize_claim_kiosk(claim_id: str, duration_sec: int = 10):
                 link='/user/claim-history',
                 ntype='claim_success'
             )
+            try:
+                subj = 'Claim completed successfully'
+                txt = f"You have successfully claimed {item_name or 'your item'} at the kiosk."
+                html = f"<p>You have successfully claimed <strong>{item_name or 'your item'}</strong> at the kiosk.</p>"
+                _queue_trigger_email(data.get('student_id'), subj, html, txt)
+            except Exception:
+                pass
         except Exception:
             pass
 
@@ -1106,6 +1114,19 @@ def generate_claim_qr(claim_id: str, upload_folder: str):
                 link='/user/my-qr-code',
                 ntype='registration_success'
             )
+            try:
+                item_name = None
+                fi = cdata.get('found_item_id')
+                if fi:
+                    idoc = db.collection('found_items').document(fi).get()
+                    if idoc.exists:
+                        item_name = (idoc.to_dict() or {}).get('found_item_name')
+                subj = 'Your QR code is ready'
+                txt = f"Your QR code for {item_name or 'your item'} has been generated. It expires in 5 minutes."
+                html = f"<p>Your QR code for <strong>{item_name or 'your item'}</strong> has been generated.</p><p>It expires in 5 minutes for security.</p>"
+                _queue_trigger_email(student_id, subj, html, txt)
+            except Exception:
+                pass
         except Exception:
             pass
 
@@ -1285,6 +1306,53 @@ def get_qr_status_for_user_item(student_id: str, found_item_id: str):
         
     except Exception as e:
         _logger.error('Error getting QR status for user=%s item=%s: %s', student_id, found_item_id, str(e))
+        return False, {'error': str(e)}, 500
+
+def get_active_qr_for_user(student_id: str):
+    try:
+        if not student_id:
+            return False, {'error': 'Missing student_id'}, 400
+        now_utc = datetime.now(timezone.utc)
+        query = db.collection('claims').where('student_id', '==', student_id).where('qr_token', '!=', None).order_by('created_at', direction=firestore.Query.DESCENDING)
+        try:
+            docs = list(query.limit(20).stream())
+        except Exception:
+            docs = list(db.collection('claims').where('student_id','==',student_id).where('qr_token','!=',None).stream())
+        active = None
+        for d in docs:
+            data = d.to_dict() or {}
+            exp = data.get('expires_at')
+            exp_dt = None
+            if exp:
+                try:
+                    exp_dt = exp if isinstance(exp, datetime) else datetime.fromtimestamp(float(exp), tz=timezone.utc)
+                except Exception:
+                    exp_dt = None
+            if exp_dt and now_utc < exp_dt:
+                active = (d.id, data)
+                break
+        if not active:
+            return True, {'success': True, 'qr_code': None}, 200
+        claim_id, cdata = active
+        item_name = None
+        if cdata.get('found_item_id'):
+            idoc = db.collection('found_items').document(cdata.get('found_item_id')).get()
+            if idoc.exists:
+                item_name = (idoc.to_dict() or {}).get('found_item_name')
+        resp = {
+            'success': True,
+            'qr_code': {
+                'claim_id': claim_id,
+                'item_name': item_name,
+                'qr_image_url': cdata.get('qr_image_url'),
+                'created_at': _isoformat_or_none(cdata.get('created_at')),
+                'expires_at': _isoformat_or_none(cdata.get('expires_at')),
+                'expires_at_ms': int((cdata.get('expires_at') or now_utc).timestamp() * 1000) if hasattr((cdata.get('expires_at') or now_utc), 'timestamp') else None,
+                'token': cdata.get('qr_token')
+            }
+        }
+        return True, resp, 200
+    except Exception as e:
         return False, {'error': str(e)}, 500
 
 def get_user_claim_status_for_item(student_id: str, found_item_id: str):
@@ -1792,14 +1860,75 @@ def list_user_claims(student_id: str, status: str = None, sort: str = 'newest', 
         except Exception as e:
             msg = str(e)
             if 'requires an index' in msg or 'FAILED_PRECONDITION' in msg:
-                # Try to extract Firebase console index creation URL
-                import re
-                m = re.search(r'https://console\.firebase\.google\.com[^\s]+', msg)
-                return False, {
-                    'error': 'Query requires a Firestore composite index',
-                    'code': 'INDEX_REQUIRED',
-                    'index_url': m.group(0) if m else None
-                }, 400
+                try:
+                    # Fallback: load by student_id only, then filter/sort/paginate in Python
+                    base_q = db.collection('claims').where('student_id', '==', student_id)
+                    base_docs = list(base_q.stream())
+                    # Convert to list of dicts with created_at
+                    items = []
+                    for d in base_docs:
+                        data = d.to_dict() or {}
+                        data['__id'] = d.id
+                        items.append(data)
+                    # Filter by status
+                    if status:
+                        items = [x for x in items if str(x.get('status','')).strip().lower() == str(status).strip().lower()]
+                    # Filter by date range
+                    def _to_dt(v):
+                        try:
+                            return v if isinstance(v, datetime) else datetime.fromisoformat(str(v).replace('Z','+00:00'))
+                        except Exception:
+                            return None
+                    if start_dt:
+                        items = [x for x in items if (_to_dt(x.get('created_at')) or datetime.min.replace(tzinfo=timezone.utc)) >= start_dt]
+                    if end_dt:
+                        items = [x for x in items if (_to_dt(x.get('created_at')) or datetime.max.replace(tzinfo=timezone.utc)) <= end_dt]
+                    # Sort by created_at
+                    reverse = ((sort or 'newest').lower() in ('newest','desc','latest'))
+                    items.sort(key=lambda x: (_to_dt(x.get('created_at')) or datetime.min.replace(tzinfo=timezone.utc)), reverse=reverse)
+                    # Pagination fallback (no cursor id available reliably): simple first page only
+                    items = items[:page_size]
+                    claims = []
+                    for data in items:
+                        raw_status = str(data.get('status', 'pending')).strip().lower()
+                        status_title = raw_status.capitalize()
+                        claim_id = data.get('claim_id') or data.get('__id')
+                        found_item_id = data.get('found_item_id')
+                        item_name = None
+                        item_image_url = None
+                        is_valuable = None
+                        try:
+                            if found_item_id:
+                                item_doc = db.collection('found_items').document(found_item_id).get()
+                                if item_doc and item_doc.exists:
+                                    item_data = item_doc.to_dict() or {}
+                                    item_name = item_data.get('found_item_name') or item_data.get('name')
+                                    item_image_url = item_data.get('image_url') or (item_data.get('images', []) or [None])[0]
+                                    is_valuable = bool(item_data.get('is_valuable') or item_data.get('valuable') or False)
+                        except Exception:
+                            pass
+                        claims.append({
+                            'id': claim_id,
+                            'status': status_title,
+                            'created_at': _isoformat_or_none(data.get('created_at')),
+                            'approved_by': data.get('approved_by'),
+                            'verification_timestamp': _isoformat_or_none(data.get('verified_at')),
+                            'locker_id': data.get('locker_id'),
+                            'found_item_id': found_item_id,
+                            'item_name': item_name,
+                            'item_image_url': item_image_url,
+                            'is_valuable': is_valuable,
+                        })
+                    return True, {'success': True, 'claims': claims, 'pagination': {'page_size': page_size, 'next_cursor_id': None, 'returned_count': len(claims)}}, 200
+                except Exception as e2:
+                    import re
+                    m = re.search(r'https://console\.firebase\.google\.com[^\s]+', msg)
+                    return False, {
+                        'error': 'Query requires a Firestore composite index',
+                        'code': 'INDEX_REQUIRED',
+                        'index_url': m.group(0) if m else None,
+                        'details': str(e2)
+                    }, 400
             return False, {'error': 'Failed to query Firestore', 'code': 'FIRESTORE_QUERY_ERROR', 'details': msg}, 500
 
         next_cursor_id = None
@@ -1904,3 +2033,23 @@ def _create_notification(user_id: str, title: str, message: str, link: str, ntyp
         })
     except Exception:
         pass
+
+def _queue_trigger_email(student_id: str, subject: str, html: str, text: str = None):
+    try:
+        if not student_id or not subject or not html:
+            return False
+        uref = db.collection('users').document(student_id)
+        ud = uref.get()
+        if not ud.exists:
+            return False
+        email = (ud.to_dict() or {}).get('email')
+        if not email:
+            return False
+        ok = send_email(email, subject, html=html, text=text)
+        if ok:
+            _logger.info('Email sent to %s: %s', email, subject)
+        else:
+            _logger.warning('Email send failed for %s: %s', email, subject)
+        return ok
+    except Exception:
+        return False

@@ -54,7 +54,9 @@ class KioskApp {
         this.INVALID_QR_RESET_DELAY = 4000; // restart after invalid QR (4s)
         this.FACE_FAIL_RESET_DELAY = 5000; // restart after face timeout/mismatch (5s)
         this.SUCCESS_RESET_DELAY = 8000; // restart after successful claim (8s)
+        this.SCAN_TIMEOUT = 30000;
         this._restartCountdownInterval = null;
+        this._scanTimeoutId = null;
         
         // Visual feedback elements
         this.qrOverlay = null;
@@ -488,6 +490,7 @@ class KioskApp {
             await this.qrScanner.start();
             this.state.scanning = true;
             this.state.mode = 'qr';
+            this.armScanTimeout();
             
             // Initialize QR scanner visual feedback
             this.updateQRScannerFeedback('scanning');
@@ -525,6 +528,7 @@ class KioskApp {
             
             // Update visual feedback for QR detection
             this.updateQRScannerFeedback('detected', 'QR code detected, processing...');
+            this.clearScanTimeout();
             this.playSound('scan');
 
             // Stop scanner temporarily
@@ -651,6 +655,37 @@ class KioskApp {
             actions: [{ id: 'restart-scan', label: 'Restart Scanning', handler: () => this.resetToScanning() }]
         });
         this.log('warn', 'QR scan error', { message: msg });
+    }
+
+    armScanTimeout() {
+        try {
+            this.clearScanTimeout();
+            this._scanTimeoutId = setTimeout(() => {
+                this.onScanTimeout();
+            }, this.SCAN_TIMEOUT);
+        } catch (_) {}
+    }
+
+    clearScanTimeout() {
+        try {
+            if (this._scanTimeoutId) {
+                clearTimeout(this._scanTimeoutId);
+                this._scanTimeoutId = null;
+            }
+        } catch (_) {}
+    }
+
+    onScanTimeout() {
+        try {
+            if (!this.state.scanning) return;
+            this.updateQRScannerFeedback('error', 'Scan timed out');
+            this.showStatus('Timeout', 'No QR code detected within 30 seconds.', 'warning', {
+                actions: [{ id: 'restart-scan', label: 'Restart Scanning', handler: () => this.resetToScanning() }]
+            });
+            this.startAutoRestartCountdown({ seconds: 5, type: 'warning', title: 'Scan Timeout', message: 'Restarting QR scanner...', immediateSwitch: true });
+        } catch (e) {
+            this.log('warn', 'onScanTimeout failed', { error: e.message });
+        }
     }
 
     /**
@@ -955,10 +990,16 @@ class KioskApp {
             // Try to get additional details from Firestore, but don't fail if offline
             // or when rules block reads. Surface a friendly info message and continue.
             try {
-                const claimResult = await firebaseService.getClaim(qrVerification.claim_id);
+                let claimResult = null;
+                if (qrData && qrData.token) {
+                    claimResult = await firebaseService.getClaimByToken(qrData.token);
+                } else {
+                    claimResult = await firebaseService.getClaim(qrVerification.claim_id);
+                }
                 if (claimResult && claimResult.success && claimResult.data) {
                     // Merge Firestore data with QR verification data
                     this.currentClaim = { ...this.currentClaim, ...claimResult.data };
+                    this.clearSensitiveQRData();
                 } else if (claimResult && !claimResult.success) {
                     // Show guidance when Firestore is unavailable or permissions are restricted
                     const msg = claimResult.error || 'Firestore details unavailable.';
@@ -974,11 +1015,14 @@ class KioskApp {
                                     handler: async () => {
                                         try {
                                             this.showProgress('Retrying claim details from Firestore...');
-                                            const retry = await firebaseService.getClaim(qrVerification.claim_id);
+                                            const retry = qrData && qrData.token
+                                                ? await firebaseService.getClaimByToken(qrData.token)
+                                                : await firebaseService.getClaim(qrVerification.claim_id);
                                             if (retry && retry.success && retry.data) {
                                                 this.currentClaim = { ...this.currentClaim, ...retry.data };
                                                 this.displayClaimInfo(this.currentClaim);
                                                 this.showStatus('Info', 'Claim details fetched successfully from Firestore.', 'success');
+                                                this.clearSensitiveQRData();
                                             } else {
                                                 const errMsg = (retry && retry.error) ? retry.error : 'Still unable to fetch details.';
                                                 this.showStatus('Info', errMsg, 'warning');
@@ -1031,6 +1075,15 @@ class KioskApp {
             // Auto-restart countdown for general processing errors
             this.startAutoRestartCountdown(false, 'error', 'Scanner will restart in a moment...');
         }
+    }
+
+    clearSensitiveQRData() {
+        try {
+            this.state.lastRawQR = null;
+            if (this.currentClaim) {
+                if (this.currentClaim.qr_token) delete this.currentClaim.qr_token;
+            }
+        } catch (_) {}
     }
 
     /**
@@ -1313,6 +1366,7 @@ class KioskApp {
             if (this.qrScanner) {
                 await this.qrScanner.start();
                 this.state.scanning = true;
+                this.armScanTimeout();
             }
             this.state.mode = 'qr';
 
@@ -2460,6 +2514,7 @@ class KioskApp {
             if (this.qrScanner) {
                 await this.qrScanner.start();
                 this.state.scanning = true;
+                this.armScanTimeout();
             }
             // Re-add scanning animation class
             try {

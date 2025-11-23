@@ -4,7 +4,12 @@ import os
 import json
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # Prefer loading from config/.env if present, then fallback to default
+    cfg_env_path = os.path.join('config', '.env')
+    if os.path.exists(cfg_env_path):
+        load_dotenv(cfg_env_path)
+    else:
+        load_dotenv()
 except Exception:
     pass
 
@@ -15,9 +20,16 @@ from backend.auth import configure_session, authenticate_user, login_user, logou
 from backend.routes.user_routes import user_bp
 from backend.routes.admin_routes import admin_bp
 from backend.routes.validation_routes import validation_bp
-from backend.services.image_service import generate_tags, generate_description
-from test_routes import test_bp
+try:
+    from tests.test_routes import test_bp
+except Exception:
+    try:
+        from test_routes import test_bp
+    except Exception:
+        test_bp = None
 from backend.services.scheduler_service import start_scheduler, stop_scheduler
+from firebase_admin import firestore as fb_fs
+import uuid
 
 # Create app directly
 app = Flask(__name__)
@@ -33,7 +45,8 @@ configure_session(app)
 app.register_blueprint(user_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(validation_bp)
-app.register_blueprint(test_bp)
+if test_bp:
+    app.register_blueprint(test_bp)
 
 
 
@@ -146,6 +159,66 @@ def health_check():
         "service": "qreclaim-main"
     })
 
+# =============================
+# Network error logging & handlers
+# =============================
+
+def log_network_failure(context):
+    try:
+        payload = {
+            'code': context.get('code'),
+            'message': context.get('message'),
+            'path': context.get('path'),
+            'method': context.get('method'),
+            'user_id': session.get('user_id'),
+            'role': session.get('role'),
+            'user_agent': request.headers.get('User-Agent'),
+            'incident_id': context.get('incident_id'),
+            'timestamp': fb_fs.SERVER_TIMESTAMP,
+            'origin': context.get('origin', 'server')
+        }
+        db.collection('network_logs').add(payload)
+    except Exception:
+        pass
+
+@app.route('/api/log-network-error', methods=['POST'])
+def api_log_network_error():
+    try:
+        data = request.get_json(silent=True) or {}
+        context = {
+            'code': data.get('code'),
+            'message': data.get('message'),
+            'path': data.get('path') or request.headers.get('X-Orig-Path'),
+            'method': data.get('method') or 'FETCH',
+            'incident_id': data.get('incident_id') or uuid.uuid4().hex[:8],
+            'origin': 'client'
+        }
+        log_network_failure(context)
+        return jsonify({'success': True, 'incident_id': context['incident_id']}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.errorhandler(404)
+def handle_404(error):
+    incident_id = uuid.uuid4().hex[:8]
+    context = {'code': 404, 'message': 'Page Not Found', 'path': request.path, 'method': request.method, 'incident_id': incident_id, 'origin': 'server'}
+    log_network_failure(context)
+    return render_template('network-access-info.html', code=404, message='Page Not Found'), 404
+
+@app.errorhandler(500)
+def handle_500(error):
+    incident_id = uuid.uuid4().hex[:8]
+    context = {'code': 500, 'message': 'Server Error', 'path': request.path, 'method': request.method, 'incident_id': incident_id, 'origin': 'server'}
+    log_network_failure(context)
+    return render_template('network-access-info.html', code=500, message='Server Error'), 500
+
+@app.errorhandler(401)
+def handle_401(error):
+    incident_id = uuid.uuid4().hex[:8]
+    context = {'code': 401, 'message': 'Session Expired', 'path': request.path, 'method': request.method, 'incident_id': incident_id, 'origin': 'server'}
+    log_network_failure(context)
+    return render_template('network-access-info.html', code=401, message='Session Expired'), 401
+
 # Development-only endpoint to set Firebase Web config from the browser
 @app.route('/admin/firebase-web-config', methods=['GET', 'POST'])
 def set_firebase_web_config():
@@ -192,76 +265,6 @@ def set_firebase_web_config():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/ai/generate-tags', methods=['POST'])
-def ai_generate_tags():
-    try:
-        token_required = os.environ.get('AI_SERVICE_TOKEN')
-        if token_required:
-            auth = request.headers.get('Authorization') or ''
-            if not auth.startswith('Bearer '):
-                return jsonify({'error': 'Unauthorized'}), 401
-            if auth.split(' ', 1)[1].strip() != token_required:
-                return jsonify({'error': 'Forbidden'}), 403
-
-        file = request.files.get('image')
-        if not file:
-            return jsonify({'error': 'No image file provided'}), 400
-
-        extra_raw = request.form.get('extra_candidates') or request.form.get('learned_tags')
-        extra_candidates = []
-        if extra_raw:
-            try:
-                extra_candidates = json.loads(extra_raw)
-            except Exception:
-                extra_candidates = []
-
-        temp_dir = os.path.join(tempfile.gettempdir(), 'qreclaim_ai')
-        os.makedirs(temp_dir, exist_ok=True)
-        ext = (file.filename or 'img').rsplit('.', 1)[-1].lower()
-        temp_path = os.path.join(temp_dir, f'{os.urandom(8).hex()}.{ext}')
-        file.save(temp_path)
-        try:
-            result = generate_tags(temp_path, extra_candidates=extra_candidates)
-        finally:
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
-        return jsonify({'success': True, 'result': result, 'tags': result.get('tags', [])}), 200
-    except Exception as e:
-        return jsonify({'error': f'Failed to generate tags: {str(e)}'}), 500
-
-@app.route('/ai/generate-description', methods=['POST'])
-def ai_generate_description():
-    try:
-        token_required = os.environ.get('AI_SERVICE_TOKEN')
-        if token_required:
-            auth = request.headers.get('Authorization') or ''
-            if not auth.startswith('Bearer '):
-                return jsonify({'error': 'Unauthorized'}), 401
-            if auth.split(' ', 1)[1].strip() != token_required:
-                return jsonify({'error': 'Forbidden'}), 403
-
-        file = request.files.get('image')
-        if not file:
-            return jsonify({'error': 'No image file provided'}), 400
-
-        temp_dir = os.path.join(tempfile.gettempdir(), 'qreclaim_ai')
-        os.makedirs(temp_dir, exist_ok=True)
-        ext = (file.filename or 'img').rsplit('.', 1)[-1].lower()
-        temp_path = os.path.join(temp_dir, f'{os.urandom(8).hex()}.{ext}')
-        file.save(temp_path)
-        try:
-            caption = generate_description(temp_path)
-        finally:
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
-        return jsonify({'success': True, 'description': caption}), 200
-    except Exception as e:
-        return jsonify({'error': f'Failed to generate description: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Start the background scheduler for automatic tasks

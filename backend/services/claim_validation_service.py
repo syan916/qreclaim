@@ -291,6 +291,18 @@ class ClaimValidationService:
                     409
                 )
             
+            # Block starting new claims if the user has any approved claim for another item
+            approved_claims_query = db.collection('claims').where('student_id', '==', user_id).where('status', '==', 'approved')
+            approved_claims = list(approved_claims_query.stream())
+            for ac in approved_claims:
+                ac_data = ac.to_dict() or {}
+                if ac_data.get('found_item_id') != item_id:
+                    raise ValidationError(
+                        "You already have an approved claim. Please complete it before starting another",
+                        "MAX_CONCURRENT_APPROVED_CLAIMS_EXCEEDED",
+                        409
+                    )
+
             # Acquire claim session lock
             if not ClaimValidationService._acquire_claim_session_lock(user_id):
                 raise ValidationError(
